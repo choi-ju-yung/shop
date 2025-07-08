@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="NotificationMapper">
+	<insert id="insertNotification" parameterType="Map">
+		<selectKey keyProperty="id" resultType="String" order="BEFORE">
+			SELECT 'NOTI' || LPAD(noti_seq.NEXTVAL, 5, '0') FROM DUAL
+		</selectKey>
+		INSERT INTO NOTIFICATION(NOTI_ID, USER_NO, NOTI_MESSAGE, NOTI_URL, NOTIFICATION_TYPE)
+		VALUES (#{id}, #{userNo}, #{notiMessage}, #{notiUrl}, #{notificationType})
+	</insert>
+	
+	<select id="selectNoReadNotiByN" resultType="int">
+		SELECT COUNT(*) FROM NOTIFICATION 
+		WHERE USER_NO = #{userNo} 
+		AND IS_READ = 'N'
+	</select>
+	
+	<select id="selectNoReadNotiByNFromM" resultType="int">
+		SELECT COUNT(*) FROM NOTIFICATION 
+		WHERE USER_NO = #{userNo}
+		AND IS_READ = 'N'
+		AND NOTIFICATION_TYPE = 'MESSAGE'
+	</select>
+</mapper>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+ <mapper namespace="MyPageMapper">
+ 	
+ 	<select id="findByMyPage" parameterType="long" resultType="com.example.demo.mypage.vo.MyPage">
+ 		SELECT * FROM MY_USER_PAGE_TB WHERE USER_NO = #{userNo}
+ 	</select>
+ 	
+ 	<insert id="registUserPage"> <!-- 실무에서는 명시적으로 Default 값을 넣는것이 더 안전해서 실무에서 권장 -->
+		INSERT INTO MY_USER_PAGE_TB(
+			USER_NO,
+			PROFILE_IMG,
+			INTRODUCE,
+			TEMPERATURE
+		) VALUES(
+		 	#{userId},
+		 	DEFAULT,
+		 	DEFAULT,
+		 	DEFAULT
+		)
+	</insert>
+	
+<!-- 	<parameterMap type="" id="">
+	
+	
+	</parameterMap> -->
+ 	
+ 	
+ </mapper>

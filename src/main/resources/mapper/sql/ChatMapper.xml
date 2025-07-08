@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+    
+<mapper namespace="ChatMapper">
+
+    <insert id="insertMessage">
+        INSERT INTO chat_message (id, room_id, sender, message, time)
+        VALUES (chat_seq.NEXTVAL, #{roomId}, #{sender}, #{message}, #{time})
+    </insert>
+
+    <select id="selectMessagesByRoomId" resultType="com.example.demo.chat.vo.ChatMessage">
+        SELECT room_id, sender, message, time
+        FROM chat_message
+        WHERE room_id = #{roomId}
+        ORDER BY id ASC
+    </select>
+	
+	<select id="findRoomByParticipants" resultType="com.example.demo.chat.vo.ChatRoom">
+        SELECT *
+        FROM CHAT_ROOM
+        WHERE PRODUCT_ID = #{productId}
+          AND ((SELLER_NO = #{senderUserNo} AND BUYER_NO = #{receiverUserNo})
+           OR (SELLER_NO = #{receiverUserNo} AND BUYER_NO = #{senderUserNo}))
+    </select>
+
+    <insert id="createRoom">
+        INSERT INTO CHAT_ROOM (ROOM_ID, PRODUCT_ID, SELLER_NO, BUYER_NO, CREATED_AT)
+        VALUES (SEQ_CHAT_ROOM.NEXTVAL, #{productId}, #{senderUserNo}, #{receiverUserNo}, SYSDATE)
+    </insert>
+
+    <select id="getMessages" resultType="com.example.demo.chat.vo.ChatMessage">
+        SELECT * FROM CHAT_MESSAGE
+        WHERE ROOM_ID = #{roomId}
+        ORDER BY SENT_AT ASC
+    </select>
+
+    <update id="markMessagesAsRead">
+        UPDATE CHAT_MESSAGE
+        SET IS_READ = 'Y'
+        WHERE ROOM_ID = #{roomId}
+          AND RECEIVER_NO = #{userNo}
+          AND IS_READ = 'N'
+    </update>
+
+    <select id="getUnreadMessageCount" resultType="int">
+        SELECT COUNT(*)
+        FROM CHAT_MESSAGE
+        WHERE ROOM_ID = #{roomId}
+          AND SENDER_NO = #{userNo}
+          AND IS_READ = 'N'
+    </select>
+	
+	<select id="getUserChatRooms" resultType="com.example.demo.chat.vo.ChatRoom">
+SELECT 
+    R.ROOM_ID,
+    R.PRODUCT_ID,
+    R.SELLER_NO,
+    R.BUYER_NO,
+    R.CREATED_AT,
+    CASE 
+        WHEN R.SELLER_NO = #{userNo} THEN R.BUYER_NO 
+        ELSE R.SELLER_NO 
+    END AS OTHER_USER_NO,
+    (SELECT M.MESSAGE 
+     FROM CHAT_MESSAGE M 
+     WHERE M.ROOM_ID = R.ROOM_ID 
+       AND M.MSG_ID = (SELECT MAX(MSG_ID) FROM CHAT_MESSAGE WHERE ROOM_ID = R.ROOM_ID)
+    ) AS LAST_MESSAGE,
+    (SELECT M.SENT_AT 
+     FROM CHAT_MESSAGE M 
+     WHERE M.ROOM_ID = R.ROOM_ID 
+       AND M.MSG_ID = (SELECT MAX(MSG_ID) FROM CHAT_MESSAGE WHERE ROOM_ID = R.ROOM_ID)
+    ) AS LAST_MESSAGE_TIME,
+    (SELECT COUNT(*) 
+     FROM CHAT_MESSAGE M 
+     WHERE M.ROOM_ID = R.ROOM_ID 
+       AND M.SENDER_NO != #{userNo}
+       AND M.IS_READ = 'N'         
+    ) AS UNREAD_COUNT
+FROM 
+    CHAT_ROOM R
+WHERE 
+    R.SELLER_NO = #{userNo} OR R.BUYER_NO = #{userNo}
+ORDER BY 
+    CASE 
+        WHEN (SELECT MAX(M.SENT_AT) FROM CHAT_MESSAGE M WHERE M.ROOM_ID = R.ROOM_ID) IS NOT NULL
+        THEN (SELECT MAX(M.SENT_AT) FROM CHAT_MESSAGE M WHERE M.ROOM_ID = R.ROOM_ID)
+        ELSE R.CREATED_AT
+    END DESC 
+	</select>
+	
+	
+	<insert id="insertChatMessage" parameterType="Map">
+		INSERT INTO CHAT_MESSAGE VALUES(CHAT_MESSAGE_SEQ.NEXTVAL,#{roomId},#{senderNo},#{message},SYSDATE,default,#{receiverNo})
+	</insert>
+	
+	<select id="getChatMessagesByRoomId" resultType="com.example.demo.chat.vo.ChatMessage">
+    		SELECT M.ROOM_ID, M.SENDER_NO, U.NAME AS SENDER_NAME, M.MESSAGE, M.SENT_AT
+		    FROM CHAT_MESSAGE M
+		    JOIN USERS_TB U ON M.SENDER_NO = U.USER_NO
+		    WHERE M.ROOM_ID = #{roomId}
+		    ORDER BY M.SENT_AT
+	</select>
+	
+	<update id="updateReadMessage" parameterType="Map">
+			UPDATE CHAT_MESSAGE SET IS_READ = 'Y' WHERE ROOM_ID = #{roomId} AND IS_READ = 'N' AND SENDER_NO = #{targetUserNo}
+	</update>
+	
+	<select id="getLatestMessageNameTimeInfo" resultType="Map">
+			SELECT
+				U.NAME,
+				M.SENT_AT
+			FROM
+				USERS_TB U
+			JOIN CHAT_MESSAGE M ON
+				U.USER_NO = M.SENDER_NO
+			WHERE
+				M.ROOM_ID = #{roomId}
+			ORDER BY SENT_AT DESC
+			FETCH FIRST 1 ROWS ONLY
+	</select>
+	
+	<select id="getSingleChatRoomInfo" resultType="com.example.demo.chat.vo.ChatRoom" parameterType="Map">
+		SELECT 
+		    R.ROOM_ID,
+		    R.PRODUCT_ID,
+		    R.SELLER_NO,
+		    R.BUYER_NO,
+		    CASE 
+		        WHEN R.SELLER_NO = #{userNo} THEN R.BUYER_NO 
+		        ELSE R.SELLER_NO 
+		    END AS OTHER_USER_NO,
+		    (
+		        SELECT MESSAGE
+		        FROM (
+		            SELECT M.MESSAGE
+		            FROM CHAT_MESSAGE M
+		            WHERE M.ROOM_ID = R.ROOM_ID
+		            ORDER BY M.MSG_ID DESC
+		        )
+		        WHERE ROWNUM = 1
+		    ) AS LAST_MESSAGE,
+		    (
+		        SELECT COUNT(*) 
+		        FROM CHAT_MESSAGE M 
+		        WHERE M.ROOM_ID = R.ROOM_ID 
+		          AND M.SENDER_NO != #{userNo}
+		          AND M.IS_READ = 'N'         
+		    ) AS UNREAD_COUNT
+		FROM CHAT_ROOM R
+		WHERE R.ROOM_ID = #{roomId}
+	</select> 	
+
+</mapper>

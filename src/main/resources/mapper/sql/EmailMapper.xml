@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+ <mapper namespace="EmailMapper">
+ 	
+ 	<!-- 해당아이디로 보낸 인증번호가 있으면, 덮어쓰고 없으면 인증번호 새로 만듬 -->
+ 	<insert id="createAuthNumber" parameterType="com.example.demo.authnumber.vo.AuthNumber">
+ 		MERGE INTO email_auth USING dual
+		ON (email = #{email}) 
+		WHEN MATCHED THEN
+		    UPDATE SET auth_code = #{authCode}, create_time = SYSTIMESTAMP, is_verified = 'N'
+		WHEN NOT MATCHED THEN
+		    INSERT (email, auth_code, create_time, is_verified, request_ip)
+		    VALUES (#{email}, #{authCode}, SYSTIMESTAMP, 'N', #{requestIp})
+ 	</insert>
+ 	
+ 	<select id="compareAuthNumber" parameterType="com.example.demo.authnumber.vo.AuthNumber" resultType="int">
+ 		SELECT CASE WHEN EXISTS(
+ 			SELECT 1 FROM EMAIL_AUTH
+ 			WHERE email = #{email}
+          AND auth_code = #{authCode}
+          AND is_verified = 'N'
+          AND create_time >= SYSTIMESTAMP - INTERVAL '5' MINUTE
+ 		) THEN 1 ELSE 0 END
+ 		FROM DUAL
+ 	</select>
+ </mapper>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ProductRegistMapper">
+		
+		
+	 <resultMap id="categoryMap" type="com.example.demo.category.vo.Category">
+	    <result property="categoryName" column="CATEGORY_NAME"/>
+	 </resultMap>	
+	
+	 <select id="selectSubCate" parameterType="String" resultType="String">
+	        SELECT S.SUB_CATEGORY_NAME 
+			FROM SUBCATEGORY S
+			JOIN CATEGORY C ON S.PARENT_CATEGORY_ID = C.CATEGORY_ID
+			WHERE C.CATEGORY_NAME = #{categoryName}
+    </select>
+   	   	
+   	<select id="selectAll" resultMap="categoryMap">
+   		SELECT CATEGORY_NAME FROM CATEGORY
+   	</select>
+    
+    <insert id="insertProduct" parameterType="com.example.demo.product.vo.Product">
+          <selectKey keyProperty="productId" resultType="string" order="BEFORE">
+            SELECT product_id_seq.NEXTVAL FROM dual
+          </selectKey>
+    	 INSERT INTO product (
+            product_id,user_no, product_title, sub_category_name, product_place, product_state, product_price, product_explanation, product_keyword
+        ) VALUES (
+            #{productId},#{userNo}, #{title}, #{subCate}, #{place}, #{state}, #{price}, #{explanation}, #{tag}
+        )
+    </insert>
+    
+    <insert id="insertProductFile" parameterType="com.example.demo.product.vo.ProductFile">
+         <selectKey keyProperty="fileId" resultType="int" order="BEFORE">
+            SELECT product_file_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO product_file (
+            file_id,product_id, original_name, saved_name, file_path, is_main
+        ) VALUES (
+            #{fileId}, #{productId}, #{originalName}, #{savedName}, #{filePath}, #{isMain}
+        )
+    </insert>
+
+</mapper>

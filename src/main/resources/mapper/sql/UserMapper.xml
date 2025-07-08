@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper">
+
+	<resultMap id="userResultMap" type="com.example.demo.user.vo.UserVO">
+		    <result property="userNo" column="user_no"/>
+		    <result property="loginId" column="login_Id"/>
+		    <result property="password" column="pass_wd"/>
+		    <result property="username" column="name"/>
+		    <result property="email" column="email"/>
+		    <result property="role" column="role"/>
+		    <result property="oauthProvider" column="oauth_provider"/>
+		    <result property="oauthId" column="oauth_id"/>
+		    <result property="regDate" column="reg_date"/>
+	</resultMap>
+	
+	
+	<select id="findByKakaoId" parameterType="String" resultMap="userResultMap">
+		SELECT * FROM USERS_TB WHERE OAUTH_ID = #{kakaoId} and OAUTH_PROVIDER = 'kakao'
+	</select>
+	
+	<select id="findByUserId" parameterType="String" resultMap="userResultMap">
+		SELECT * FROM USERS_TB WHERE LOGIN_ID = #{loginId}
+	</select>
+	
+	<select id="findByUserNo" parameterType="long" resultMap="userResultMap">
+		SELECT * FROM USERS_TB WHERE USER_NO = #{userNo}
+	</select>
+	
+
+	<select id="getUserByUsername" parameterType="String"
+		resultType="com.example.demo.user.vo.UserVO">
+		SELECT name, pass_wd, role FROM users_tb WHERE name = #{username}
+	</select>
+
+	<select id="emailDupCheck" parameterType="String"
+		resultType="int">
+		SELECT CASE
+		WHEN COUNT(*) > 0 THEN 1
+		ELSE 0
+		END AS email_exists
+		FROM USERS_TB
+		WHERE email = #{memberEmail}
+	</select>
+
+
+	<insert id="registKakaoUser"
+		parameterType="com.example.demo.user.vo.UserVO">
+		 <selectKey keyProperty="userNo" resultType="int" order="BEFORE">
+        SELECT USERS_SEQ.NEXTVAL FROM dual
+    	</selectKey>
+		INSERT INTO USERS_TB (
+		USER_NO,
+		NAME,
+		EMAIL,
+		PASS_WD,
+		ROLE,
+		OAUTH_PROVIDER,
+		OAUTH_ID
+		) VALUES (
+		#{userNo},
+		#{username},
+		#{email},
+		#{password},
+		#{role},
+		#{oauthProvider},
+		#{oauthId}
+		)
+	</insert>
+	
+	<select id="duplicateId" parameterType="string" resultType="int">
+		SELECT
+			CASE
+				WHEN COUNT(*) > 0 THEN 1
+				ELSE 0
+			END AS USER_EXISTS
+		FROM
+			USERS_TB
+		WHERE
+			LOGIN_ID = #{loginId}
+			AND OAUTH_PROVIDER IS NULL
+			AND OAUTH_ID IS NULL
+	</select>
+	
+	<select id="findPwdById" parameterType="String" resultType="String">
+		    SELECT PASS_WD FROM USERS_TB WHERE LOGIN_ID = #{loginId}
+	</select>
+	
+</mapper>
