@@ -22,6 +22,7 @@
     </c:forEach>
 	</section>
     <script>
+
     document.addEventListener('DOMContentLoaded', function() {
 
         function openChatRoom(productId, targetUserNo, roomId) {

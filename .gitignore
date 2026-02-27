@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+.DS_Store
+# 민감정보 있으면 제외
+application.yml
+application-local.yml
