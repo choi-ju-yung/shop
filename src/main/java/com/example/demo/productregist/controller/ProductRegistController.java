@@ -3,17 +3,21 @@ package com.example.demo.productregist.controller;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.Locale.Category;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,7 +29,6 @@ import com.example.demo.product.vo.ProductFile;
 import com.example.demo.productregist.service.ProductRegistService;
 import com.example.demo.user.vo.UserVO;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -33,90 +36,150 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/user")
 public class ProductRegistController {
 
-	private final ProductRegistService productRegistService;
+    private static final Logger log = LoggerFactory.getLogger(ProductRegistController.class);
 
-	@Autowired
-	public ProductRegistController(ProductRegistService productRegistService) {
-		this.productRegistService = productRegistService;
-	}
+    private final ProductRegistService productRegistService;
 
-	/**
-	 * 상품등록 화면으로 이동
-	 */
-	@GetMapping("/productRegist")
-	public String productRegistView(Model model) {
-		List<Category> categorys = productRegistService.selectAll();
-		model.addAttribute("categorys", categorys);
-		return "product/productregist";
-	}
+    @Value("${app.upload.dir:C:/upload}")
+    private String uploadDir;
 
-	@GetMapping("/findSubCate")
-	@ResponseBody
-	public String findSubCate(HttpServletRequest request) {
-		String categoryName = request.getParameter("categoryName");
-		List<String> subCategorys = productRegistService.findSubCate(categoryName);
+    @Autowired
+    public ProductRegistController(ProductRegistService productRegistService) {
+        this.productRegistService = productRegistService;
+    }
 
-		String result = subCategorys.stream().map(n -> String.valueOf(n)).collect(Collectors.joining(","));
-		return result;
-	}
+    /** 상품 등록 화면 */
+    @GetMapping("/productRegist")
+    public String productRegistView(Model model) {
+        List<Category> categorys = productRegistService.selectAll();
+        model.addAttribute("categorys", categorys);
+        return "product/productregist";
+    }
 
-	@PostMapping("/productRegistEnd")
-	@ResponseBody // 뷰로 리턴이 아닌 문자열 값 자체를 리턴
-	public String productRegistEnd(HttpServletRequest request, HttpSession session, 
-			@RequestParam("title") String title,
-			@RequestParam("subCate") String subCate,
-			@RequestParam("place") String place,
-			@RequestParam("state") String state,
-			@RequestParam("price") String price,
-			@RequestParam("explanation") String explanation,
-			@RequestParam("tag") String tag,
-			@RequestParam("mainImageIndex") int mainImageIndex,
-		    @RequestParam("files") List<MultipartFile> files) {
-		
-		// 여기서 세션분기 로직으로 loginID인지 카카오 고유 ID인지 구별해야함 
-		long userNo = ((UserVO)session.getAttribute("loginUser")).getUserNo();
-		
-		
-		//String path= request.getServletContext().getRealPath("/upload/productRegist");  // ->  /upload/productRegist 안에다 업로드되는 이미지 넣음
-		 String uploadDir = "C:/upload/productRegist"; // 절대 경로, 미리 생성되어 있어야 함
-		
-		File dir = new File(uploadDir);
-		if(!dir.exists()) {
-			dir.mkdirs(); // 디렉토리 생성
-		}
-		
-		List<ProductFile> fileList= new ArrayList();
-		
-		for(int i=0; i<	files.size(); i++) {
-			MultipartFile file = files.get(i);
-			if(!file.isEmpty()) {
-				try {
-					 String originalFilename = file.getOriginalFilename(); // 나중에 사용자에게 보여줄 때 필요
-		             String ext = originalFilename.substring(originalFilename.lastIndexOf(".")); // MIME 타입을 확인하거나, 이미지 리사이징/처리할 때 사용
-		             String savedName = UUID.randomUUID().toString() + ext; // 중복 방지를 위해 반드시 필요 (UUID로 생성)
-		             
-		             File dest = new File(uploadDir, savedName);
-		             file.transferTo(dest); // 실제파일저장
-		             
-		             fileList.add(ProductFile.builder()
-		            		 .originalName(originalFilename)
-		            		 .savedName(savedName)
-		            		 .filePath("/upload/productRegist/"+savedName)
-		            		 .isMain(i == mainImageIndex) // 대표 이미지인지 체크
-		            		 .build());
-				}catch(IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		int realPrice = Integer.parseInt(price.replace(",", "")); // 쉼표있는 숫자를 정수로 바꾸는 과정
-		
-		
-		 Product p = Product.builder().userNo(userNo).title(title).state(state).price(realPrice).explanation(explanation)
-				 .tag(tag).place(place).subCate(subCate).productFiles(fileList).build();
-		 
-		int result = productRegistService.insertProduct(p); // 상품등록 및 상품이미지첨부파일 데이터 추가 하는 작업
-	    return "1";
-	}
+    /** 서브카테고리 AJAX 조회 */
+    @GetMapping("/findSubCate")
+    @ResponseBody
+    public String findSubCate(HttpServletRequest request) {
+        String categoryName = request.getParameter("categoryName");
+        List<String> subCategorys = productRegistService.findSubCate(categoryName);
+        return subCategorys.stream().collect(Collectors.joining(","));
+    }
+
+    /** 상품 등록 처리 */
+    @PostMapping("/productRegistEnd")
+    @ResponseBody
+    public String productRegistEnd(HttpSession session,
+            @RequestParam("title") String title,
+            @RequestParam("subCate") String subCate,
+            @RequestParam("place") String place,
+            @RequestParam("state") String state,
+            @RequestParam("price") String price,
+            @RequestParam("explanation") String explanation,
+            @RequestParam("tag") String tag,
+            @RequestParam("mainImageIndex") int mainImageIndex,
+            @RequestParam("files") List<MultipartFile> files) {
+
+        long userNo = ((UserVO) session.getAttribute("loginUser")).getUserNo();
+
+        String productUploadDir = uploadDir + "/productRegist";
+        File dir = new File(productUploadDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        List<ProductFile> fileList = new ArrayList<>();
+        for (int i = 0; i < files.size(); i++) {
+            MultipartFile file = files.get(i);
+            if (!file.isEmpty()) {
+                // 이미지 파일 검증 (보안)
+                String contentType = file.getContentType();
+                if (contentType == null || !contentType.startsWith("image/")) {
+                    log.warn("이미지가 아닌 파일 업로드 시도: {}", contentType);
+                    continue;
+                }
+                try {
+                    String originalFilename = file.getOriginalFilename();
+                    String ext = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
+                    String savedName = UUID.randomUUID().toString() + ext;
+                    File dest = new File(productUploadDir, savedName);
+                    file.transferTo(dest);
+                    fileList.add(ProductFile.builder()
+                            .originalName(originalFilename)
+                            .savedName(savedName)
+                            .filePath("/upload/productRegist/" + savedName)
+                            .isMain(i == mainImageIndex)
+                            .build());
+                } catch (IOException e) {
+                    log.error("파일 저장 실패", e);
+                }
+            }
+        }
+
+        int realPrice = Integer.parseInt(price.replace(",", ""));
+        Product p = Product.builder()
+                .userNo(userNo).title(title).state(state).price(realPrice)
+                .explanation(explanation).tag(tag).place(place).subCate(subCate)
+                .productFiles(fileList).build();
+        productRegistService.insertProduct(p);
+        return "1";
+    }
+
+    /** 메인 페이지 상품 목록 AJAX (JSON) */
+    @GetMapping("/mainProducts")
+    @ResponseBody
+    public List<Product> mainProducts() {
+        return productRegistService.selectMainProducts();
+    }
+
+    /** 상품 상세 페이지 */
+    @GetMapping("/product/{productId}")
+    public String productDetail(@PathVariable String productId, Model model, HttpSession session) {
+        Product product = productRegistService.selectProductDetail(productId);
+        if (product == null) {
+            return "redirect:/user/main";
+        }
+        model.addAttribute("product", product);
+        UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+        if (loginUser != null) {
+            model.addAttribute("isSeller", loginUser.getUserNo() == product.getUserNo());
+        } else {
+            model.addAttribute("isSeller", false);
+        }
+        return "product/productDetail";
+    }
+
+    /** 상품 검색 결과 페이지 */
+    @GetMapping("/search")
+    public String searchProducts(@RequestParam(required = false) String keyword, Model model) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return "redirect:/user/main";
+        }
+        List<Product> products = productRegistService.searchProducts(keyword.trim());
+        model.addAttribute("products", products);
+        model.addAttribute("keyword", keyword);
+        return "product/searchResult";
+    }
+
+    /** 카테고리별 상품 목록 페이지 */
+    @GetMapping("/category")
+    public String categoryProducts(@RequestParam(required = false) String name, Model model) {
+        List<Product> products;
+        if (name == null || name.trim().isEmpty()) {
+            products = productRegistService.selectMainProducts();
+            model.addAttribute("categoryName", "전체");
+        } else {
+            products = productRegistService.selectProductsByCategory(name.trim());
+            model.addAttribute("categoryName", name.trim());
+        }
+        model.addAttribute("products", products);
+        return "product/searchResult";
+    }
+
+    /** 헤더 카테고리 메뉴 AJAX (JSON) */
+    @GetMapping("/headercategories")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> headerCategories() {
+        List<Map<String, Object>> categories = productRegistService.selectAllCategories();
+        return ResponseEntity.ok(categories);
+    }
 }

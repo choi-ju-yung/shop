@@ -1,10 +1,14 @@
 package com.example.demo.product.vo;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProductFile {
     private int fileId;
     private String productId;

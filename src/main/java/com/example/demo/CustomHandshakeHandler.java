@@ -29,4 +29,4 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
 
         return new CustomPrincipal(loginUser); // ★ 여기!
     }
-}
+}	

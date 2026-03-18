@@ -16,6 +16,12 @@
 	font-family: "NEXON Lv2 Gothic";
 }
 
+body {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
 header {
 	width: 100%;
 	height: auto;
@@ -42,6 +48,11 @@ header {
 
 #fixedContainer {
 	width: 1280px;
+}
+
+/* body 직접 자식 중 section/div는 flex: 1로 footer 하단 고정 */
+section, body > div {
+	flex: 1;
 }
 
 section {
@@ -552,9 +563,13 @@ input[id="menuIcon"]:checked+label>span:nth-child(3) {
 
 /* footer */
 footer {
-	height: 300px;
+	height: 80px;
 	background-color: ghostwhite;
-	margin-top: 100px;
+	margin-top: 0;
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 #footer {

@@ -2,40 +2,132 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="ProductRegistMapper">
-		
-		
-	 <resultMap id="categoryMap" type="com.example.demo.category.vo.Category">
-	    <result property="categoryName" column="CATEGORY_NAME"/>
-	 </resultMap>	
-	
-	 <select id="selectSubCate" parameterType="String" resultType="String">
-	        SELECT S.SUB_CATEGORY_NAME 
-			FROM SUBCATEGORY S
-			JOIN CATEGORY C ON S.PARENT_CATEGORY_ID = C.CATEGORY_ID
-			WHERE C.CATEGORY_NAME = #{categoryName}
+
+    <!-- ===== ResultMap ===== -->
+    <resultMap id="categoryMap" type="com.example.demo.category.vo.Category">
+        <result property="categoryName" column="CATEGORY_NAME"/>
+    </resultMap>
+
+    <resultMap id="productMap" type="com.example.demo.product.vo.Product">
+        <result property="productId"    column="PRODUCT_ID"/>
+        <result property="userNo"       column="USER_NO"/>
+        <result property="title"        column="PRODUCT_TITLE"/>
+        <result property="subCate"      column="SUB_CATEGORY_NAME"/>
+        <result property="place"        column="PRODUCT_PLACE"/>
+        <result property="state"        column="PRODUCT_STATE"/>
+        <result property="price"        column="PRODUCT_PRICE"/>
+        <result property="explanation"  column="PRODUCT_EXPLANATION"/>
+        <result property="tag"          column="PRODUCT_KEYWORD"/>
+        <result property="sellerName"   column="SELLER_NAME"/>
+        <result property="mainFilePath" column="MAIN_FILE_PATH"/>
+        <result property="regDate"      column="REG_DATE"/>
+    </resultMap>
+
+    <!-- ===== 카테고리 조회 ===== -->
+    <select id="selectSubCate" parameterType="String" resultType="String">
+        SELECT S.SUB_CATEGORY_NAME
+        FROM SUBCATEGORY S
+        JOIN CATEGORY C ON S.PARENT_CATEGORY_ID = C.CATEGORY_ID
+        WHERE C.CATEGORY_NAME = #{categoryName}
     </select>
-   	   	
-   	<select id="selectAll" resultMap="categoryMap">
-   		SELECT CATEGORY_NAME FROM CATEGORY
-   	</select>
-    
+
+    <select id="selectAll" resultMap="categoryMap">
+        SELECT CATEGORY_NAME FROM CATEGORY
+    </select>
+
+    <!-- ===== 메인 페이지 상품 목록 (최신순 16개 + 대표 이미지) ===== -->
+    <select id="selectMainProducts" resultMap="productMap">
+        SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.PRODUCT_STATE,
+               P.PRODUCT_PRICE, P.SUB_CATEGORY_NAME, P.PRODUCT_PLACE,
+               F.FILE_PATH AS MAIN_FILE_PATH
+        FROM PRODUCT P
+        LEFT JOIN PRODUCT_FILE F ON P.PRODUCT_ID = F.PRODUCT_ID AND F.IS_MAIN = 1
+        ORDER BY P.PRODUCT_ID DESC
+        FETCH FIRST 16 ROWS ONLY
+    </select>
+
+    <!-- ===== 상품 상세 조회 (판매자 이름 포함) ===== -->
+    <select id="selectProductById" parameterType="String" resultMap="productMap">
+        SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.SUB_CATEGORY_NAME,
+               P.PRODUCT_PLACE, P.PRODUCT_STATE, P.PRODUCT_PRICE,
+               P.PRODUCT_EXPLANATION, P.PRODUCT_KEYWORD,
+               U.NAME AS SELLER_NAME
+        FROM PRODUCT P
+        JOIN USERS_TB U ON P.USER_NO = U.USER_NO
+        WHERE P.PRODUCT_ID = #{productId}
+    </select>
+
+    <!-- ===== 상품 이미지 파일 목록 ===== -->
+    <select id="selectProductFilesById" parameterType="String"
+            resultType="com.example.demo.product.vo.ProductFile">
+        SELECT FILE_ID   AS fileId,
+               PRODUCT_ID AS productId,
+               ORIGINAL_NAME AS originalName,
+               SAVED_NAME    AS savedName,
+               FILE_PATH     AS filePath,
+               IS_MAIN       AS isMain
+        FROM PRODUCT_FILE
+        WHERE PRODUCT_ID = #{productId}
+        ORDER BY IS_MAIN DESC, FILE_ID ASC
+    </select>
+
+    <!-- ===== 키워드 검색 (제목 / 태그) ===== -->
+    <select id="searchProducts" parameterType="String" resultMap="productMap">
+        SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.PRODUCT_STATE,
+               P.PRODUCT_PRICE, P.SUB_CATEGORY_NAME, P.PRODUCT_PLACE,
+               F.FILE_PATH AS MAIN_FILE_PATH
+        FROM PRODUCT P
+        LEFT JOIN PRODUCT_FILE F ON P.PRODUCT_ID = F.PRODUCT_ID AND F.IS_MAIN = 1
+        WHERE UPPER(P.PRODUCT_TITLE) LIKE UPPER('%' || #{keyword} || '%')
+           OR UPPER(P.PRODUCT_KEYWORD) LIKE UPPER('%' || #{keyword} || '%')
+        ORDER BY P.PRODUCT_ID DESC
+    </select>
+
+    <!-- ===== 카테고리별 상품 목록 ===== -->
+    <select id="selectProductsByCategory" parameterType="String" resultMap="productMap">
+        SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.PRODUCT_STATE,
+               P.PRODUCT_PRICE, P.SUB_CATEGORY_NAME, P.PRODUCT_PLACE,
+               F.FILE_PATH AS MAIN_FILE_PATH
+        FROM PRODUCT P
+        LEFT JOIN PRODUCT_FILE F ON P.PRODUCT_ID = F.PRODUCT_ID AND F.IS_MAIN = 1
+        WHERE P.SUB_CATEGORY_NAME = #{category}
+           OR EXISTS (
+               SELECT 1 FROM SUBCATEGORY S
+               JOIN CATEGORY C ON S.PARENT_CATEGORY_ID = C.CATEGORY_ID
+               WHERE S.SUB_CATEGORY_NAME = P.SUB_CATEGORY_NAME
+                 AND C.CATEGORY_NAME = #{category}
+           )
+        ORDER BY P.PRODUCT_ID DESC
+    </select>
+
+    <!-- ===== 헤더 카테고리 메뉴용 카테고리 + 서브카테고리 전체 조회 ===== -->
+    <select id="selectAllCategories" resultType="map">
+        SELECT C.CATEGORY_NAME, S.SUB_CATEGORY_NAME
+        FROM CATEGORY C
+        LEFT JOIN SUBCATEGORY S ON S.PARENT_CATEGORY_ID = C.CATEGORY_ID
+        ORDER BY C.CATEGORY_ID, S.SUB_CATEGORY_ID
+    </select>
+
+    <!-- ===== 상품 등록 ===== -->
     <insert id="insertProduct" parameterType="com.example.demo.product.vo.Product">
-          <selectKey keyProperty="productId" resultType="string" order="BEFORE">
+        <selectKey keyProperty="productId" resultType="string" order="BEFORE">
             SELECT product_id_seq.NEXTVAL FROM dual
-          </selectKey>
-    	 INSERT INTO product (
-            product_id,user_no, product_title, sub_category_name, product_place, product_state, product_price, product_explanation, product_keyword
+        </selectKey>
+        INSERT INTO product (
+            product_id, user_no, product_title, sub_category_name,
+            product_place, product_state, product_price, product_explanation, product_keyword
         ) VALUES (
-            #{productId},#{userNo}, #{title}, #{subCate}, #{place}, #{state}, #{price}, #{explanation}, #{tag}
+            #{productId}, #{userNo}, #{title}, #{subCate},
+            #{place}, #{state}, #{price}, #{explanation}, #{tag}
         )
     </insert>
-    
+
     <insert id="insertProductFile" parameterType="com.example.demo.product.vo.ProductFile">
-         <selectKey keyProperty="fileId" resultType="int" order="BEFORE">
+        <selectKey keyProperty="fileId" resultType="int" order="BEFORE">
             SELECT product_file_seq.NEXTVAL FROM dual
         </selectKey>
         INSERT INTO product_file (
-            file_id,product_id, original_name, saved_name, file_path, is_main
+            file_id, product_id, original_name, saved_name, file_path, is_main
         ) VALUES (
             #{fileId}, #{productId}, #{originalName}, #{savedName}, #{filePath}, #{isMain}
         )

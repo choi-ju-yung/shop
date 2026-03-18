@@ -23,7 +23,7 @@
 <link rel="stylesheet"
    href="<%=request.getContextPath()%>/css/default.css" />
 <link rel="icon"
-   href="<%=request.getContextPath()%>/images/common/fivicon.png"
+   href="<%=request.getContextPath()%>/css/images/common/fivicon.png"
    type="image/x-icon" />
 <!-- js 파일 -->
 <script type="module"
@@ -70,24 +70,24 @@
             <div class="headerMain">
                <div class="logo">
                   <a href=""> <img
-                     src="<%=request.getContextPath()%>/images/common/hifiveLogo.png"
+                     src="<%=request.getContextPath()%>/css/images/common/hifiveLogo.png"
                      alt="" />
                   </a>
                </div>
                <div class="searchBar">
                   <div class="searchDetail">
-                     <form id="searchForm" class="form">
-                        <input required id="searchInput" maxlength="10" type="text"
+                     <form id="searchForm" class="form" action="<%=request.getContextPath()%>/user/search" method="get">
+                        <input name="keyword" id="searchInput" maxlength="50" type="text"
                            placeholder="상품명, #키워드 검색" onfocus="this.placeholder = ''"
                         onblur="this.placeholder = '상품명, #키워드 검색'">
                         <button type="reset" id="resetBtn">
                      <ion-icon name="close"></ion-icon>
                      </button>
                      </form>
-                     
+
                      <button type="submit" form="searchForm" id="submitBtn">
                         <img
-                           src="<%=request.getContextPath()%>/images/common/magnifier.png"
+                           src="<%=request.getContextPath()%>/css/images/common/magnifier.png"
                            alt="" />
                      </button>
                   </div>
@@ -251,22 +251,40 @@ function changePage(pageNo) {
 
 
 
-// 페이지 로딩되었을때 로딩후 마지막에 실행되는 함수
-$(()=>{HeaderCategoryMenu()});
-// 해더 카테고리에 DB데이터값을 Map으로 가져와서 뿌려주는 ajax 
+// 페이지 로딩 후 헤더 카테고리 메뉴 빌드
+$(function() { HeaderCategoryMenu(); });
+
 function HeaderCategoryMenu() {
     $.ajax({
-        url: "<%=request.getContextPath()%>/headercategories.do",
+        url: "<%=request.getContextPath()%>/user/headercategories",
         dataType: 'json',
         success: function(data) {
-           $("#menuList>ul").html("<li><a href='<%=request.getContextPath()%>/getproduct.do' id='category0'>전체</a></li>");
-           $("#categoryName span").text("전체" + " " + '(<%=request.getAttribute("totalData")%>)'); 
-           data.main.forEach(function(category,index) {
-                makeCategoryHeader(category.categoryName, index);
-                const subCategory=data.sub.filter(cate=>cate.category.categoryName==category.categoryName);
-                //console.log(subCategory);
-                makeCatetorySub(subCategory, index);
+            var ctx = "<%=request.getContextPath()%>";
+            var $ul = $("#menuList>ul");
+            $ul.html("<li><a href='" + ctx + "/user/category' id='category0'>전체</a></li>");
+
+            // 카테고리별 그룹핑 후 메뉴 생성
+            var categories = {};
+            data.forEach(function(row) {
+                var cat = row['CATEGORY_NAME'] || row['category_name'];
+                var sub = row['SUB_CATEGORY_NAME'] || row['sub_category_name'];
+                if (!categories[cat]) categories[cat] = [];
+                if (sub) categories[cat].push(sub);
             });
+
+            var idx = 1;
+            Object.keys(categories).forEach(function(catName) {
+                var $li = $("<li>");
+                var $a = $("<a>").attr("href", ctx + "/user/category?name=" + encodeURIComponent(catName))
+                                 .attr("id", "category" + idx)
+                                 .text(catName);
+                $li.append($a);
+                $ul.append($li);
+                idx++;
+            });
+        },
+        error: function() {
+            // 카테고리 로드 실패 시 조용히 무시
         }
     });
 }
@@ -345,7 +363,3 @@ $("div#menuList").after($div);
       const $a = $("<a>").attr("href", href).text(subcategoryName); --%>
 </script>
    <script src="<%=request.getContextPath()%>/js/common/header.js"></script>
-  <%--  <script src="<%=request.getContextPath()%>/js/searchpage/searchPage.js"></script> --%>
-
-</body>
-</html>

@@ -441,7 +441,7 @@ function addTag(tag) {
   $button.style.backgroundColor = "transparent";
 
   const $img = document.createElement("img");
-  $img.src = (typeof contextPath !== "undefined" ? contextPath : "") + "/images/productregist/xbtn.png";
+  $img.src = (typeof contextPath !== "undefined" ? contextPath : "") + "/css/images/productregist/xbtn.png";
   $img.width = 15;
   $img.height = 15;
 

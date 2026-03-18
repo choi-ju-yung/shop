@@ -61,10 +61,11 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth // 변경된 메서드 사용
 						.requestMatchers(HttpMethod.POST, "/regist/insert").permitAll() // post 설정 허용
 						.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
-						.requestMatchers("/login","/WEB-INF/views/**","/auth/kakao/callback","/logout","/emailDupCheck","/regist/**","/processLogin","/checkTimeBoard/**","checkTimeBoardByCategory/**").permitAll() // 인증없이 접근가능
-						//.requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/webjars/**").permitAll() // 정적 리소스 허용
+						.requestMatchers("/login","/WEB-INF/views/**","/auth/kakao/callback","/logout","/emailDupCheck","/regist/**","/processLogin","/checkTimeBoard/**","/checkTimeBoardByCategory/**").permitAll()
 						.requestMatchers("/popup/**").permitAll()
-		                .requestMatchers("/admin/**").hasRole("ADMIN") 
+						// 상품 조회/검색/카테고리는 비로그인도 허용
+						.requestMatchers("/user/mainProducts","/user/product/**","/user/search","/user/category","/user/headercategories").permitAll()
+		                .requestMatchers("/admin/**").hasRole("ADMIN")
 		                .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
 		                .requestMatchers("/chat/**").hasAnyRole("USER", "ADMIN")
 		                .requestMatchers("/room/**").hasAnyRole("USER", "ADMIN")

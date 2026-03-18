@@ -16,7 +16,7 @@
 <div class="myPageMainAll">
 	<div class="profileMain">
 		<div class="profileInfo">
-			<img src="/images/profile/${profileImg}" alt=""
+			<img src="/css/images/profile/${profileImg}" alt=""
 				style="width: 130px; height: 130px; border-radius: 300px; margin-left: 90px; border: #f2f2f2 1px solid;">
 			<div class="nameNdate">
 				<div class="profileName">

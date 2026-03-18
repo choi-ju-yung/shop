@@ -1,8 +1,11 @@
 @charset "UTF-8";
 
+.loginSection {
+    flex: 1;
+}
+
 .login ul {
     list-style-type: none;
-
 }
 
 

@@ -1,14 +1,21 @@
 package com.example.demo.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class WebConfig {
-	
-	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-	    registry.addResourceHandler("/upload/**") // 요청 URL 패턴을 정의
-	            .addResourceLocations("file:///C:/upload/") // 실제 리소스가 저장된 물리적 경로를 지정
-	            .setCachePeriod(3600); // 캐싱 기간 설정 (초 단위) 
-	}
+public class WebConfig implements WebMvcConfigurer {
+
+    @Value("${app.upload.dir:C:/upload}")
+    private String uploadDir;
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String resourceLocation = "file:///" + uploadDir.replace("\\", "/") + "/";
+        registry.addResourceHandler("/upload/**")
+                .addResourceLocations(resourceLocation)
+                .setCachePeriod(3600);
+    }
 }
