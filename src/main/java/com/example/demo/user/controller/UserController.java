@@ -77,17 +77,6 @@ public class UserController {
 		return "regist/nomalRegistView";
 	}
 	
-	@PostMapping("/processLogin")
-	public String processLogin(@ModelAttribute UserVO userVO) {
-		boolean processLogin = userService.processLogin(userVO);
-		
-		if(processLogin) {
-			return "redirect:/user/main"; // 로그인 성공하면 
-		}else {
-			return "redirect:/login";
-		}
-	} 
-	
 	/**
 	 * 설명 : 메인화면으로 이동
 	 */

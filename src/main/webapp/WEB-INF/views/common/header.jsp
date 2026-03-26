@@ -274,11 +274,26 @@ function HeaderCategoryMenu() {
 
             var idx = 1;
             Object.keys(categories).forEach(function(catName) {
-                var $li = $("<li>");
+                var $li = $("<li>").addClass("has-sub");
                 var $a = $("<a>").attr("href", ctx + "/user/category?name=" + encodeURIComponent(catName))
                                  .attr("id", "category" + idx)
                                  .text(catName);
                 $li.append($a);
+
+                // 서브카테고리 드롭다운 생성
+                var subs = categories[catName];
+                if (subs && subs.length > 0) {
+                    var $subUl = $("<ul>").addClass("sub-menu");
+                    subs.forEach(function(subName) {
+                        var $subLi = $("<li>");
+                        var $subA = $("<a>").attr("href", ctx + "/user/category?name=" + encodeURIComponent(subName))
+                                           .text(subName);
+                        $subLi.append($subA);
+                        $subUl.append($subLi);
+                    });
+                    $li.append($subUl);
+                }
+
                 $ul.append($li);
                 idx++;
             });

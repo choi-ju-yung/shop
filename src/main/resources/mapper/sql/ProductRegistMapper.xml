@@ -84,19 +84,22 @@
     </select>
 
     <!-- ===== 카테고리별 상품 목록 ===== -->
+    <!-- 부모카테고리 클릭: 해당 카테고리의 모든 서브카테고리 상품 조회 -->
+    <!-- 서브카테고리 클릭: 해당 서브카테고리 상품만 조회 -->
     <select id="selectProductsByCategory" parameterType="String" resultMap="productMap">
         SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.PRODUCT_STATE,
                P.PRODUCT_PRICE, P.SUB_CATEGORY_NAME, P.PRODUCT_PLACE,
                F.FILE_PATH AS MAIN_FILE_PATH
         FROM PRODUCT P
         LEFT JOIN PRODUCT_FILE F ON P.PRODUCT_ID = F.PRODUCT_ID AND F.IS_MAIN = 1
-        WHERE P.SUB_CATEGORY_NAME = #{category}
-           OR EXISTS (
-               SELECT 1 FROM SUBCATEGORY S
-               JOIN CATEGORY C ON S.PARENT_CATEGORY_ID = C.CATEGORY_ID
-               WHERE S.SUB_CATEGORY_NAME = P.SUB_CATEGORY_NAME
-                 AND C.CATEGORY_NAME = #{category}
-           )
+        WHERE P.SUB_CATEGORY_NAME IN (
+            SELECT S.SUB_CATEGORY_NAME
+            FROM SUBCATEGORY S
+            JOIN CATEGORY C ON S.PARENT_CATEGORY_ID = C.CATEGORY_ID
+            WHERE C.CATEGORY_NAME = #{category}
+            UNION
+            SELECT #{category} FROM DUAL
+        )
         ORDER BY P.PRODUCT_ID DESC
     </select>
 

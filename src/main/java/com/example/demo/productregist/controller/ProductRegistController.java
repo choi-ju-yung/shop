@@ -149,6 +149,7 @@ public class ProductRegistController {
     }
 
     /** 상품 검색 결과 페이지 */
+    
     @GetMapping("/search")
     public String searchProducts(@RequestParam(required = false) String keyword, Model model) {
         if (keyword == null || keyword.trim().isEmpty()) {

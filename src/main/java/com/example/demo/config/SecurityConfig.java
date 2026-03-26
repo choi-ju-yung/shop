@@ -103,7 +103,7 @@ public class SecurityConfig {
 
 				
 				 .sessionManagement(session -> session
-				            .sessionCreationPolicy(SessionCreationPolicy.ALWAYS) // 🔥 로그인 상태 유지
+				            .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // 🔥 로그인 상태 유지
 				            .sessionFixation().migrateSession()
 				        )
 

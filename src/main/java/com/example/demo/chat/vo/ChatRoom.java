@@ -1,7 +1,7 @@
 package com.example.demo.chat.vo;
 
-import java.security.Timestamp;
 import java.sql.Date;
+import java.sql.Timestamp;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

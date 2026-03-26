@@ -79,12 +79,13 @@ public class UserService {
 	/**
 	 * 아이디 비번 로그인 처리 
 	 */
-	public boolean processLogin(UserVO userVO) {
-		String encodePwd = userDao.findPwdById(userVO.getLoginId());
-		String inputPwd = userVO.getPassword();
-		
-		// matches(사용자입력비밀번호 (암호화x) , DB에저장된 암호화된 비밀번호) , matches가 true면 맞게 로그인 성공 false면 비밀번호 틀림
-		return passwordEncoder.matches(inputPwd, encodePwd); 
-	}
+	/*
+	 * public boolean processLogin(UserVO userVO) { String encodePwd =
+	 * userDao.findPwdById(userVO.getLoginId()); String inputPwd =
+	 * userVO.getPassword();
+	 * 
+	 * // matches(사용자입력비밀번호 (암호화x) , DB에저장된 암호화된 비밀번호) , matches가 true면 맞게 로그인 성공
+	 * false면 비밀번호 틀림 return passwordEncoder.matches(inputPwd, encodePwd); }
+	 */
 	
 }

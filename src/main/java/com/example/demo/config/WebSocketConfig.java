@@ -17,7 +17,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer{
 	
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOriginPatterns("*").setHandshakeHandler(new CustomHandshakeHandler()).withSockJS();
+        registry.addEndpoint("/ws")  // 클라이언트가 new SockJS('/ws') 로 접속하는 주소
+        		.setAllowedOriginPatterns("*") // 모든 도메인에서 접속 허용
+        		.setHandshakeHandler(new CustomHandshakeHandler()) // 세션에서 loginUser 꺼내서 Principal 등록
+        		.withSockJS(); 
     }
 
     @Override

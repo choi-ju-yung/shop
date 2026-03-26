@@ -1,0 +1,322 @@
+/* =====================================================
+   productDetail.css - 상품 상세 페이지
+   ===================================================== */
+
+.pdContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 30px 0 60px;
+}
+
+/* =====================================================
+   상단: 이미지 갤러리 + 상품 정보
+   ===================================================== */
+.pdTopArea {
+  display: flex;
+  gap: 48px;
+  align-items: flex-start;
+  margin-bottom: 48px;
+}
+
+/* ── 갤러리 ── */
+.pdGallery {
+  width: 480px;
+  flex-shrink: 0;
+}
+
+.pdMainImg {
+  width: 480px;
+  height: 480px;
+  border: 1px solid #eee;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f8f8f8;
+  margin-bottom: 14px;
+}
+
+.pdMainImg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.pdMainImg:hover img {
+  transform: scale(1.03);
+}
+
+.pdThumbs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pdThumb {
+  width: 80px;
+  height: 80px;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  background: #f8f8f8;
+}
+
+.pdThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pdThumb.active,
+.pdThumb:hover {
+  border-color: #20c997;
+}
+
+/* ── 상품 정보 패널 ── */
+.pdInfoPanel {
+  flex: 1;
+  min-width: 0;
+}
+
+.pdBreadcrumb {
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pdBreadcrumb a {
+  color: #aaa;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.pdBreadcrumb a:hover {
+  color: #20c997;
+}
+
+.pdTitle {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1a1a1a;
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+.pdPriceRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.pdPrice {
+  font-size: 30px;
+  font-weight: bold;
+  color: #1a1a1a;
+}
+
+.pdStateBadge {
+  font-size: 13px;
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1.5px solid #20c997;
+  color: #20c997;
+}
+
+.pdState-미개봉 {
+  background: #e6f9f4;
+}
+
+.pdDivider {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: 20px 0;
+}
+
+/* 메타 정보 */
+.pdMetaList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.pdMetaList li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.pdMetaList ion-icon {
+  font-size: 18px;
+  color: #20c997;
+  flex-shrink: 0;
+}
+
+.pdMetaLabel {
+  color: #aaa;
+  width: 64px;
+  flex-shrink: 0;
+}
+
+.pdMetaValue {
+  color: #313030;
+  font-weight: 500;
+}
+
+/* 판매자 박스 */
+.pdSellerBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8f8f8;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.pdSellerAvatar ion-icon {
+  font-size: 44px;
+  color: #ccc;
+}
+
+.pdSellerName {
+  font-size: 15px;
+  font-weight: bold;
+  color: #313030;
+}
+
+.pdSellerSub {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 2px;
+}
+
+/* 태그 */
+.pdTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.pdTag {
+  font-size: 13px;
+  color: #20c997;
+  background: #e6f9f4;
+  border-radius: 20px;
+  padding: 4px 10px;
+}
+
+/* 액션 버튼 */
+.pdActions {
+  display: flex;
+  gap: 10px;
+}
+
+.pdBtnPrimary,
+.pdBtnSecondary,
+.pdBtnDanger {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: inherit;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.pdBtnPrimary {
+  background: #20c997;
+  color: #fff;
+}
+
+.pdBtnPrimary:hover {
+  background: #17a589;
+}
+
+.pdBtnSecondary {
+  background: #f0f0f0;
+  color: #555;
+}
+
+.pdBtnSecondary:hover {
+  background: #e0e0e0;
+}
+
+.pdBtnDanger {
+  background: #fff0f0;
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
+.pdBtnDanger:hover {
+  background: #e74c3c;
+  color: #fff;
+}
+
+/* =====================================================
+   하단: 상품 설명
+   ===================================================== */
+.pdDescSection {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 14px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+}
+
+.pdSectionTitle {
+  font-size: 17px;
+  font-weight: bold;
+  color: #313030;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid #20c997;
+}
+
+.pdDesc {
+  font-size: 15px;
+  color: #444;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 뒤로가기 */
+.pdBackRow {
+  text-align: left;
+}
+
+.pdBackBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #666;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pdBackBtn:hover {
+  background: #e8e8e8;
+}
