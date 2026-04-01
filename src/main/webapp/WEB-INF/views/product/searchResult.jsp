@@ -20,7 +20,7 @@
         <h3 class="filterBoxTitle">카테고리</h3>
         <ul class="cateFilterList" id="cateFilterList">
           <li class="cateItem">
-            <a href="<%=request.getContextPath()%>/user/category"
+            <a href="<%=request.getContextPath()%>/product/category"
                class="cateLink mainCate <c:if test="${categoryName == '전체' || (empty categoryName && empty keyword)}">active</c:if>">
               전체
             </a>
@@ -81,7 +81,7 @@
             <div class="srNoResult">
               <ion-icon name="search-outline"></ion-icon>
               <p>검색 결과가 없습니다.</p>
-              <a href="<%=request.getContextPath()%>/user/category" class="srNoResultBtn">전체 상품 보기</a>
+              <a href="<%=request.getContextPath()%>/product/category" class="srNoResultBtn">전체 상품 보기</a>
             </div>
           </c:when>
           <c:otherwise>
@@ -90,16 +90,16 @@
                    data-price="${p.price}"
                    data-state="${p.state}"
                    data-id="${p.productId}">
-                <a href="<%=request.getContextPath()%>/user/product/${p.productId}" class="srProductLink">
+                <a href="<%=request.getContextPath()%>/product/${p.productId}" class="srProductLink">
                   <div class="srProductImg">
                     <c:choose>
                       <c:when test="${not empty p.mainFilePath}">
                         <img src="<%=request.getContextPath()%>${p.mainFilePath}"
                              alt="<c:out value='${p.title}'/>"
-                             onerror="this.src='<%=request.getContextPath()%>/css/images/common/hifiveLogo.png'">
+                             onerror="this.src='<%=request.getContextPath()%>/images/common/hifiveLogo.png'">
                       </c:when>
                       <c:otherwise>
-                        <img src="<%=request.getContextPath()%>/css/images/common/hifiveLogo.png"
+                        <img src="<%=request.getContextPath()%>/images/common/hifiveLogo.png"
                              alt="<c:out value='${p.title}'/>">
                       </c:otherwise>
                     </c:choose>
@@ -138,7 +138,7 @@
 
   /* ── 카테고리 사이드바 로드 ── */
   $.ajax({
-    url: ctx + '/user/headercategories',
+    url: ctx + '/product/categories',
     type: 'GET',
     dataType: 'json',
     success: function (data) {
@@ -155,13 +155,13 @@
         var isMainActive = (currentCate === cname) ? ' active' : '';
         var isOpen = (currentCate === cname || catMap[cname].indexOf(currentCate) !== -1);
         html += '<li class="cateItem">';
-        html += '<a href="' + ctx + '/user/category?name=' + encodeURIComponent(cname) + '"'
+        html += '<a href="' + ctx + '/product/category?name=' + encodeURIComponent(cname) + '"'
               + ' class="cateLink mainCate' + isMainActive + '">' + cname + '</a>';
         if (catMap[cname].length > 0) {
           html += '<ul class="subCateList' + (isOpen ? ' open' : '') + '">';
           catMap[cname].forEach(function (sname) {
             var isSubActive = (currentCate === sname) ? ' active' : '';
-            html += '<li><a href="' + ctx + '/user/category?name=' + encodeURIComponent(sname) + '"'
+            html += '<li><a href="' + ctx + '/product/category?name=' + encodeURIComponent(sname) + '"'
                   + ' class="cateLink subCate' + isSubActive + '">' + sname + '</a></li>';
           });
           html += '</ul>';

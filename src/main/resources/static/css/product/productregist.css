@@ -43,8 +43,8 @@
 
 /* 상품이미지 */
 .upload {
-    width: 250px;
-    height: 250px;
+    width: 167px;
+    height: 167px;
     margin-top: 20px;
     margin-bottom: 20px;
     cursor: pointer;
@@ -57,10 +57,10 @@
     gap: 7px;
   }
 
-/* 업로드되는 이미지들 너비 높이 250씩 통일 */
+/* 업로드되는 이미지들 너비 높이 167씩 통일 */
 .image-preview>li img{
-    width: 250px;
-    height: 250px;
+    width: 167px;
+    height: 167px;
 }
 
 
@@ -99,11 +99,11 @@ section hr{
 
 /* 상품 제목 입력창 문구 */
 .productTitle>input{
-    font-size: 20px;    
+    font-size: 16px;
     text-indent: 16px;
     border: 1px solid #cccccc;
     width: 78%;
-    height: 60px;
+    height: 40px;
     margin-right: 20px;
 }
 
@@ -251,11 +251,11 @@ select{
 
 /* 가격 입력창 문구 */
 .price>input{
-    font-size: 20px;    
+    font-size: 16px;
     text-indent: 16px;
     border: 1px solid #cccccc;
     width: 20%;
-    height: 60px;
+    height: 40px;
     margin-left: 100px;
 }
 
@@ -281,13 +281,13 @@ select{
 
 /* 설명 입력창 문구 */
 .explan>textarea{
-    font-size: 20px;  
+    font-size: 16px;
     padding:10px;
-	line-height:25px;
+	line-height:22px;
     border: 1px solid #cccccc;
     resize: none;  /* textarea 문구 창 사이즈 조절 불가능하게 만듬 */
     width: 81%;
-    height: 200px;
+    height: 133px;
     margin-left: 100px;
     margin-bottom: 10px;
 }
@@ -316,12 +316,12 @@ h3{
 
 /* 상품태그 입력창 문구 */
 .relativeTag>input{
-    font-size: 20px;    
+    font-size: 16px;
     text-indent: 16px;
     border: 1px solid #cccccc;
     width: 30%;
-    height: 60px;
-    margin-left: 68px;  
+    height: 40px;
+    margin-left: 68px;
     margin-bottom: -10px;
 }
 

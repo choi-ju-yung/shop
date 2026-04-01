@@ -30,7 +30,7 @@ public class ChatController {
     	this.chatService = chatService;
 	}
 
-    @PostMapping("/room")
+    @PostMapping("/member/chat/room")
     public String chatRoom(@RequestParam int productId, @RequestParam int targetUserNo, @RequestParam String roomId,Model model) {
         model.addAttribute("productId", productId);
         model.addAttribute("targetUserNo", targetUserNo);
@@ -47,13 +47,13 @@ public class ChatController {
         return "chat/chatroom";
     }
 
-    @GetMapping("/notifications")
+    @GetMapping("/member/notifications")
     @ResponseBody
     public int getUnreadCount(@RequestParam int roomId, @RequestParam int userNo) {
         return chatService.getUnreadMessageCount(roomId, userNo);
     }
     
-    @GetMapping("/chatList")
+    @GetMapping("/member/chat")
     public String chatList(HttpSession session, Model model) {
     	long userNo = ((UserVO)session.getAttribute("loginUser")).getUserNo();
 

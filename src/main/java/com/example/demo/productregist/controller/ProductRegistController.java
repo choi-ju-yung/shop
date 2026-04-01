@@ -33,7 +33,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
-@RequestMapping("/user")
 public class ProductRegistController {
 
     private static final Logger log = LoggerFactory.getLogger(ProductRegistController.class);
@@ -49,7 +48,7 @@ public class ProductRegistController {
     }
 
     /** 상품 등록 화면 */
-    @GetMapping("/productRegist")
+    @GetMapping("/member/sell")
     public String productRegistView(Model model) {
         List<Category> categorys = productRegistService.selectAll();
         model.addAttribute("categorys", categorys);
@@ -57,7 +56,7 @@ public class ProductRegistController {
     }
 
     /** 서브카테고리 AJAX 조회 */
-    @GetMapping("/findSubCate")
+    @GetMapping("/member/sell/subcategory")
     @ResponseBody
     public String findSubCate(HttpServletRequest request) {
         String categoryName = request.getParameter("categoryName");
@@ -66,7 +65,7 @@ public class ProductRegistController {
     }
 
     /** 상품 등록 처리 */
-    @PostMapping("/productRegistEnd")
+    @PostMapping("/member/sell")
     @ResponseBody
     public String productRegistEnd(HttpSession session,
             @RequestParam("title") String title,
@@ -125,7 +124,7 @@ public class ProductRegistController {
     }
 
     /** 메인 페이지 상품 목록 AJAX (JSON) */
-    @GetMapping("/mainProducts")
+    @GetMapping("/product/list")
     @ResponseBody
     public List<Product> mainProducts() {
         return productRegistService.selectMainProducts();
@@ -136,7 +135,7 @@ public class ProductRegistController {
     public String productDetail(@PathVariable String productId, Model model, HttpSession session) {
         Product product = productRegistService.selectProductDetail(productId);
         if (product == null) {
-            return "redirect:/user/main";
+            return "redirect:/main";
         }
         model.addAttribute("product", product);
         UserVO loginUser = (UserVO) session.getAttribute("loginUser");
@@ -150,10 +149,10 @@ public class ProductRegistController {
 
     /** 상품 검색 결과 페이지 */
     
-    @GetMapping("/search")
+    @GetMapping("/product/search")
     public String searchProducts(@RequestParam(required = false) String keyword, Model model) {
         if (keyword == null || keyword.trim().isEmpty()) {
-            return "redirect:/user/main";
+            return "redirect:/main";
         }
         List<Product> products = productRegistService.searchProducts(keyword.trim());
         model.addAttribute("products", products);
@@ -162,7 +161,7 @@ public class ProductRegistController {
     }
 
     /** 카테고리별 상품 목록 페이지 */
-    @GetMapping("/category")
+    @GetMapping("/product/category")
     public String categoryProducts(@RequestParam(required = false) String name, Model model) {
         List<Product> products;
         if (name == null || name.trim().isEmpty()) {
@@ -177,7 +176,7 @@ public class ProductRegistController {
     }
 
     /** 헤더 카테고리 메뉴 AJAX (JSON) */
-    @GetMapping("/headercategories")
+    @GetMapping("/product/categories")
     @ResponseBody
     public ResponseEntity<List<Map<String, Object>>> headerCategories() {
         List<Map<String, Object>> categories = productRegistService.selectAllCategories();

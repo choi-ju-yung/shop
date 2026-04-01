@@ -35,6 +35,31 @@ div.btnContainer{
     cursor:pointer;
     color: #313030;
 }
+
+/* 인디케이터 도트 */
+.slideDots {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: transparent;
+    border: 2px solid white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.dot.active {
+    background-color: white;
+}
 .prevBtn{
     position: absolute;
     top: 180px;

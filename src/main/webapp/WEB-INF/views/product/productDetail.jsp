@@ -18,11 +18,11 @@
               <img id="mainImg"
                    src="<%=request.getContextPath()%>${product.mainFilePath}"
                    alt="<c:out value='${product.title}'/>"
-                   onerror="this.src='<%=request.getContextPath()%>/css/images/common/hifiveLogo.png'">
+                   onerror="this.src='<%=request.getContextPath()%>/images/common/hifiveLogo.png'">
             </c:when>
             <c:otherwise>
               <img id="mainImg"
-                   src="<%=request.getContextPath()%>/css/images/common/hifiveLogo.png"
+                   src="<%=request.getContextPath()%>/images/common/hifiveLogo.png"
                    alt="이미지 없음">
             </c:otherwise>
           </c:choose>
@@ -36,7 +36,7 @@
                    data-src="${f.filePath}">
                 <img src="<%=request.getContextPath()%>${f.filePath}"
                      alt="상품 이미지"
-                     onerror="this.src='<%=request.getContextPath()%>/css/images/common/hifiveLogo.png'">
+                     onerror="this.src='<%=request.getContextPath()%>/images/common/hifiveLogo.png'">
               </div>
             </c:forEach>
           </div>
@@ -48,9 +48,9 @@
 
         <%-- 카테고리 브레드크럼 --%>
         <div class="pdBreadcrumb">
-          <a href="<%=request.getContextPath()%>/user/category">전체</a>
+          <a href="<%=request.getContextPath()%>/product/category">전체</a>
           <span>&gt;</span>
-          <a href="<%=request.getContextPath()%>/user/category?name=${product.subCate}">
+          <a href="<%=request.getContextPath()%>/product/category?name=${product.subCate}">
             <c:out value="${product.subCate}"/>
           </a>
         </div>
@@ -168,7 +168,7 @@
 </section>
 
 <%-- 채팅방 생성 폼 (숨김) --%>
-<form id="chatForm" method="post" action="<%=request.getContextPath()%>/room" style="display:none;">
+<form id="chatForm" method="post" action="<%=request.getContextPath()%>/member/chat/room" style="display:none;">
   <input type="hidden" name="productId"   id="chatProductId"   value="${product.productId}">
   <input type="hidden" name="targetUserNo" id="chatTargetUserNo" value="${product.userNo}">
   <input type="hidden" name="roomId"      id="chatRoomId"      value="">

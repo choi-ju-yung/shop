@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="420" viewBox="0 0 1280 420">
+  <defs>
+    <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f0fdf9"/>
+      <stop offset="100%" style="stop-color:#e0faf2"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="420" fill="url(#bg2)" rx="30"/>
+
+  <!-- 왼쪽 포인트 바 -->
+  <rect x="0" y="0" width="12" height="420" rx="6" fill="#20c997"/>
+
+  <!-- 배경 장식 원 -->
+  <circle cx="1150" cy="210" r="280" fill="#20c997" fill-opacity="0.06"/>
+  <circle cx="1080" cy="210" r="180" fill="#20c997" fill-opacity="0.06"/>
+
+  <!-- 3개 특징 카드 -->
+  <!-- 카드1: 안전거래 -->
+  <rect x="100" y="110" width="280" height="200" rx="20" fill="white"
+        filter="drop-shadow(0 4px 20px rgba(32,201,151,0.12))"/>
+  <text x="240" y="185" font-size="48" text-anchor="middle">🔒</text>
+  <text x="240" y="232"
+        font-family="'Apple SD Gothic Neo','Noto Sans KR',sans-serif"
+        font-size="20" font-weight="800" fill="#1a1a1a" text-anchor="middle">안전한 거래</text>
+  <text x="240" y="262"
+        font-family="'Apple SD Gothic Neo','Noto Sans KR',sans-serif"
+        font-size="13" fill="#888" text-anchor="middle">인증된 회원과 신뢰 거래</text>
+
+  <!-- 카드2: 실시간 채팅 -->
+  <rect x="500" y="110" width="280" height="200" rx="20" fill="white"
+        filter="drop-shadow(0 4px 20px rgba(32,201,151,0.12))"/>
+  <text x="640" y="185" font-size="48" text-anchor="middle">💬</text>
+  <text x="640" y="232"
+        font-family="'Apple SD Gothic Neo','Noto Sans KR',sans-serif"
+        font-size="20" font-weight="800" fill="#1a1a1a" text-anchor="middle">실시간 채팅</text>
+  <text x="640" y="262"
+        font-family="'Apple SD Gothic Neo','Noto Sans KR',sans-serif"
+        font-size="13" fill="#888" text-anchor="middle">바로 연락하고 바로 거래</text>
+
+  <!-- 카드3: 빠른 등록 -->
+  <rect x="900" y="110" width="280" height="200" rx="20" fill="white"
+        filter="drop-shadow(0 4px 20px rgba(32,201,151,0.12))"/>
+  <text x="1040" y="185" font-size="48" text-anchor="middle">⚡</text>
+  <text x="1040" y="232"
+        font-family="'Apple SD Gothic Neo','Noto Sans KR',sans-serif"
+        font-size="20" font-weight="800" fill="#1a1a1a" text-anchor="middle">간편 등록</text>
+  <text x="1040" y="262"
+        font-family="'Apple SD Gothic Neo','Noto Sans KR',sans-serif"
+        font-size="13" fill="#888" text-anchor="middle">30초 안에 상품 등록 완료</text>
+
+  <!-- 상단 제목 -->
+  <text x="640" y="70"
+        font-family="'Apple SD Gothic Neo','Noto Sans KR',sans-serif"
+        font-size="28" font-weight="900" fill="#1a1a1a" text-anchor="middle"
+        letter-spacing="-1">니꺼내꺼가 특별한 이유</text>
+
+  <!-- 하단 태그라인 -->
+  <text x="640" y="370"
+        font-family="'Apple SD Gothic Neo','Noto Sans KR',sans-serif"
+        font-size="16" fill="#20c997" text-anchor="middle" font-weight="600"
+        letter-spacing="2">믿을 수 있는 · 빠른 · 편리한 중고거래</text>
+</svg>

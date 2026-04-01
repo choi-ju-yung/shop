@@ -34,7 +34,7 @@
 		<!-- input type file을 만들어서 눈에는 안보이게 숨기고 -->
 		<!-- 이미지를 클릭했을 때 해당 input이 실행되도록 만듬 -->
 		<img
-			src="<%=request.getContextPath()%>/css/images/productregist/imgregist.png"
+			src="<%=request.getContextPath()%>/images/productregist/imgregist.png"
 			class="upload" width="250px" height="250px"> <input type="file"
 			id="inputFile" class="real-upload" accept="image/*" required multiple
 			style="display: none;">

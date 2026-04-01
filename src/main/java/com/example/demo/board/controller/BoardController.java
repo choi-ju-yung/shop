@@ -27,14 +27,14 @@ public class BoardController {
 		this.boardService = boardService;
 	}
 	
-	@RequestMapping("/checkTimeBoard")
+	@RequestMapping("/board/check")
 	@ResponseBody
 	public List<Board> checkTimeBoard(){
 		System.out.println("실행");
 		return boardService.getBoardList();
 	}
 	
-	@RequestMapping("/checkTimeBoardByCategory")
+	@RequestMapping("/board/checkByCategory")
 	@ResponseBody
 	public List<Board> checkTimeBoardByCategory(@RequestParam(value = "category", required = false) String category){
 		if(category == null || category.trim().isEmpty()) {
@@ -45,7 +45,7 @@ public class BoardController {
 	}
 	
 
-	@RequestMapping("/user/boardList")
+	@RequestMapping("/board/list")
 	public String boardList(@RequestParam(defaultValue = "1") int cPage,
 			@RequestParam(defaultValue = "N") String notice, Model model,
 			@RequestParam(required = false) String category, HttpServletRequest request) throws UnsupportedEncodingException {
@@ -55,7 +55,7 @@ public class BoardController {
 		int totalData = boardService.getTotalBoardCount(notice, category);
 		int totalPage = (int) Math.ceil((double) totalData / pageSize);
 
-	    String url = request.getContextPath() + "/user/boardList";
+	    String url = request.getContextPath() + "/board/list";
 	    StringBuilder queryString = new StringBuilder();
 	    queryString.append("&notice=").append(notice);
 	    if (category != null && !category.equals("전체")) {

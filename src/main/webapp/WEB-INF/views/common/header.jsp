@@ -19,11 +19,12 @@
 <meta charset="UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="ctx" content="<%=request.getContextPath()%>" />
 <!-- css 파일 -->
 <link rel="stylesheet"
    href="<%=request.getContextPath()%>/css/default.css" />
 <link rel="icon"
-   href="<%=request.getContextPath()%>/css/images/common/fivicon.png"
+   href="<%=request.getContextPath()%>/images/common/fivicon.png"
    type="image/x-icon" />
 <!-- js 파일 -->
 <script type="module"
@@ -47,7 +48,7 @@
 					<a href="<%=request.getContextPath()%>/login" id="login">로그인</a>
 					<a href="<%=request.getContextPath()%>/regist/nomalregist" id="enroll">회원가입</a>
 					<a
-						href="<%=request.getContextPath()%>/user/boardList?notice=N"
+						href="<%=request.getContextPath()%>/board/list?notice=N"
 						id="service">고객센터</a>
 				</div>
 				</c:if>
@@ -62,21 +63,21 @@
 					<a href="#"
 						onclick="location.replace('<%=request.getContextPath()%>/logout')"
 						id="logout">로그아웃</a> <a
-						href="<%=request.getContextPath()%>/user/boardList?notice=N"
+						href="<%=request.getContextPath()%>/board/list?notice=N"
 						id="service">고객센터</a>
 				</div>
  				</c:if>
    
             <div class="headerMain">
                <div class="logo">
-                  <a href=""> <img
-                     src="<%=request.getContextPath()%>/css/images/common/hifiveLogo.png"
+                  <a href="<%=request.getContextPath()%>/"> <img
+                     src="<%=request.getContextPath()%>/images/common/logo.svg"
                      alt="" />
                   </a>
                </div>
                <div class="searchBar">
                   <div class="searchDetail">
-                     <form id="searchForm" class="form" action="<%=request.getContextPath()%>/user/search" method="get">
+                     <form id="searchForm" class="form" action="<%=request.getContextPath()%>/product/search" method="get">
                         <input name="keyword" id="searchInput" maxlength="50" type="text"
                            placeholder="상품명, #키워드 검색" onfocus="this.placeholder = ''"
                         onblur="this.placeholder = '상품명, #키워드 검색'">
@@ -87,7 +88,7 @@
 
                      <button type="submit" form="searchForm" id="submitBtn">
                         <img
-                           src="<%=request.getContextPath()%>/css/images/common/magnifier.png"
+                           src="<%=request.getContextPath()%>/images/common/magnifier.png"
                            alt="" />
                      </button>
                   </div>
@@ -110,7 +111,7 @@
                   </div>
                </div>
                <div class="memberIcon">
-                  <a href="<%=request.getContextPath()%>/user/productRegist"> <ion-icon
+                  <a href="<%=request.getContextPath()%>/member/sell"> <ion-icon
                         name="storefront-outline" class="storeIcon"></ion-icon> <span>
                         판매하기</span>
                   </a>
@@ -118,12 +119,12 @@
                   if (loginMember != null) {
                   %> --%>
                   <a
-                     href="<%=request.getContextPath()%>/user/myPage/myPageMain">
+                     href="<%=request.getContextPath()%>/member/mypage">
                      <ion-icon name="person-outline" class="myIcon"></ion-icon> 내정보
                   </a> <a href="<%=request.getContextPath()%>/myPage/wishList.do"> <ion-icon name="heart-outline" class="heartIcon"></ion-icon>
                      찜한상품
                   </a>
-                  <a href="<%=request.getContextPath()%>/chatList"> <ion-icon name="mail-outline" class="heartIconr"></ion-icon>
+                  <a href="<%=request.getContextPath()%>/member/chat"> <ion-icon name="mail-outline" class="heartIconr"></ion-icon>
                      채팅
                   </a>
                   <a href="<%=request.getContextPath()%>/"> <ion-icon name="mail-outline" class="heartIconr"></ion-icon>
@@ -256,12 +257,12 @@ $(function() { HeaderCategoryMenu(); });
 
 function HeaderCategoryMenu() {
     $.ajax({
-        url: "<%=request.getContextPath()%>/user/headercategories",
+        url: "<%=request.getContextPath()%>/product/categories",
         dataType: 'json',
         success: function(data) {
             var ctx = "<%=request.getContextPath()%>";
             var $ul = $("#menuList>ul");
-            $ul.html("<li><a href='" + ctx + "/user/category' id='category0'>전체</a></li>");
+            $ul.html("<li><a href='" + ctx + "/product/category' id='category0'>전체</a></li>");
 
             // 카테고리별 그룹핑 후 메뉴 생성
             var categories = {};
@@ -275,7 +276,7 @@ function HeaderCategoryMenu() {
             var idx = 1;
             Object.keys(categories).forEach(function(catName) {
                 var $li = $("<li>").addClass("has-sub");
-                var $a = $("<a>").attr("href", ctx + "/user/category?name=" + encodeURIComponent(catName))
+                var $a = $("<a>").attr("href", ctx + "/product/category?name=" + encodeURIComponent(catName))
                                  .attr("id", "category" + idx)
                                  .text(catName);
                 $li.append($a);
@@ -286,7 +287,7 @@ function HeaderCategoryMenu() {
                     var $subUl = $("<ul>").addClass("sub-menu");
                     subs.forEach(function(subName) {
                         var $subLi = $("<li>");
-                        var $subA = $("<a>").attr("href", ctx + "/user/category?name=" + encodeURIComponent(subName))
+                        var $subA = $("<a>").attr("href", ctx + "/product/category?name=" + encodeURIComponent(subName))
                                            .text(subName);
                         $subLi.append($subA);
                         $subUl.append($subLi);

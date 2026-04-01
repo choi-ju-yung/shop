@@ -198,7 +198,7 @@ $(() => {
 function chageSubCate(value) {
 	console.log(value);
 	$.ajax({
-		url: "/user/findSubCate",
+		url: "/member/sell/subcategory",
 		data: { "categoryName": value },
 		success: function(result) {
 
@@ -210,8 +210,11 @@ function chageSubCate(value) {
 				$(".middleCate").append(option);
 			}
 		},
-		error: function() {
-			console.log("카테고리 선택 오류발생");
+		error: function(xhr, status, err) {
+			console.error("카테고리 오류:", xhr.status, err);  // 개발자용 로그
+			$(".middleCate option").remove();
+			$(".middleCate").append('<option value="">불러오기 실패</option>');
+			$(".middleCate").prop("disabled", true);
 		}
 	})
 }
@@ -441,7 +444,7 @@ function addTag(tag) {
   $button.style.backgroundColor = "transparent";
 
   const $img = document.createElement("img");
-  $img.src = (typeof contextPath !== "undefined" ? contextPath : "") + "/css/images/productregist/xbtn.png";
+  $img.src = (typeof contextPath !== "undefined" ? contextPath : "") + "/images/productregist/xbtn.png";
   $img.width = 15;
   $img.height = 15;
 

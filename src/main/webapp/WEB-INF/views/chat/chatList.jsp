@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '/room';
+        form.action = '/member/chat/room';
         form.target = 'chatPopup_' + roomId;
 
         [

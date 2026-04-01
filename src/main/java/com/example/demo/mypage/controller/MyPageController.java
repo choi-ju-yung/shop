@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
-@RequestMapping("/user")
 public class MyPageController {
 	
 	private final UserService userService;
@@ -27,7 +26,7 @@ public class MyPageController {
 		this.myPageService = myPageService;
 	}
 	
-	@GetMapping("/myPage/myPageMain")
+	@GetMapping("/member/mypage")
 	public String MyPageView(HttpServletRequest request, Model model) {
 		HttpSession session = request.getSession();
 		long userNo = ((UserVO)session.getAttribute("loginUser")).getUserNo();

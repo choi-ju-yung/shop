@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="BannerMapper">
+
+    <resultMap id="bannerMap" type="com.example.demo.banner.vo.Banner">
+        <id     property="bannerId"   column="BANNER_ID"/>
+        <result property="imageUrl"   column="IMAGE_URL"/>
+        <result property="linkUrl"    column="LINK_URL"/>
+        <result property="sortOrder"  column="SORT_ORDER"/>
+        <result property="isActive"   column="IS_ACTIVE"/>
+        <result property="startDt"    column="START_DT"/>
+        <result property="endDt"      column="END_DT"/>
+        <result property="regDate"    column="REG_DATE"/>
+    </resultMap>
+
+    <!-- 메인페이지용: 활성화 + 기간 유효한 배너만 -->
+    <select id="selectActiveBanners" resultMap="bannerMap">
+        SELECT BANNER_ID, IMAGE_URL, LINK_URL, SORT_ORDER, IS_ACTIVE, START_DT, END_DT, REG_DATE
+        FROM BANNER
+        WHERE IS_ACTIVE = 'Y'
+          AND (START_DT IS NULL OR START_DT &lt;= SYSDATE)
+          AND (END_DT   IS NULL OR END_DT   &gt;= SYSDATE)
+        ORDER BY SORT_ORDER ASC
+    </select>
+
+    <!-- 관리자용: 전체 배너 -->
+    <select id="selectAllBanners" resultMap="bannerMap">
+        SELECT BANNER_ID, IMAGE_URL, LINK_URL, SORT_ORDER, IS_ACTIVE, START_DT, END_DT, REG_DATE
+        FROM BANNER
+        ORDER BY SORT_ORDER ASC
+    </select>
+
+    <!-- 배너 등록 -->
+    <insert id="insertBanner" parameterType="com.example.demo.banner.vo.Banner">
+        INSERT INTO BANNER (BANNER_ID, IMAGE_URL, LINK_URL, SORT_ORDER, IS_ACTIVE, START_DT, END_DT)
+        VALUES (
+            BANNER_SEQ.NEXTVAL,
+            #{imageUrl},
+            #{linkUrl},
+            #{sortOrder},
+            #{isActive},
+            <choose>
+                <when test="startDt != null and startDt != ''">TO_DATE(#{startDt}, 'YYYY-MM-DD')</when>
+                <otherwise>NULL</otherwise>
+            </choose>,
+            <choose>
+                <when test="endDt != null and endDt != ''">TO_DATE(#{endDt}, 'YYYY-MM-DD')</when>
+                <otherwise>NULL</otherwise>
+            </choose>
+        )
+    </insert>
+
+    <!-- 활성화/비활성화 토글 -->
+    <update id="updateBannerActive" parameterType="com.example.demo.banner.vo.Banner">
+        UPDATE BANNER
+        SET IS_ACTIVE = #{isActive}
+        WHERE BANNER_ID = #{bannerId}
+    </update>
+
+    <!-- 배너 삭제 -->
+    <delete id="deleteBanner" parameterType="long">
+        DELETE FROM BANNER WHERE BANNER_ID = #{bannerId}
+    </delete>
+
+</mapper>

@@ -765,4 +765,21 @@ VALUES (BOARD_SEQ.NEXTVAL, '강지원', '검색이 잘 안 됩니다',
         '문의', 'N');
 
 
+-- =============================================================
+-- BANNER (광고배너 관리)
+-- =============================================================
+CREATE SEQUENCE BANNER_SEQ
+    START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
+
+CREATE TABLE BANNER (
+    BANNER_ID   NUMBER          PRIMARY KEY,
+    IMAGE_URL   VARCHAR2(500)   NOT NULL,
+    LINK_URL    VARCHAR2(500),
+    SORT_ORDER  NUMBER          DEFAULT 1,
+    IS_ACTIVE   CHAR(1)         DEFAULT 'Y',
+    START_DT    DATE,
+    END_DT      DATE,
+    REG_DATE    DATE            DEFAULT SYSDATE
+);
+
 COMMIT;

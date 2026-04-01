@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="64" viewBox="0 0 280 64">
+
+  <!-- 아이콘 배경 원 -->
+  <circle cx="32" cy="32" r="30" fill="#20c997" opacity="0.12"/>
+
+  <!-- 교환 화살표 아이콘 -->
+  <g transform="translate(32,32)" fill="none" stroke="#20c997" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 오른쪽 화살표 -->
+    <path d="M-13 -7 L10 -7 L6 -12 M10 -7 L6 -2"/>
+    <!-- 왼쪽 화살표 -->
+    <path d="M13 7 L-10 7 L-6 2 M-10 7 L-6 12"/>
+  </g>
+
+  <!-- 브랜드명 -->
+  <text x="74" y="38"
+        font-family="'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif"
+        font-size="28" font-weight="900"
+        fill="#1a1a1a"
+        letter-spacing="-1">니꺼내꺼</text>
+
+  <!-- 포인트 도트 -->
+  <circle cx="74" cy="52" r="3" fill="#20c997"/>
+  <circle cx="84" cy="52" r="3" fill="#20c997" opacity="0.5"/>
+  <circle cx="94" cy="52" r="3" fill="#20c997" opacity="0.2"/>
+
+</svg>

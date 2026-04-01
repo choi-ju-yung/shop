@@ -55,39 +55,66 @@ public class SecurityConfig {
                 .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/webjars/**", "/regist/insert");
     }
     
+	// =====================================================
+	// URL 권한 목록 - 경로 추가/변경 시 여기서만 관리
+	// =====================================================
+
+	// 비로그인도 접근 가능한 공개 경로
+	private static final String[] PUBLIC_URLS = {
+		"/",
+		"/main",
+		"/user/main",
+		"/login",
+		"/logout",
+		"/processLogin",
+		"/regist/**",
+		"/emailDupCheck",
+		"/auth/kakao/callback",
+		"/popup/**",
+		"/banner/list",
+		"/product/**",
+		"/board/check",
+		"/board/checkByCategory",
+		"/board/list",
+		"/WEB-INF/views/**"
+	};
+
+	// 로그인한 일반 유저 + 관리자 접근 가능 경로
+	private static final String[] USER_URLS = {
+		"/member/**",
+		"/ws/**"
+	};
+
+	// 관리자만 접근 가능 경로
+	private static final String[] ADMIN_URLS = {
+		"/admin/**"
+	};
+
+	// =====================================================
+
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (필요에 따라 설정)
-				.authorizeHttpRequests(auth -> auth // 변경된 메서드 사용
-						.requestMatchers(HttpMethod.POST, "/regist/insert").permitAll() // post 설정 허용
+		http.csrf(csrf -> csrf.disable())
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(HttpMethod.POST, "/regist/insert").permitAll()
 						.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
-						.requestMatchers("/login","/WEB-INF/views/**","/auth/kakao/callback","/logout","/emailDupCheck","/regist/**","/processLogin","/checkTimeBoard/**","/checkTimeBoardByCategory/**").permitAll()
-						.requestMatchers("/popup/**").permitAll()
-						// 상품 조회/검색/카테고리는 비로그인도 허용
-						.requestMatchers("/user/mainProducts","/user/product/**","/user/search","/user/category","/user/headercategories").permitAll()
-		                .requestMatchers("/admin/**").hasRole("ADMIN")
-		                .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
-		                .requestMatchers("/chat/**").hasAnyRole("USER", "ADMIN")
-		                .requestMatchers("/room/**").hasAnyRole("USER", "ADMIN")
+						.requestMatchers(PUBLIC_URLS).permitAll()
+						.requestMatchers(ADMIN_URLS).hasRole("ADMIN")
+						.requestMatchers(USER_URLS).hasAnyRole("USER", "ADMIN")
 		                .requestMatchers("/app/**").permitAll()
-		                .requestMatchers("/ws/**").hasAnyRole("USER", "ADMIN")
-		                
-		                
-						//.requestMatchers("/**").permitAll() // 인증없이 접근가능
-						//.requestMatchers("/", "/login").permitAll()
-		                .anyRequest().authenticated() // 나머지는 인증 필요
+		                .anyRequest().authenticated()
 				)/* .formLogin(form -> form.disable()) */
 				.formLogin(form -> form
 						.loginPage("/login") // 우리가 만든 로그인 페이지 사용 
 						.loginProcessingUrl("/processLogin") // 로그인 처리 URL 변경
 						.usernameParameter("loginId")
 					    .passwordParameter("password")
-						.defaultSuccessUrl("/user/main",true) // 로그인 성공 후 이동할 페이지
+						.defaultSuccessUrl("/main",true) // 로그인 성공 후 이동할 페이지
 						.failureHandler(customAuthFailureHandler)
 						.permitAll())
 		        .oauth2Login(oauth2 -> oauth2
 		        		.loginPage("/login")
-		        		.defaultSuccessUrl("/user/main",true)
+		        		.defaultSuccessUrl("/main",true)
 		        		.userInfoEndpoint(userInfo -> userInfo
 		        				.userService(customOAuth2UserService)
 		        			)
@@ -96,7 +123,7 @@ public class SecurityConfig {
 		                    if (authentication.getPrincipal() instanceof DefaultOAuth2User) {
 		                        response.sendRedirect("/regist/kakao");
 		                    } else {
-		                        response.sendRedirect("/user/main");
+		                        response.sendRedirect("/main");
 		                    }
 		                })
 		        	)

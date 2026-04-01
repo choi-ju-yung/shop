@@ -41,27 +41,16 @@ public class UserController {
 		
 	@GetMapping("/login")
 	public String login(Model model, HttpSession session) {
-		//model.addAttribute("clientId", KakaoConfig.CLIENT_ID);
-		//model.addAttribute("redirectUri", KakaoConfig.REDIRECT_URI);
-		
+
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-		
-		 boolean isAuthenticated = authentication != null &&
+		boolean isAuthenticated = authentication != null &&
                  authentication.isAuthenticated() &&
                  !(authentication.getPrincipal() instanceof String);
 
 		if (isAuthenticated || session.getAttribute("loginUser") != null) {
 			return "redirect:/user/main"; // 이미 로그인된 경우 메인으로 리다이렉트
 		}
-
-		
-	    /*Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-	    String sessionId = (String)session.getAttribute("loginId");
-	    
-	    if ((principal instanceof CustomUserDetails) || (sessionId != null)) { // 1. 로그인된 사용자면 메인으로 리다이렉트
-	        return "redirect:/user/main";
-	    }*/
 
 		return "login/loginView"; // 로그인 후 이동할 페이지
 	}
@@ -78,9 +67,17 @@ public class UserController {
 	}
 	
 	/**
+	 * 설명 : 루트 경로 → /user/main 리다이렉트
+	 */
+	@GetMapping("/")
+	public String root() {
+		return "redirect:/user/main";
+	}
+
+	/**
 	 * 설명 : 메인화면으로 이동
 	 */
-	@GetMapping(value = {"/user/main","/"})
+	@GetMapping({"/main", "/user/main"})
 	public String mainView(@AuthenticationPrincipal CustomUserDetails userDetails, HttpSession session) {
 		if(userDetails != null) {
 			session.setAttribute("loginUser",userDetails.getUser());

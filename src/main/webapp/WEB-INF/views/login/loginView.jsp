@@ -32,7 +32,7 @@
 
 		<a
 			href="/oauth2/authorization/kakao">
-			<img src="/css/images/common/kakaoImage.png" style="width: 400px"
+			<img src="/images/common/kakaoImage.png" style="width: 400px"
 			height="50px" alt="카카오톡 이미지" />
 		</a>
 		<div>
