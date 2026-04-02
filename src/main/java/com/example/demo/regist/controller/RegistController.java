@@ -1,8 +1,6 @@
 package com.example.demo.regist.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -12,6 +10,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.ui.Model;
 import com.example.demo.regist.service.RegistService;
 import com.example.demo.user.vo.UserVO;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/regist")
@@ -37,11 +36,15 @@ public class RegistController {
 	}
 
 	@GetMapping("/kakao")
-	public String kakaoRegistForm(@AuthenticationPrincipal OAuth2User oauthUser, Model model) {
-		model.addAttribute("nickname", oauthUser.getAttribute("nickname"));
-		model.addAttribute("oauthId", oauthUser.getAttribute("oauthId"));
-		model.addAttribute("email", oauthUser.getAttribute("email"));
-
+	public String kakaoRegistForm(HttpSession session, Model model) {
+		String oauthId = (String) session.getAttribute("kakaoOauthId");
+		if (oauthId == null) {
+			return "redirect:/login";
+		}
+		model.addAttribute("nickname", session.getAttribute("kakaoNickname"));
+		model.addAttribute("oauthId", oauthId);
+		model.addAttribute("email", session.getAttribute("kakaoEmail"));
 		return "regist/kakaoregist";
 	}
+
 }

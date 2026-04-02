@@ -32,7 +32,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
 	@Override
 	public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 		
-		OAuth2User oAuth2User = super.loadUser(userRequest); // 1. 부모 클래스의 메서드로 기본 OAuth2User 객체 생성
+		OAuth2User oAuth2User = super.loadUser(userRequest); // 부모 클래스의 메서드로 기본 OAuth2User 객체 생성
 		
         Map<String, Object> kakaoAccount = oAuth2User.getAttribute("kakao_account"); 
         Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
@@ -44,10 +44,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService{
         UserVO user = userService.findByKakaoId(oauthId); // DB에서 카카오 사용자 조회
 		
         if(user == null) {
-        	 UserVO tempUser = new UserVO();
-        	 tempUser.setOauthId(oauthId);
-        	 tempUser.setUsername(nickname);
-        	
         	 Map<String, Object> attributes = new HashMap<>();
              attributes.put("oauthId", oauthId);
              attributes.put("nickname", nickname);

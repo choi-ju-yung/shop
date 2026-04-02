@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.regist.dao.RegistDao;
+import com.example.demo.regist.service.EmailService;
 import com.example.demo.user.vo.UserVO;
 
 import lombok.extern.slf4j.Slf4j;
@@ -15,13 +16,14 @@ import lombok.extern.slf4j.Slf4j;
 public class RegistService {
 	
 	private final RegistDao registDao;
-	
 	private final PasswordEncoder passwordEncoder;
-	
+	private final EmailService emailService;
+
 	@Autowired
-	public RegistService(RegistDao registDao,PasswordEncoder passwordEncoder) {
+	public RegistService(RegistDao registDao, PasswordEncoder passwordEncoder, EmailService emailService) {
 		this.registDao = registDao;
 		this.passwordEncoder = passwordEncoder;
+		this.emailService = emailService;
 	}
 	
 	@Transactional
@@ -41,6 +43,12 @@ public class RegistService {
 		if (result2 == 0) {
 			log.error("회원페이지 등록실패 : {}", userVO.getUserNo());
 			throw new RuntimeException("회원페이지 등록실패");
+		}
+
+		try {
+			emailService.sendWelcomeEmail(userVO.getEmail(), userVO.getUsername());
+		} catch (Exception e) {
+			log.warn("축하 메일 발송 실패 (회원가입은 완료): {}", e.getMessage());
 		}
 	}
 	

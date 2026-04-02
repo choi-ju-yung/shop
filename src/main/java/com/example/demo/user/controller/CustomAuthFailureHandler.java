@@ -18,9 +18,11 @@ public class CustomAuthFailureHandler implements AuthenticationFailureHandler{
 	public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
 			AuthenticationException exception) throws IOException, ServletException {
 		
-		String errorMessage = "아이디 또는 비밀번호가 잘못되었습니다.";
-		
-		response.sendRedirect("/login?error=true&message="+URLEncoder.encode(errorMessage,"UTF-8"));
+		String errorMessage = exception.getMessage() != null
+				? exception.getMessage()
+				: "아이디 또는 비밀번호가 잘못되었습니다.";
+
+		response.sendRedirect("/login?error=true&message=" + URLEncoder.encode(errorMessage, "UTF-8"));
 	}
 	
 	

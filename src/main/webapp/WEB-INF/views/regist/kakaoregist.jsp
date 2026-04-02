@@ -22,7 +22,7 @@
 
             <!-- 이메일 주소 -->
             <div class="email">
-                <input type="email" placeholder="이메일 주소" id=email name="email" required>
+                <input type="email" placeholder="이메일 주소" id=email name="email" value="${email}" required>
 <!--                 &nbsp;
                 &nbsp;
                 

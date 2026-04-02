@@ -47,12 +47,13 @@ public class UserController {
 		boolean isAuthenticated = authentication != null &&
                  authentication.isAuthenticated() &&
                  !(authentication.getPrincipal() instanceof String);
-
+		
+		// 시큐리티 인증와 세션값으로 인증되있으면 메인페이지로, 안되어있으면 로그인페이지로
 		if (isAuthenticated || session.getAttribute("loginUser") != null) {
-			return "redirect:/user/main"; // 이미 로그인된 경우 메인으로 리다이렉트
+			return "redirect:/main";
 		}
 
-		return "login/loginView"; // 로그인 후 이동할 페이지
+		return "login/loginView"; 
 	}
 	
 	
@@ -71,13 +72,13 @@ public class UserController {
 	 */
 	@GetMapping("/")
 	public String root() {
-		return "redirect:/user/main";
+		return "redirect:/main";
 	}
 
 	/**
 	 * 설명 : 메인화면으로 이동
 	 */
-	@GetMapping({"/main", "/user/main"})
+	@GetMapping("/main")
 	public String mainView(@AuthenticationPrincipal CustomUserDetails userDetails, HttpSession session) {
 		if(userDetails != null) {
 			session.setAttribute("loginUser",userDetails.getUser());
@@ -138,11 +139,16 @@ public class UserController {
 		SecurityContextHolder.getContext().setAuthentication(authentication); 
 		
 		
-		request.getSession().setAttribute("userNo",savedUser.getOauthId());
-		request.getSession().setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
+		HttpSession session = request.getSession();
+		session.setAttribute("userNo", savedUser.getOauthId());
+		session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                   SecurityContextHolder.getContext());
-		
-		return "redirect:/user/main"; // 회원가입 후 리디렉션
+		// 카카오 임시 세션 정리
+		session.removeAttribute("kakaoOauthId");
+		session.removeAttribute("kakaoNickname");
+		session.removeAttribute("kakaoEmail");
+
+		return "redirect:/main";
 	}
 	
 	@GetMapping("/regist/duplicateId")

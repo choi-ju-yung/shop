@@ -21,12 +21,14 @@ public class UserService {
 	private final UserDao userDao;
 	private final MyPageDao myPageDao;
 	private final PasswordEncoder passwordEncoder;
-	
+	private final com.example.demo.regist.service.EmailService emailService;
+
 	@Autowired
-	public UserService(UserDao userDao, MyPageDao myPageDao, PasswordEncoder passwordEncoder) {
+	public UserService(UserDao userDao, MyPageDao myPageDao, PasswordEncoder passwordEncoder, com.example.demo.regist.service.EmailService emailService) {
 		this.userDao = userDao;
 		this.myPageDao = myPageDao;
 		this.passwordEncoder = passwordEncoder;
+		this.emailService = emailService;
 	}
 
 	public UserVO findByKakaoId(String kakaoId) {
@@ -69,6 +71,12 @@ public class UserService {
 		if (result2 == 0) {
 			log.error("회원페이지 등록실패 : {}", userVO.getUserNo());
 			throw new RuntimeException("회원페이지 등록실패");
+		}
+
+		try {
+			emailService.sendWelcomeEmail(userVO.getEmail(), userVO.getUsername());
+		} catch (Exception e) {
+			log.warn("축하 메일 발송 실패 (회원가입은 완료): {}", e.getMessage());
 		}
 	}
 	

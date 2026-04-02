@@ -47,6 +47,20 @@ public class EmailService {
         mailSender.send(message);
     }
     
+    // 회원가입 축하 메일
+    public void sendWelcomeEmail(String toEmail, String username) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+        helper.setTo(toEmail);
+        helper.setSubject("[Shop] 회원가입을 축하합니다!");
+        helper.setText(
+            "<h2>" + username + "님, 가입을 환영합니다! 🎉</h2>" +
+            "<p>저희 서비스를 이용해 주셔서 감사합니다.</p>",
+            true
+        );
+        mailSender.send(message);
+    }
+
     public int createAuthNumber(AuthNumber authNumber) {
     	return emailDao.createAuthNumber(authNumber);
     }
