@@ -1,178 +1,188 @@
-<%@page import="java.util.Locale.Category"%>
 <%@page import="java.util.List"%>
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-	pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<link rel="stylesheet"
-	href="<%=request.getContextPath()%>/css/product/productregist.css" />
-<script
-	src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-<!-- 다음 주소 api 사용 -->
+<link rel="stylesheet" href="<%=request.getContextPath()%>/css/product/productregist.css" />
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
 <%@ include file="../common/header.jsp"%>
 
-<section>
+<div class="regist-wrapper">
+    <div class="regist-card">
 
+        <!-- 헤더 -->
+        <div class="regist-header">
+            <h2>상품 등록</h2>
+            <p class="required-notice"><span class="badge-required">필수</span> 표시는 필수 입력 항목입니다.</p>
+        </div>
 
-	<!-- <form class="container" method="post" enctype="multipart/form-data"> -->
+        <!-- 상품 이미지 -->
+        <div class="form-section">
+            <div class="form-label">
+                <span class="label-text">상품 이미지</span>
+                <span class="badge-required">필수</span>
+            </div>
+            <div class="form-content">
+                <div class="image-upload-area">
+                    <img src="<%=request.getContextPath()%>/images/productregist/imgregist.png"
+                         class="upload" width="110" height="110">
+                    <input type="file" id="inputFile" class="real-upload" accept="image/*" required multiple style="display:none;">
+                    <p class="upload-hint">클릭하여 이미지 추가 <span class="imgCount">(0/10)</span></p>
+                </div>
+                <ul class="image-preview"></ul>
+                <div class="image-guide">
+                    <p>• 이미지는 등록 시 정사각형으로 잘려서 등록됩니다.</p>
+                    <p>• 이미지를 드래그하여 순서를 변경할 수 있습니다.</p>
+                    <p>• 이미지를 클릭하면 확대해서 볼 수 있습니다.</p>
+                    <p>• 이미지 우상단의 X 버튼을 클릭하면 삭제됩니다.</p>
+                    <p>• 개당 최대 10MB, 최대 10장까지 등록 가능합니다.</p>
+                </div>
+            </div>
+        </div>
 
-	<div class="information">
-		<div>
-			<h3>기본정보</h3>
-			<p>*필수항목</p>
-		</div>
-	</div>
-	<hr>
+        <div class="divider"></div>
 
-	<div class="productImg">
-		<div class="letters">
-			<p>상품이미지</p>
-			<p class="imgCount">(0/10)</p>
-			<!-- document.all.file2.value=document.all.file1.value -->
-		</div>
+        <!-- 제목 -->
+        <div class="form-section">
+            <div class="form-label">
+                <span class="label-text">제목</span>
+                <span class="badge-required">필수</span>
+            </div>
+            <div class="form-content">
+                <div class="input-wrap">
+                    <input type="text" placeholder="상품 제목을 입력하세요" class="inputTitle form-input" name="title">
+                    <span class="char-count countTitle">0/20</span>
+                </div>
+                <span id="spanTitle" class="error-msg"></span>
+            </div>
+        </div>
 
-		<!-- input type file을 만들어서 눈에는 안보이게 숨기고 -->
-		<!-- 이미지를 클릭했을 때 해당 input이 실행되도록 만듬 -->
-		<img
-			src="<%=request.getContextPath()%>/images/productregist/imgregist.png"
-			class="upload" width="250px" height="250px"> <input type="file"
-			id="inputFile" class="real-upload" accept="image/*" required multiple
-			style="display: none;">
+        <div class="divider"></div>
 
+        <!-- 카테고리 -->
+        <div class="form-section">
+            <div class="form-label">
+                <span class="label-text">카테고리</span>
+                <span class="badge-required">필수</span>
+            </div>
+            <div class="form-content">
+                <form name="frm1" style="display:flex; gap:12px;">
+                    <select class="mainCate form-select" onchange="chageSubCate(this.value);">
+                        <c:forEach var="category" items="${categorys}">
+                            <option value="${category.categoryName}">${category.categoryName}</option>
+                        </c:forEach>
+                    </select>
+                    <select class="middleCate form-select" name="subCate"></select>
+                </form>
+            </div>
+        </div>
 
-		<ul class="image-preview">
+        <div class="divider"></div>
 
-		</ul>
+        <!-- 거래지역 -->
+        <div class="form-section">
+            <div class="form-label">
+                <span class="label-text">거래지역</span>
+                <span class="badge-required">필수</span>
+            </div>
+            <div class="form-content">
+                <div class="place-wrap">
+                    <button type="button" class="btn-address" id="sample6Id" onclick="sample6_execDaumPostcode()">주소 검색</button>
+                    <input type="text" id="sample6_address" placeholder="주소를 검색해주세요" name="place" readonly class="form-input">
+                </div>
+                <input type="hidden" id="sample6_postcode">
+                <input type="hidden" id="sample6_detailAddress">
+                <input type="hidden" id="sample6_extraAddress">
+                <span id="spanPlace" class="error-msg"></span>
+            </div>
+        </div>
 
-		<div class="explane">
-			<h4>* 상품 이미지는 640x640에 최적화 되어 있습니다.</h4>
-			<p>- 상품 이미지는 PC에서는 1:1, 모바일에서는 1:1.23 비율로 보여집니다.</p>
-			<p>- 이미지는 상품 등록 시 정사각형으로 잘려서 등록됩니다.</p>
-			<p>- 이미지를 클릭할 경우 원본 이미지를 확인할 수 있습니다.</p>
-			<p>- 이미지를 클릭 후 이동하여 등록순서를 변경할 수 있습니다.</p>
-			<p>- 큰 이미지일 경우 이미지가 깨지는 경우가 발생할 수 있습니다.</p>
-			<p>최대 지원 사이즈인 640 X 640으로 리사이즈 해서 올려주세요.(개당 이미지 최대 10M)</p>
-		</div>
-		<!-- <img src="./img/이미지등록.png" onclick='document.all.file1.click();' class="upload" width="250px" height="250px">   -->
-		<!-- <input type=file name='file1' style='display: none;' accept="img/*">  accept="img/*" -> 이미지 파일만 등록가능 -->
-	</div>
+        <div class="divider"></div>
 
-	<div class="title">
-		<hr>
-		<div class="productTitle">
-			<h4 class="h4Size">제목 *</h4>
-			<input type="text" placeholder="상품제목을 입력하세요" class="inputTitle"
-				name="title">
-			<p class="countTitle">0/20</p>
-		</div>
-		<span id="spanTitle"></span>
-		<hr>
-	</div>
+        <!-- 상태 -->
+        <div class="form-section">
+            <div class="form-label">
+                <span class="label-text">상품 상태</span>
+                <span class="badge-required">필수</span>
+            </div>
+            <div class="form-content">
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="state" value="미개봉" checked>
+                        <span class="radio-text">미개봉</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="state" value="사용감 있음">
+                        <span class="radio-text">사용감 있음</span>
+                    </label>
+                </div>
+            </div>
+        </div>
 
-	<div class="cate">
-		<h4 class="h4Size">카테고리 *</h4>
-		<form name="frm1">
-			<select class="mainCate" onchange="chageSubCate(this.value);">
-				<!-- this.value -> 선택된 option의 밸류값을 매개변수로 넣음 -->
+        <div class="divider"></div>
 
-				<c:forEach var="category" items="${categorys}">
-					<option value="${category.categoryName}">${category.categoryName}</option>
-				</c:forEach>
+        <!-- 가격 -->
+        <div class="form-section">
+            <div class="form-label">
+                <span class="label-text">가격</span>
+                <span class="badge-required">필수</span>
+            </div>
+            <div class="form-content">
+                <div class="price-wrap">
+                    <input type="text" id="priceId" oninput="inputNumberFormat(this);"
+                           placeholder="숫자만 입력해주세요" name="price" class="form-input price-input">
+                    <span class="price-unit">원</span>
+                </div>
+                <span id="spanPrice" class="error-msg"></span>
+            </div>
+        </div>
 
+        <div class="divider"></div>
 
-			</select> <select class="middleCate" name="subCate">
+        <!-- 설명 -->
+        <div class="form-section">
+            <div class="form-label">
+                <span class="label-text">상품 설명</span>
+                <span class="badge-required">필수</span>
+            </div>
+            <div class="form-content">
+                <textarea id="explanId" name="explanation" class="form-textarea explan"
+                    placeholder="구입 연도, 브랜드, 사용감, 하자 유무 등 구매자에게 필요한 정보를 입력해주세요. (10자 이상)"></textarea>
+                <div class="textarea-footer">
+                    <span id="spanExplan" class="error-msg"></span>
+                    <span class="countExpaln">0/2000</span>
+                </div>
+            </div>
+        </div>
 
-			</select>
-	</div>
-	<hr>
+        <div class="divider"></div>
 
-	<div class="productPlace">
-		<h4 class="h4Size">거래지역 *</h4>
-		<input type="button" id="sample6Id"
-			onclick="sample6_execDaumPostcode()" value="우편번호 찾기"> <input
-			type="text" id="sample6_address" placeholder="주소" name="place"
-			readonly> <input type="hidden" id="sample6_postcode"
-			placeholder="우편번호"> <input type="hidden"
-			id="sample6_detailAddress" placeholder="상세주소"> <input
-			type="hidden" id="sample6_extraAddress" placeholder="참고항목">
-	</div>
-	<span id="spanPlace"></span>
-	<hr>
+        <!-- 상품 태그 -->
+        <div class="form-section">
+            <div class="form-label">
+                <span class="label-text">상품 태그</span>
+                <span class="badge-optional">선택</span>
+            </div>
+            <div class="form-content" style="position:relative;">
+                <input type="text" id="searchTag" placeholder="태그를 입력하고 Enter" class="form-input" autocomplete="on">
+                <div class="autocomplete"></div>
+                <div id="relativeTagDiv"></div>
+                <div class="tag-guide">
+                    <p>• 태그는 최대 5개까지 선택 가능합니다.</p>
+                    <p>• 선택된 태그의 x버튼을 클릭하면 삭제됩니다.</p>
+                    <p>• 상품과 무관한 태그 입력 시 노출이 중단될 수 있습니다.</p>
+                </div>
+            </div>
+        </div>
 
-	<div class="productStatus">
-		<h4 class="h4Size">상태 *</h4>
-		<fieldset>
-			<label> <input type="radio" name="state" value="미개봉" checked />
-				<span>미개봉</span>
-			</label> <label> <input type="radio" name="state" value="사용감 있음" />
-				<span>사용감있음</span>
-			</label>
-		</fieldset>
-	</div>
-	<hr>
+        <!-- 등록 버튼 -->
+        <div class="regist-footer">
+            <button type="button" class="btn-cancel" onclick="history.back()">취소</button>
+            <button type="button" class="btn-submit" onclick="productRegist()">등록하기</button>
+        </div>
 
-	<div class="price">
-		<h4 class="h4Size">가격 *</h4>
-		<!--             <input type="text" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');"
-                placeholder="숫자만 입력해주세요."> -->
-		<input type="text" id="priceId" oninput="inputNumberFormat(this);"
-			placeholder="숫자만 입력해주세요." name="price">
-		<p>원</p>
-	</div>
-	<span id="spanPrice"></span>
-	<hr>
+    </div>
+</div>
 
-	<div class="explan">
-		<h4 class="h4Size">설명 *</h4>
-		<textarea id="explanId" name="explanation"
-			placeholder="여러 장의 상품 사진과 구입 연도, 브랜드, 사용감, 하자 유무 등 구매자에게 필요한 정보를 꼭 포함해 주세요. (10자 이상)"></textarea>
-	</div>
-	<span id="spanExplan"></span>
-	<h3 class="countExpaln">0/2000</h3>
-	<hr>
-
-
-	<div class="relativeTag">
-		<h4 class="h4Size">상품태그</h4>
-		<input type="text" id="searchTag" placeholder="연관 태그를 입력해주세요"
-			autocomplete="on">
-		<div id="relativeTagDiv"></div>
-	</div>
-
-	<div class="autocomplete"></div>
-
-
-	<br>
-	<div class="pp">
-		<p>- 태그는 최대 5개까지 선택 가능합니다.</p>
-		<p>- 선택된 태그는 x버튼을 클릭하면 삭제됩니다.</p>
-		<p>- 태그는 검색의 부가정보로 사용 되지만, 검색 결과 노출을 보장하지는 않습니다.</p>
-		<p>- 검색 광고는 태그정보를 기준으로 노출됩니다.</p>
-		<p>- 상품과 직접 관련이 없는 다른 상품명, 브랜드, 스팸성 키워드 등을 입력하면 노출이 중단되거나 상품이 삭제될
-			수 있습니다.</p>
-	</div>
-	<hr>
-
-
-	<div class="fix">
-		<button type="button" onclick="productRegist()">등록하기</button>
-		<!-- form안의 버튼은 submit	이 가능함 -->
-		<!-- button type="button" -> 자동으로 submit되는걸 방지하고 다른 동작을 실행시키고 싶을 때-->
-	</div>
-
-
-
-	<!-- 내부 js파일 호출 -->
-	<script src="<%=request.getContextPath()%>/js/product/productregist.js"></script>
-
-
-	<%-- 		<script>
-			location.href ="<%=request.getContextPath()%>/productRegist.do"
-		</script> --%>
-	<!-- 여기부분이 직접 검색해서 들어갔을 때 들어가짐  -->
-
-	<!-- 	</form> -->
-</section>
-
+<script src="<%=request.getContextPath()%>/js/product/productregist.js"></script>
 
 <%@ include file="../common/footer.jsp"%>

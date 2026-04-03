@@ -1,481 +1,610 @@
 @charset "UTF-8";
 
-/* 기본정보 글씨부분 */
-.information>div>h3{
-    font-size: 30px;
-    letter-spacing: 3px;
-    margin-right: 40px;
+/* ===================== 전체 레이아웃 ===================== */
+.regist-wrapper {
+    background-color: #f5f6fa;
+    min-height: 100vh;
+    padding: 250px 20px 80px;
+    flex: 1;
 }
 
-/* 필수항목 글씨부분 */
-.information>div>p{
-    color: red;
+.regist-card {
+    max-width: 860px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+    padding: 40px 48px;
+    position: relative;
 }
 
-/* 기본정보와 필수항목 문구를 묶어서 스타일 지정 */
-.information div {
+/* ===================== 헤더 ===================== */
+.regist-header {
     display: flex;
     align-items: center;
-}  
-
-/* 기본정보 밑에 밑줄 부분 */
-.information>hr{
-    margin-top: 30px;
-    background:black;
-    /* 선 색을 변경하기 위해서 height:1px 필수로 해야함 */
-    height:1px; 
-    border:1;
+    justify-content: space-between;
+    margin-bottom: 32px;
 }
 
-/* 상품이미지 문구 */
-.productImg>.letters>p:first-child{
-    font-size: 30px;
-    margin-right: 10px;
+.regist-header h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a2e;
+    letter-spacing: -0.5px;
 }
 
-/* 상품이미지 문구와, (0,10)문구를 가로로 배치 및 글자 높이 가운데 정렬*/
-.productImg>.letters {
-    margin-top: 30px;
+.required-notice {
+    font-size: 13px;
+    color: #888;
     display: flex;
     align-items: center;
+    gap: 6px;
 }
 
+/* ===================== 필수/선택 배지 ===================== */
+.badge-required {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ff4757;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+}
 
-/* 상품이미지 */
-.upload {
-    width: 167px;
-    height: 167px;
-    margin-top: 20px;
-    margin-bottom: 20px;
+.badge-optional {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+}
+
+/* ===================== 구분선 ===================== */
+.divider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 24px 0;
+}
+
+/* ===================== 폼 섹션 ===================== */
+.form-section {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.form-label {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 110px;
+    padding-top: 8px;
+}
+
+.label-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-content {
+    flex: 1;
+}
+
+/* ===================== 공통 인풋 ===================== */
+.form-input {
+    width: 100%;
+    height: 44px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    padding: 0 16px;
+    color: #333;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    background: #fafafa;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #20c997;
+    background: #fff;
+}
+
+.form-input::placeholder {
+    color: #bbb;
+}
+
+/* ===================== 이미지 업로드 ===================== */
+.image-upload-area {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 150px;
+    height: 150px;
+    border: 2px dashed #d0d0d0;
+    border-radius: 12px;
     cursor: pointer;
+    background: #fafafa;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 14px;
 }
 
-/* 업로드되는 이미지들은 가로로 출력되며 간격은 15씩 */
+.image-upload-area:hover {
+    border-color: #20c997;
+    background: #f0fdf8;
+}
+
+.upload {
+    width: 48px;
+    height: 48px;
+    opacity: 0.5;
+    margin-bottom: 6px;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: #999;
+    text-align: center;
+}
+
+.imgCount {
+    color: #20c997;
+    font-weight: 600;
+}
+
 .image-preview {
     display: flex;
     flex-wrap: wrap;
-    gap: 7px;
-  }
-
-/* 업로드되는 이미지들 너비 높이 167씩 통일 */
-.image-preview>li img{
-    width: 167px;
-    height: 167px;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px;
 }
 
+.image-preview > li {
+    position: relative;
+    cursor: grab;
+    border-radius: 8px;
+}
 
-/* input type file 안보이게 설정 */
-.real-upload {
+.image-preview > li.dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+}
+
+.image-preview > li img {
+    width: 90px;
+    height: 90px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid #eee;
+    display: block;
+    pointer-events: none;
+}
+
+.img-delete-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 1;
+}
+
+.img-delete-btn:hover {
+    background: rgba(255, 71, 87, 0.85);
+}
+
+.image-preview > li .img-delete-btn img {
+    width: 8px;
+    height: 8px;
+    display: block;
+}
+
+.badge-representative {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(32, 201, 151, 0.85);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    padding: 2px 0;
+    border-radius: 0 0 8px 8px;
+    pointer-events: none;
+}
+
+.image-guide {
+    font-size: 12px;
+    color: #aaa;
+    line-height: 1.8;
+}
+
+/* ===================== 제목 인풋 ===================== */
+.input-wrap {
+    position: relative;
+}
+
+.input-wrap .form-input {
+    padding-right: 60px;
+}
+
+.char-count {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #bbb;
+}
+
+/* ===================== 카테고리 ===================== */
+.form-select {
+    height: 44px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    padding: 0 14px;
+    color: #333;
+    background: #fafafa;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    min-width: 160px;
+}
+
+.form-select:focus {
+    border-color: #20c997;
+    background: #fff;
+}
+
+/* ===================== 거래지역 ===================== */
+.place-wrap {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-address {
+    height: 44px;
+    padding: 0 20px;
+    background: #f0fdf8;
+    border: 1.5px solid #20c997;
+    border-radius: 8px;
+    color: #20c997;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-address:hover {
+    background: #20c997;
+    color: #fff;
+}
+
+/* ===================== 상품 상태 라디오 ===================== */
+.radio-group {
+    display: flex;
+    gap: 12px;
+}
+
+.radio-label {
+    cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
     display: none;
 }
 
-
-/* 사진 주의사항 설명문구 */
-.explane {
-    color: rgb(44, 125, 179);
-    line-height: 20px;  /* 문장간 간격 설정 */
-    margin-top: 20px;
-}
-
-/* 모든 - 스타일 */
-section hr{
-    margin-top: 30px;
-    margin-bottom: 30px;
-    background:gainsboro;
-    height:1px; 
-    border:0;
-}
-
-/* 제목 문구와 입력창, 글자수 제한까지 가로로 출력하기 위한 설정 */
-.productTitle {
-    display: flex;
+.radio-text {
+    display: inline-flex;
     align-items: center;
-}
-
-/* 제목 문구 */
-.productTitle>h4{
-    margin-right: 150px;
-}
-
-/* 상품 제목 입력창 문구 */
-.productTitle>input{
-    font-size: 16px;
-    text-indent: 16px;
-    border: 1px solid #cccccc;
-    width: 78%;
-    height: 40px;
-    margin-right: 20px;
-}
-
-
-/* 카테고리 문구 */
-.cate>h4{
-    margin-right: 57px;
-}
-
-
-/* 카테고리 문구와 select까지 가로로 출력하기 위한 설정 */
-.cate {
-    display: flex;
-    align-items: center;
-   
-}
-
-.h4Size{
-	font-size: 24px;
-}
-
-
-
-/* 카테고리와 지역 부분 select 꾸미기 */
-select{
-    background-color: #ccc;
-    background-repeat: no-repeat;
-	padding: 12px 12px; 
-    margin-left: 50px;
-
-    width: auto;
-    font-family: 'Lato', sans-serif;
-    font-size: 16px;
-    font-weight: normal;
-    color: #000;
-    text-align: center;
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-    border-radius: 3px;
-    -webkit-border-raidus: 3px;
-    -webkit-appearance: none;
-    border: 0;
-    outline: 0;
-    -webkit-transition: 0.3s ease all;
-    -moz-transition: 0.3s ease all;
-    -ms-transition: 0.3s ease all;
-    -o-transition: 0.3s ease all;
-    transition: 0.3s ease all;
-}
-
-
-/* ============ 거래지역 스타일 적용 =================== */
-.productPlace {
-	display: flex;
-	align-items: center;
-}
-
-.productPlace>h4{
-	margin-right:110px;
-}
-
-/* 우편번호 찾기 버튼 */
-.productPlace>input[type=button]{
-	border: 1px solid #cccccc;
-	margin-right:20px;
-	font-size: 20px;    
-    text-indent: 16px;
-	width: 20%;
-    height: 40px;
-}
-
-/* 주소 찾아지는 text 부분 */
-.productPlace>input[type=text]{
-	font-size: 20px;    
-    text-indent: 16px;
-    border: 1px solid #cccccc;
-    width: 40%;
-    height: 40px;
-}
-
-
-
-
-/* ======== 상태 스타일 꾸미기 ======== */
-.productStatus>h4{
-    margin-right: 140px;
-}
-
-.productStatus{
-    display: flex;
-    align-items: center;
-}
-
-.productStatus label {
-    font-size: 18px;
-    line-height: 2rem;
-    /* padding: 0.2em 0.4em; */
-    padding : 12px 30px 12px 12px;
-  }
-  
-  span {
-    vertical-align: middle;
-  }
-  
-  /* 라디오체크표시 애니메이션 효과 및 전반적인 스타일 */
-  [type="radio"] {
-    vertical-align: middle;
-    appearance: none;
-    border: max(2px, 0.1em) solid gray;
-    border-radius: 50%;
-    width: 2em;
-    height: 2em;
-    transition: border 0.2s ease-in-out;
-  }
-  
-  /* 라디오 체크표시에 체크했을 때 */
-  [type="radio"]:checked {
-    border: 0.4em solid #20c997;
-  }
-   
-  /* 라디오 체크버튼에 마우스 올렸을 때 */
-  [type="radio"]:hover {
-    box-shadow: 0 0 0 max(4px, 0.2em) lightgray;
-    cursor: pointer;
-  }
-    
-  fieldset {
-    display: flex;
     justify-content: center;
-    border: none;
-  }
-/* ====================================== 여기까지가 상태 스타일임 */
-
-
-/* ======== 가격 스타일 꾸미기 ========  */
-/* 가격 문구 */
-.price>h4{
-    margin-right: 50px;
-}
-
-/* 가격 문구와 input태그까지 가로로 출력하기 위한 설정 */
-.price {
-    display: flex;
-    align-items: center;
-}
-
-/* 가격 입력창 문구 */
-.price>input{
-    font-size: 16px;
-    text-indent: 16px;
-    border: 1px solid #cccccc;
-    width: 20%;
-    height: 40px;
-    margin-left: 100px;
-}
-
-/* (원) 문구 */
-.price>p{
-    margin-left: 20px;
-    font-size: 20px;
-}
-/* ====================================== 여기까지가 가격 스타일임 */
-
-
-/* ===========설명 스타일 꾸미기============ */
-/* 설명 문구 */
-.explan>h4{
-    margin-right: 50px;
-    margin-top: 20px;
-}
-
-/* 설명 문구와 input태그까지 가로로 출력하기 위한 설정 */
-.explan {
-    display: flex;
-}
-
-/* 설명 입력창 문구 */
-.explan>textarea{
-    font-size: 16px;
-    padding:10px;
-	line-height:22px;
-    border: 1px solid #cccccc;
-    resize: none;  /* textarea 문구 창 사이즈 조절 불가능하게 만듬 */
-    width: 81%;
-    height: 133px;
-    margin-left: 100px;
-    margin-bottom: 10px;
-}
-
-/* 0/2000 문구 스타일 */
-h3{
-    display: flex;
-    justify-content: flex-end;
-	padding-right: 20px;
-}
-/* ====================================== 여기까지가 설명 스타일임 */
-
-
-/* ===========연관태그 스타일 꾸미기========= */
-
-/* 상품태그 문구 */
-.relativeTag>h4{
-    margin-right: 58px;
-}
-
-/* 상품태그문구와 input태그까지 가로로 출력하기 위한 설정 */
-.relativeTag {
-    display: flex;
-    align-items: center;
-}
-
-/* 상품태그 입력창 문구 */
-.relativeTag>input{
-    font-size: 16px;
-    text-indent: 16px;
-    border: 1px solid #cccccc;
-    width: 30%;
-    height: 40px;
-    margin-left: 68px;
-    margin-bottom: -10px;
-}
-
-.pp {
-    display: flex;
-    flex-direction: column;
-    color: rgba(128, 128, 128, 0.788);
-    font-size: 20px;
-    padding-left: 220px;
-}
-
-.pp p{
-    margin-top: 5px;
-}
-/* ====================================== 여기까지가 연관태그 스타일임 */
-
-
-
-/* .fix {
-    position: fixed;
-} */
-
-/*  .fixBtn{
-    position: relative;
-    border: 50px solid #cccccc;
-}  */
-
-
-.fix button{
-	
-	top: 45em;
-    right: 18em;
-    background-color: #20c997;
-    border: 20px solid #20c997 !important;
-    color: white;
+    padding: 8px 24px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    background: #fafafa;
+    transition: all 0.2s;
     cursor: pointer;
-    width: 150px;
-    border-radius: 15px;
-    font-size: 18px;    
 }
 
-
-
-.fix {
-	margin-top:-15px;
-	display:flex;
-    justify-content:end;
-} 
-
-/* ========================================================== */
-
-.autocomplete>div.active {  
-  background: #e0e5f6;
-  color: #000;
+.radio-label input[type="radio"]:checked + .radio-text {
+    border-color: #20c997;
+    background: #f0fdf8;
+    color: #20c997;
+    font-weight: 600;
 }
 
-.autocomplete>div {   /* 자동으로 나오는 검색어들 스타일 */
-  /* background: #f1f3f499;  */
-  background: white; 
+.radio-text:hover {
+    border-color: #20c997;
+    color: #20c997;
+}
 
-  /*padding: .2rem .6rem; */   /*  각 검색어들마다 패딩값줌 */
-  padding: 10px 10px;
+/* ===================== 가격 ===================== */
+.price-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.price-input {
+    max-width: 280px;
+}
+
+.price-unit {
+    font-size: 16px;
+    font-weight: 600;
+    color: #555;
+    flex-shrink: 0;
+}
+
+/* ===================== 설명 textarea ===================== */
+.form-textarea {
+    width: 100%;
+    height: 160px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    padding: 14px 16px;
+    line-height: 1.7;
+    color: #333;
+    resize: none;
+    background: #fafafa;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: #20c997;
+    background: #fff;
+}
+
+.form-textarea::placeholder {
+    color: #bbb;
+}
+
+.textarea-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+}
+
+.countExpaln {
+    font-size: 12px;
+    color: #bbb;
+    margin: 0;
+}
+
+/* ===================== 태그 ===================== */
+.tag-guide {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #bbb;
+    line-height: 1.9;
+}
+
+#relativeTagDiv {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+#relativeTagDiv > li {
+    display: flex;
+    align-items: center;
+    height: 30px;
+    border: none;
+    border-radius: 20px;
+    background-color: #f0fdf8;
+    padding: 0 4px 0 12px;
+    list-style: none;
+}
+
+#relativeTagDiv > li > label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #20c997;
+    margin-right: 4px;
+}
+
+#relativeTagDiv > li > button {
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 4px;
+}
+
+#relativeTagDiv > li > button:hover {
+    color: #ff4757;
+}
+
+/* 자동완성 */
+.autocomplete {
+    position: absolute;
+    width: 320px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    z-index: 100;
+    margin-top: 4px;
+    display: none;
+}
+
+.autocomplete:not(:empty) {
+    display: block;
+}
+
+.autocomplete > div {
+    padding: 10px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.autocomplete > div:hover,
+.autocomplete > div.active {
+    background: #f0fdf8;
 }
 
 .autocomplete label {
     color: #20c997;
+    font-weight: 600;
 }
 
-
-/* 만들어진 li태그 .없애기 */
-/* #registTag {
-  display: flex;
-  list-style:none;
-  margin-top:20px;
-  margin-left:200px;
+/* ===================== 에러 메시지 ===================== */
+.error-msg {
+    font-size: 12px;
+    color: #ff4757;
+    margin-top: 4px;
+    display: block;
 }
 
-#registTag>li{
-  margin: 10px;
-  border: solid 1px gray;
-  border-radius: 20px; 
-} */
-
-
-#relativeTagDiv{
-	display: flex;
+/* ===================== 하단 버튼 ===================== */
+.regist-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid #f0f0f0;
 }
 
-#relativeTagDiv>li{
-	display: flex;
-	height:30px;
-	border: none;
-	border-radius:20px;
-	align-items:center;
-	margin-left : 5px;
-	margin-right: 5px;
-	background-color: rgb(244, 244, 250);
+.btn-cancel {
+    height: 48px;
+    padding: 0 32px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 10px;
+    background: #fff;
+    color: #888;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-#relativeTagDiv>li>label{
-	margin-left: 10px;
-	margin-right: 10px;
-	font-weight: 600;
+.btn-cancel:hover {
+    border-color: #ccc;
+    color: #555;
 }
 
-#relativeTagDiv>li>button{
-	margin-right: 10px;
-	background-color: rgb(244, 244, 250);
-	border: none;
+.btn-submit {
+    height: 48px;
+    padding: 0 40px;
+    border: none;
+    border-radius: 10px;
+    background: #20c997;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
-
-#relativeTagDiv>li *{
-/* 	justify-content: center; */
-	align-items: center;
+.btn-submit:hover {
+    background: #17a97e;
 }
 
-.autocomplete{   /* 자동으로 나오는 검색어들 스타일 */
-    height : 200px;
-    width : 385px;
-    overflow: auto;
-    margin-left: 210px;
-    margin-top: 10px;
-    position: absolute; 
-    /* 자동으로 나오는 검색어들을 글씨들 위에 겹쳐서 보이기위해서 아래깔리는 부분을 부모 위에올라가는 부분이 자식 */
-    /* 자식부분에는 : position : absolute */
-    /* 부모부분에는 : position : relative */
-} 
-
-.autocomplete>div{
-	 border-left : solid 2px whitesmoke;
+/* ===================== 이미지 확대 모달 ===================== */
+#img-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.78);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
 }
 
-.autocomplete div:last-child{
-	 border-bottom : solid 2px whitesmoke;
+.img-modal-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
 }
 
-#searchTag{
-	margin-right: 10px;
+.img-modal-content img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 10px;
+    display: block;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
 }
 
-
-#spanPrice{
-	margin-left : 210px;
+.img-modal-close {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    width: 30px;
+    height: 30px;
+    background: #fff;
+    border: none;
+    border-radius: 50%;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: background 0.15s, color 0.15s;
 }
 
-#spanTitle{
-	margin-left : 210px;
+.img-modal-close:hover {
+    background: #ff4757;
+    color: #fff;
 }
 
-#spanPlace{
-	margin-left : 600px;
-}
-
-#spanExplan{
-	margin-left: 210px;
+/* ===================== span 초기화 (전역 오버라이드 방지) ===================== */
+span.radio-text,
+span.label-text,
+span.badge-required,
+span.badge-optional,
+span.char-count,
+span.price-unit,
+span.imgCount,
+span.countExpaln {
+    vertical-align: unset;
 }

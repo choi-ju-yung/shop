@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.product.service.TagService;
 import com.example.demo.product.vo.Product;
 import com.example.demo.product.vo.ProductFile;
 import com.example.demo.productregist.service.ProductRegistService;
@@ -38,13 +39,15 @@ public class ProductRegistController {
     private static final Logger log = LoggerFactory.getLogger(ProductRegistController.class);
 
     private final ProductRegistService productRegistService;
+    private final TagService tagService;
 
     @Value("${app.upload.dir:C:/upload}")
     private String uploadDir;
 
     @Autowired
-    public ProductRegistController(ProductRegistService productRegistService) {
+    public ProductRegistController(ProductRegistService productRegistService, TagService tagService) {
         this.productRegistService = productRegistService;
+        this.tagService = tagService;
     }
 
     /** 상품 등록 화면 */
@@ -120,6 +123,17 @@ public class ProductRegistController {
                 .explanation(explanation).tag(tag).place(place).subCate(subCate)
                 .productFiles(fileList).build();
         productRegistService.insertProduct(p);
+
+        // 입력된 태그들을 ES에 저장 (useCount 증가)
+        if (tag != null && !tag.isBlank()) {
+            for (String t : tag.split(",")) {
+                String trimmed = t.trim();
+                if (!trimmed.isEmpty()) {
+                    tagService.saveTag(trimmed);
+                }
+            }
+        }
+
         return "1";
     }
 

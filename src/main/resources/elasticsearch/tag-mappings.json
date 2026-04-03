@@ -1,0 +1,17 @@
+{
+  "properties": {
+    "tagName": {
+      "type": "text",
+      "analyzer": "edge_ngram_analyzer",
+      "search_analyzer": "nori_analyzer",
+      "fields": {
+        "keyword": {
+          "type": "keyword"
+        }
+      }
+    },
+    "useCount": {
+      "type": "integer"
+    }
+  }
+}

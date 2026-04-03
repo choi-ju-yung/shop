@@ -1,6 +1,4 @@
 
-const context = "http://localhost:9090/semi-hifive";
-
 
 const checkProductRegist = {  // 상품등록할 때, 각 부분마다 정상적으로 처리됬는지 구분하는 객체 (다 true일경우에만 상품등록됨)
 	"productImg": false,  
@@ -11,17 +9,16 @@ const checkProductRegist = {  // 상품등록할 때, 각 부분마다 정상적
 };
 
 
-
-// 사진 불러오기 작업 
+// 사진 불러오기 작업
 
 let prouductImgCnt = 0;
 const dataTransfer = new DataTransfer();
+const imagePreview = document.querySelector('.image-preview');
+let dragSrcIndex = -1;
 
 
 function getImageFiles(e) {
 	const files = e.currentTarget.files;
-	const imagePreview = document.querySelector('.image-preview');
-
 	const newFiles = [...files];
 	let currentCount = dataTransfer.items.length;
 
@@ -33,7 +30,7 @@ function getImageFiles(e) {
 			continue;
 		}
 
-		// 중복 검사: 이미 dataTransfer에 같은 파일 있는지 확인
+		// 중복 검사
 		let isDuplicate = false;
 		for (let i = 0; i < dataTransfer.items.length; i++) {
 			const existingFile = dataTransfer.items[i].getAsFile();
@@ -46,80 +43,195 @@ function getImageFiles(e) {
 				break;
 			}
 		}
-
 		if (isDuplicate) {
 			alert(`이미 업로드한 이미지입니다: ${file.name}`);
 			continue;
 		}
 
-		// 총 이미지 수 검사 (현재 있는 이미지 + 새로 추가할 이미지)
+		// 최대 10개 검사
 		if (currentCount >= 10) {
 			alert('이미지는 최대 10개까지 업로드 가능합니다.');
-			break; // 루프 종료 (계속하면 추가될 수도 있음)
+			break;
 		}
 
-		// FileReader로 미리보기 추가
 		const reader = new FileReader();
-		reader.onload = (e) => {
-			const preview = createElement(e, file);
+		reader.onload = (ev) => {
+			const preview = createElement(ev, file);
 			imagePreview.appendChild(preview);
+			updateRepresentativeBadge();
 		};
-
 		reader.readAsDataURL(file);
-		dataTransfer.items.add(file); // 실제 파일 저장
-		currentCount++; // 새로 추가된 이미지 개수 증가
+		dataTransfer.items.add(file);
+		currentCount++;
 		prouductImgCnt++;
-		$(".imgCount").text("(" + prouductImgCnt + "/10" + ")");
+		$(".imgCount").text("(" + prouductImgCnt + "/10)");
 	}
+
+	// 삭제 후 동일 파일 재선택이 가능하도록 input 초기화
+	realUpload.value = "";
 }
 
 
-// 태그 만들어주는 함수
+function deleteImage(li, fileName, fileModified, fileSize) {
+	li.remove();
+	prouductImgCnt--;
+	$(".imgCount").text("(" + prouductImgCnt + "/10)");
+
+	for (let i = 0; i < dataTransfer.files.length; i++) {
+		const f = dataTransfer.files[i];
+		if (f.name === fileName && f.lastModified == fileModified && f.size == fileSize) {
+			dataTransfer.items.remove(i);
+			break;
+		}
+	}
+
+	if (dataTransfer.files.length === 0) {
+		checkProductRegist.productImg = false;
+	}
+
+	updateRepresentativeBadge();
+}
+
+
+function reorderDataTransfer(fromIndex, toIndex) {
+	const files = [...dataTransfer.files];
+	const [moved] = files.splice(fromIndex, 1);
+	files.splice(toIndex, 0, moved);
+	while (dataTransfer.items.length > 0) {
+		dataTransfer.items.remove(0);
+	}
+	files.forEach(f => dataTransfer.items.add(f));
+}
+
+
+function updateRepresentativeBadge() {
+	[...imagePreview.querySelectorAll('li')].forEach((li, index) => {
+		const badge = li.querySelector('.badge-representative');
+		if (badge) badge.style.display = index === 0 ? 'block' : 'none';
+	});
+}
+
+
 function createElement(e, file) {
-	const li = document.createElement('li');    // li 태그 만들기
-	const img = document.createElement('img');  // img 태그 만들기
-	img.setAttribute('src', e.target.result); // 만든 img 태그에 경로 속성 값 넣어줌
-	img.setAttribute('data-file', file.name); // 만들 ing 태그에 파일 이름 속성 값 넣어줌
+	const li = document.createElement('li');
+	li.setAttribute('draggable', 'true');
+
+	// 미리보기 이미지
+	const img = document.createElement('img');
+	img.setAttribute('src', e.target.result);
+	img.setAttribute('data-file', file.name);
 	img.setAttribute('data-modified', file.lastModified);
 	img.setAttribute('data-size', file.size);
-	checkProductRegist.productImg = true; 
-	
-	
-	img.addEventListener("click", e => {  // 해당 이미지 클릭시
-		console.log(prouductImgCnt);
-		prouductImgCnt--; // 이미지 삭제시 개수 감소
-		$(e.target).parent().remove(); // li안의 img까지 삭제
-		$(".imgCount").text("(" + prouductImgCnt + "/10" + ")");
-		
-		 for(var i=0; i<dataTransfer.files.length; i++){
-             if(dataTransfer.files[i].name==e.target.dataset.file){
-                    dataTransfer.items.remove(i)
-                    break;
-             }
-          }
-		
-		
-		if(dataTransfer.files.length == 0){  
-			checkProductRegist.productImg = false; 
-		}
-		
+	checkProductRegist.productImg = true;
+
+	// X 삭제 버튼
+	const deleteBtn = document.createElement('button');
+	deleteBtn.type = 'button';
+	deleteBtn.className = 'img-delete-btn';
+	const xImg = document.createElement('img');
+	xImg.src = '/images/productregist/xbtn.png';
+	xImg.width = 2;
+	xImg.height = 2;
+	deleteBtn.appendChild(xImg);
+	deleteBtn.addEventListener('click', (ev) => {
+		ev.stopPropagation();
+		deleteImage(li, file.name, file.lastModified, file.size);
 	});
 
-	li.appendChild(img); // 이미지가 있는 li 태그 완성하여 li 리턴
+	// 대표이미지 배지
+	const badge = document.createElement('span');
+	badge.className = 'badge-representative';
+	badge.textContent = '대표';
+	badge.style.display = 'none';
+
+	li.appendChild(img);
+	li.appendChild(deleteBtn);
+	li.appendChild(badge);
+
+	// 드래그 이벤트
+	li.addEventListener('dragstart', (ev) => {
+		dragSrcIndex = [...imagePreview.children].indexOf(li);
+		ev.dataTransfer.effectAllowed = 'move';
+		setTimeout(() => li.classList.add('dragging'), 0);
+	});
+
+	li.addEventListener('dragover', (ev) => {
+		ev.preventDefault();
+		ev.dataTransfer.dropEffect = 'move';
+	});
+
+	li.addEventListener('drop', (ev) => {
+		ev.preventDefault();
+		ev.stopPropagation();
+		const dropIndex = [...imagePreview.children].indexOf(li);
+		if (dragSrcIndex !== -1 && dragSrcIndex !== dropIndex) {
+			const draggedEl = imagePreview.children[dragSrcIndex];
+			if (dragSrcIndex < dropIndex) {
+				imagePreview.insertBefore(draggedEl, li.nextSibling);
+			} else {
+				imagePreview.insertBefore(draggedEl, li);
+			}
+			reorderDataTransfer(dragSrcIndex, dropIndex);
+			updateRepresentativeBadge();
+		}
+	});
+
+	li.addEventListener('dragend', () => {
+		li.classList.remove('dragging');
+		dragSrcIndex = -1;
+	});
+
+	// 이미지 클릭 시 확대 모달
+	li.addEventListener('click', () => {
+		openImageModal(img.getAttribute('src'));
+	});
 
 	return li;
 }
 
 
-
-
 const realUpload = document.querySelector('.real-upload');
 const upload = document.querySelector('.upload');
 
-upload.addEventListener('click', () => realUpload.click()); // 이미지등록 클록시 input file타입 호출
-realUpload.addEventListener('change', getImageFiles); // file타입에서 값 변경시키면 getImageFiles() 함수 호출
+upload.addEventListener('click', () => realUpload.click());
+
+const uploadArea = document.querySelector('.image-upload-area');
+uploadArea.addEventListener('click', (e) => {
+	if (e.target !== upload) realUpload.click();
+});
+
+realUpload.addEventListener('change', getImageFiles);
 
 
+// ===================== 이미지 확대 모달 =====================
+(function() {
+	const modal = document.createElement('div');
+	modal.id = 'img-modal';
+	modal.innerHTML = `
+		<div class="img-modal-content">
+			<img id="img-modal-img" src="">
+			<button class="img-modal-close">&#x2715;</button>
+		</div>
+	`;
+	document.body.appendChild(modal);
+
+	modal.addEventListener('click', (e) => {
+		if (e.target === modal) closeImageModal();
+	});
+	modal.querySelector('.img-modal-close').addEventListener('click', closeImageModal);
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') closeImageModal();
+	});
+})();
+
+function openImageModal(src) {
+	document.getElementById('img-modal-img').src = src;
+	document.getElementById('img-modal').style.display = 'flex';
+}
+
+function closeImageModal() {
+	document.getElementById('img-modal').style.display = 'none';
+}
 
 
 // ==== 가격 입력했을 때, 숫자만입력되고, 3자리수마다 ,로 구분해주는 작업
@@ -278,8 +390,10 @@ function sample6_execDaumPostcode() {
 			// 우편번호와 주소 정보를 해당 필드에 넣는다.
 			document.getElementById('sample6_postcode').value = data.zonecode;
 			document.getElementById("sample6_address").value = addr;
-			// 커서를 상세주소 필드로 이동한다.
 			document.getElementById("sample6_address").focus();
+			// 주소 API는 programmatic으로 값을 세팅하므로 직접 validation 처리
+			spanPlace.text("○").css("color","green");
+			checkProductRegist.productPlace = true;
 		}
 	}).open();
 }
@@ -339,11 +453,6 @@ $(".explan").keyup(e => { // 해당 텍스트부분을 입력할 때
 
 // -------------------------------------------------------------------------------------------------------------------
 
-const dataList = [
-  "#패션", "#패션의류", "#자켓", "#상의", "#스포츠", "#도서", "#전자기기", "#노트북", "#가구", "#생활", "#차량", "#악세서리",
-  "#캠핑", "#등산", "#모니터", "#마우스", "#키보드", "#에어컨", "#헤드셋", "#레고", "#피규어", "#슬리퍼", "#책", "#소설", "#가방"
-];
-
 let registTagList = [];
 
 const $searchTag = document.querySelector("#searchTag");
@@ -352,6 +461,7 @@ const $relativeTagDiv = document.querySelector("#relativeTagDiv");
 
 let nowIndex = 0;
 let matchDataList = [];
+let searchDebounceTimer = null;
 
 $searchTag.addEventListener("keyup", (event) => {
   const value = $searchTag.value.trim();
@@ -359,15 +469,16 @@ $searchTag.addEventListener("keyup", (event) => {
   switch (event.keyCode) {
     case 38: // ↑
       nowIndex = Math.max(nowIndex - 1, 0);
+      showList(matchDataList, value, nowIndex);
       break;
 
     case 40: // ↓
       nowIndex = Math.min(nowIndex + 1, matchDataList.length - 1);
+      showList(matchDataList, value, nowIndex);
       break;
 
     case 13: // Enter
       if (matchDataList.length === 0) return;
-
       const selectedTag = matchDataList[nowIndex] || value;
       addTag(selectedTag);
       resetAutoComplete();
@@ -378,14 +489,30 @@ $searchTag.addEventListener("keyup", (event) => {
       return;
 
     default:
-      matchDataList = value
-        ? dataList.filter((tag) => tag.toLowerCase().includes(value.toLowerCase()))
-        : [];
-      nowIndex = 0;
+      if (!value) {
+        matchDataList = [];
+        $autoComplete.innerHTML = "";
+        return;
+      }
+      // 타이핑 멈추고 300ms 후 ES 검색 (debounce)
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        $.ajax({
+          url: "/product/tags",
+          data: { keyword: value },
+          success: function(result) {
+            matchDataList = result;
+            nowIndex = 0;
+            showList(matchDataList, value, nowIndex);
+          },
+          error: function() {
+            matchDataList = [];
+            $autoComplete.innerHTML = "";
+          }
+        });
+      }, 300);
       break;
   }
-
-  showList(matchDataList, value, nowIndex);
 });
 
 // 검색창 외부 클릭 시 자동완성 닫기
@@ -480,13 +607,10 @@ function resetAutoComplete() {
 function productRegist() {  // 상품등록 버튼 클릭됬을 때,
 	
 
-	if(checkProductRegist.productTitle && checkProductRegist.productPrice && checkProductRegist.productExplan
-		&& checkProductRegist.productImg){
-	}else{
-			console.log("다 입력해라")
-			return;
+	if(!Object.values(checkProductRegist).every(Boolean)){  //객체의 모든 값을 배열로 변환시킨 후 하나라도 false면 false 반환
+		alert("필수항목표시에 다 기입하세요");
+		return;
 	}
-
 
 	
 	const form = new FormData();  // form 객체에 입력한 값들을 먼저 다 추가함
@@ -515,7 +639,7 @@ function productRegist() {  // 상품등록 버튼 클릭됬을 때,
 
 
 	$.ajax({
-		url: "/user/productRegistEnd", // 해당 서블릿으로 ajax로 요청
+		url: "/member/sell", // 해당 서블릿으로 ajax로 요청
 		data: form,   // 저정한 form 객체를 데이터로 보냄
 		processData:false, // 멀티파트폼으로 보내기위해서 설정
 		contentType:false, // 멀티파트폼으로 보내기위해서 설정
@@ -523,15 +647,15 @@ function productRegist() {  // 상품등록 버튼 클릭됬을 때,
 		success: function(result) {
 			if(result === "1") { // db는 결과값이 정수로 나옴 // 입력성공
 					alert("등록 성공");
-					location.replace("/user/main"); // 올바른 리다이렉트 방식
-			}else{ 
+					location.replace("/main");
+			}else{
 					alert("등록 실패");
-					location.replace("/user/productRegist");
+					location.replace("/member/sell");
 			}
 		},
 		error: function() {
 			alert("오류발생");
-			location.replace("http://localhost:9090/semi-hifive/"+"productRegist.do");
+			location.replace("/member/sell");
 		}
 	})
 }
@@ -540,11 +664,9 @@ function productRegist() {  // 상품등록 버튼 클릭됬을 때,
 
 function productUpdate() {  // 상품수정 버튼 클릭됬을 때,
 	
-	if(checkProductRegist.productTitle && checkProductRegist.productPrice && checkProductRegist.productExplan
-		&& checkProductRegist.productImg){
-	}else{
-			console.log("다 입력해라")
-			return;
+	if(!Object.values(checkProductRegist).every(Boolean)){
+		console.log("다 입력해라");
+		return;
 	}
 
 	const form = new FormData();  // form 객체에 입력한 값들을 먼저 다 추가함
@@ -572,7 +694,7 @@ function productUpdate() {  // 상품수정 버튼 클릭됬을 때,
 
 
 	$.ajax({
-		url: "productUpdateEnd.do", // 해당 서블릿으로 ajax로 요청
+		url: "/member/sell/update", // 해당 서블릿으로 ajax로 요청
 		data: form,   // 저정한 form 객체를 데이터로 보냄
 		processData:false, // 멀티파트폼으로 보내기위해서 설정
 		contentType:false, // 멀티파트폼으로 보내기위해서 설정
@@ -580,15 +702,15 @@ function productUpdate() {  // 상품수정 버튼 클릭됬을 때,
 		success: function(result) {
 			if(result>=1) { // db는 결과값이 정수로 나옴 // 입력성공
 					alert("수정 성공");
-					location.replace("http://localhost:9090/semi-hifive/");
-			}else{ 
+					location.replace("/main");
+			}else{
 					alert("수정 실패");
-					location.replace("http://localhost:9090/semi-hifive/"+"productUpdate.do");
+					location.replace("/member/sell");
 			}
 		},
 		error: function() {
 			alert("오류발생");
-			location.replace("http://localhost:9090/semi-hifive/"+"productRegist.do");
+			location.replace("/member/sell");
 		}
 	})
 }

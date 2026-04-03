@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TagMapper">
+
+    <resultMap id="tagMap" type="com.example.demo.product.vo.TagVO">
+        <result property="tagId"    column="TAG_ID"/>
+        <result property="tagName"  column="TAG_NAME"/>
+        <result property="useCount" column="USE_COUNT"/>
+    </resultMap>
+
+    <!-- 전체 태그 조회 (ES 동기화용) -->
+    <select id="selectAllTags" resultMap="tagMap">
+        SELECT TAG_ID, TAG_NAME, USE_COUNT
+        FROM TAGS
+        ORDER BY USE_COUNT DESC
+    </select>
+
+    <!-- 태그명으로 단건 조회 -->
+    <select id="selectByTagName" parameterType="String" resultMap="tagMap">
+        SELECT TAG_ID, TAG_NAME, USE_COUNT
+        FROM TAGS
+        WHERE TAG_NAME = #{tagName}
+    </select>
+
+    <!-- 태그 신규 등록 -->
+    <insert id="insertTag" parameterType="com.example.demo.product.vo.TagVO">
+        INSERT INTO TAGS (TAG_ID, TAG_NAME, USE_COUNT)
+        VALUES (TAGS_SEQ.NEXTVAL, #{tagName}, 1)
+    </insert>
+
+    <!-- 태그 사용횟수 증가 -->
+    <update id="incrementUseCount" parameterType="Long">
+        UPDATE TAGS
+        SET USE_COUNT = USE_COUNT + 1
+        WHERE TAG_ID = #{tagId}
+    </update>
+
+</mapper>
