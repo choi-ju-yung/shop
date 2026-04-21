@@ -204,6 +204,37 @@
 .srProductCard {
   width: calc(33.333% - 13px);
   transition: transform 0.2s;
+  position: relative;
+}
+
+/* 찜 버튼 */
+.srWishBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  background: rgba(255, 255, 255, 0.92);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ccc;
+  font-size: 18px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: color 0.2s, transform 0.15s;
+  z-index: 1;
+}
+
+.srWishBtn:hover {
+  color: #ff4d6d;
+  transform: scale(1.1);
+}
+
+.srWishBtn--active {
+  color: #ff4d6d;
 }
 
 .srProductCard:hover {
@@ -238,8 +269,8 @@
   transform: scale(1.05);
 }
 
-/* NEW 뱃지 */
-.srNewBadge {
+/* 판매중 뱃지 */
+.srSaleBadge {
   position: absolute;
   top: 10px;
   left: 10px;
@@ -249,6 +280,61 @@
   font-weight: bold;
   padding: 3px 8px;
   border-radius: 4px;
+}
+
+/* 거래완료 딤 오버레이 */
+.srSoldDim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-radius: 10px;
+}
+
+/* 예약중 뱃지 */
+.srReservedBadge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+/* 거래 상태 필터 뱃지 (사이드바) */
+.tradeFilterBadge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tradeFilterBadge--sale {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #6ee7b7;
+}
+
+.tradeFilterBadge--reserved {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fcd34d;
+}
+
+.tradeFilterBadge--sold {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
 }
 
 /* 상품 정보 */

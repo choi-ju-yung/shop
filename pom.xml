@@ -145,6 +145,13 @@
 		    <version>4.5.14</version>
 		</dependency>
 
+		<!-- PageHelper - MyBatis 페이징 플러그인 -->
+		<dependency>
+		    <groupId>com.github.pagehelper</groupId>
+		    <artifactId>pagehelper-spring-boot-starter</artifactId>
+		    <version>2.1.0</version>
+		</dependency>
+
 		<!-- SQL 로그 (실제 파라미터 값 출력) -->
 		<dependency>
 		    <groupId>p6spy</groupId>

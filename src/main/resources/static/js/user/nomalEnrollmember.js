@@ -259,6 +259,25 @@ sendBtn.addEventListener("click", function() {
 	timerMessageClass.css("color", "black");
 
 	if (checkObj.memberEmail) {  // 유효한 이메일이 작성되어 있을경우에만 메일보내기
+
+		// 탈퇴 30일 제한 먼저 확인
+		$.ajax({
+			url: "/regist/checkWithdraw",
+			method: "GET",
+			data: { email: memberEmail.value },
+			async: false, // 결과 확인 후 다음 로직 실행
+			success: function(res) {
+				if (res.restricted) {
+					emailMessage.text(res.message).css("color", "red");
+					checkObj.memberEmail = false;
+					return;
+				}
+			},
+			error: function() {}
+		});
+
+		if (!checkObj.memberEmail) return; // 탈퇴 제한 걸린 경우 중단
+
 		checkObj.sendEmail = false;
 		if (checkInterval) clearInterval(checkInterval); // 기존 타이머가 있으면 중지
 

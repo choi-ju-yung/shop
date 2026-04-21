@@ -1,0 +1,13 @@
+{
+  "properties": {
+    "productId":    { "type": "long" },
+    "title":        { "type": "text", "analyzer": "product_index_analyzer", "search_analyzer": "product_search_analyzer" },
+    "tags":         { "type": "text", "analyzer": "product_index_analyzer", "search_analyzer": "product_search_analyzer" },
+    "tradeStatus":  { "type": "keyword" },
+    "mainFilePath": { "type": "keyword", "index": false },
+    "price":        { "type": "integer" },
+    "place":        { "type": "keyword" },
+    "state":        { "type": "keyword" },
+    "userNo":       { "type": "long" }
+  }
+}

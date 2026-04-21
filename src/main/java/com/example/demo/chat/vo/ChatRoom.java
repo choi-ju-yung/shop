@@ -25,7 +25,8 @@ public class ChatRoom {
     private String productTitle;  // 상품 제목 (선택사항)
     private int otherUserNo;  // 상대방 번호
     
-    // ⭐ 추가된 필드	
+    // ⭐ 추가된 필드
     private String lastMessage;     // 최신 메시지 내용 (SQL: LAST_MESSAGE)
     private Timestamp lastMessageTime; // 최신 메시지 시간 (SQL: LAST_MESSAGE_TIME)
+    private String productImg;      // 상품 대표 이미지 경로
 }	

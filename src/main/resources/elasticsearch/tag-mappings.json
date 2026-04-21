@@ -2,8 +2,8 @@
   "properties": {
     "tagName": {
       "type": "text",
-      "analyzer": "edge_ngram_analyzer",
-      "search_analyzer": "nori_analyzer",
+      "analyzer": "tag_index_analyzer",
+      "search_analyzer": "tag_search_analyzer",
       "fields": {
         "keyword": {
           "type": "keyword"

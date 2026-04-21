@@ -43,12 +43,12 @@ public class ProductRegistDao {
     }
 
     /** 상품 상세 조회 */
-    public Product selectProductById(String productId) {
+    public Product selectProductById(Long productId) {
         return sqlSession.selectOne("ProductRegistMapper.selectProductById", productId);
     }
 
     /** 상품 이미지 파일 목록 */
-    public List<ProductFile> selectProductFilesById(String productId) {
+    public List<ProductFile> selectProductFilesById(Long productId) {
         return sqlSession.selectList("ProductRegistMapper.selectProductFilesById", productId);
     }
 
@@ -65,5 +65,53 @@ public class ProductRegistDao {
     /** 헤더 카테고리 메뉴 전체 조회 */
     public List<Map<String, Object>> selectAllCategories() {
         return sqlSession.selectList("ProductRegistMapper.selectAllCategories");
+    }
+    
+    public Long selectSellerNoByProductId(Long productId) {
+        return sqlSession.selectOne("ProductRegistMapper.selectSellerNoByProductId", productId);
+    }
+
+    public int softDeleteProduct(Long productId) {
+        return sqlSession.update("ProductRegistMapper.softDeleteProduct", productId);
+    }
+
+    public void deleteWishlistByProductId(Long productId) {
+        sqlSession.delete("ProductRegistMapper.deleteWishlistByProductId", productId);
+    }
+
+    public void softDeleteProductsByUserNo(long userNo) {
+        sqlSession.update("ProductRegistMapper.softDeleteProductsByUserNo", userNo);
+    }
+
+    public void deleteWishlistByUserProducts(long userNo) {
+        sqlSession.delete("ProductRegistMapper.deleteWishlistByUserProducts", userNo);
+    }
+
+    public int updateTradeStatus(Map map) {
+        return sqlSession.update("ProductRegistMapper.updateTradeStatus", map);
+    }
+
+    public int insertTrade(Map map) {
+        return sqlSession.update("ProductRegistMapper.insertTrade", map);
+    }
+
+    public List<Product> selectMySellingProducts(Map map) {
+        return sqlSession.selectList("ProductRegistMapper.selectMySellingProducts", map);
+    }
+
+    public List<Product> selectMyPurchasedProducts(long userNo) {
+        return sqlSession.selectList("ProductRegistMapper.selectMyPurchasedProducts", userNo);
+    }
+
+    public List<Product> selectRelatedProducts(Map<String, Object> map) {
+        return sqlSession.selectList("ProductRegistMapper.selectRelatedProducts", map);
+    }
+
+    public List<Product> selectAllForEs() {
+        return sqlSession.selectList("ProductRegistMapper.selectAllForEs");
+    }
+
+    public List<Product> selectSellerProducts(Map<String, Object> map) {
+        return sqlSession.selectList("ProductRegistMapper.selectSellerProducts", map);
     }
 }

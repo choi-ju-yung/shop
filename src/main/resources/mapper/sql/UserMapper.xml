@@ -18,21 +18,62 @@
 	
 	
 	<select id="findByKakaoId" parameterType="String" resultMap="userResultMap">
-		SELECT * FROM USERS_TB WHERE OAUTH_ID = #{kakaoId} and OAUTH_PROVIDER = 'kakao'
+		SELECT * FROM USERS WHERE OAUTH_ID = #{kakaoId} AND OAUTH_PROVIDER = 'kakao' AND IS_DELETED = 'N'
 	</select>
-	
+
 	<select id="findByUserId" parameterType="String" resultMap="userResultMap">
-		SELECT * FROM USERS_TB WHERE LOGIN_ID = #{loginId}
+		SELECT * FROM USERS WHERE LOGIN_ID = #{loginId} AND IS_DELETED = 'N'
 	</select>
-	
+
 	<select id="findByUserNo" parameterType="long" resultMap="userResultMap">
-		SELECT * FROM USERS_TB WHERE USER_NO = #{userNo}
+		SELECT * FROM USERS WHERE USER_NO = #{userNo} AND IS_DELETED = 'N'
 	</select>
+
+	<!--
+	    탈퇴 후 30일 재가입 제한 조회
+	    - email  : 카카오 / 일반 공통 (이메일 기반 탈퇴 이력 조회)
+	    - loginId: 일반 회원 아이디 기반 조회 (카카오는 null 전달)
+	    - 30일이 지난 레코드는 WHERE 조건에서 자동 제외 → 허용
+	    - WITHDRAWN_USERS 레코드 자체는 5년간 유지 (법적 보관 의무)
+	-->
+	<select id="findWithdrawRestriction" parameterType="map" resultType="java.sql.Timestamp">
+		SELECT WITHDRAWN_AT
+		FROM WITHDRAWN_USERS
+		WHERE (
+		    <if test="email != null and email != ''">EMAIL    = #{email}</if>
+		    <if test="email != null and email != '' and loginId != null and loginId != ''"> OR </if>
+		    <if test="loginId != null and loginId != ''">LOGIN_ID = #{loginId}</if>
+		)
+		AND WITHDRAWN_AT > SYSDATE - 30
+		ORDER BY WITHDRAWN_AT DESC
+		FETCH FIRST 1 ROWS ONLY
+	</select>
+
+	<!-- 탈퇴 전 개인정보 별도 보관 (개인정보보호법 5년) -->
+	<insert id="archiveWithdrawnUser" parameterType="long">
+		INSERT INTO WITHDRAWN_USERS (WITHDRAWN_ID, USER_NO, LOGIN_ID, NAME, EMAIL, OAUTH_PROVIDER)
+		SELECT WITHDRAWN_SEQ.NEXTVAL, USER_NO, LOGIN_ID, NAME, EMAIL, OAUTH_PROVIDER
+		  FROM USERS
+		 WHERE USER_NO = #{userNo}
+	</insert>
+
+	<!-- 회원탈퇴: 개인정보 익명화 + 소프트 딜리트 -->
+	<update id="withdrawUser" parameterType="long">
+		UPDATE USERS
+		   SET NAME           = '탈퇴한 사용자',
+		       EMAIL          = NULL,
+		       LOGIN_ID       = NULL,
+		       PASS_WD        = NULL,
+		       OAUTH_ID       = NULL,
+		       IS_DELETED     = 'Y',
+		       DELETED_AT     = SYSTIMESTAMP
+		 WHERE USER_NO = #{userNo}
+	</update>
 	
 
 	<select id="getUserByUsername" parameterType="String"
 		resultType="com.example.demo.user.vo.UserVO">
-		SELECT name, pass_wd, role FROM users_tb WHERE name = #{username}
+		SELECT name, pass_wd, role FROM users WHERE name = #{username}
 	</select>
 
 	<select id="emailDupCheck" parameterType="String"
@@ -41,7 +82,7 @@
 		WHEN COUNT(*) > 0 THEN 1
 		ELSE 0
 		END AS email_exists
-		FROM USERS_TB
+		FROM USERS
 		WHERE email = #{memberEmail}
 	</select>
 
@@ -51,7 +92,7 @@
 		 <selectKey keyProperty="userNo" resultType="int" order="BEFORE">
         SELECT USERS_SEQ.NEXTVAL FROM dual
     	</selectKey>
-		INSERT INTO USERS_TB (
+		INSERT INTO USERS (
 		USER_NO,
 		NAME,
 		EMAIL,
@@ -77,7 +118,7 @@
 				ELSE 0
 			END AS USER_EXISTS
 		FROM
-			USERS_TB
+			USERS
 		WHERE
 			LOGIN_ID = #{loginId}
 			AND OAUTH_PROVIDER IS NULL
@@ -85,7 +126,32 @@
 	</select>
 	
 	<select id="findPwdById" parameterType="String" resultType="String">
-		    SELECT PASS_WD FROM USERS_TB WHERE LOGIN_ID = #{loginId}
+		    SELECT PASS_WD FROM USERS WHERE LOGIN_ID = #{loginId}
 	</select>
-	
+
+	<!-- 아이디 찾기: 이름 + 이메일로 로그인 아이디 조회 -->
+	<select id="findLoginIdByNameAndEmail" parameterType="map" resultType="String">
+		SELECT LOGIN_ID FROM USERS
+		WHERE NAME = #{name}
+		  AND EMAIL = #{email}
+		  AND IS_DELETED = 'N'
+		  AND OAUTH_PROVIDER IS NULL
+		FETCH FIRST 1 ROWS ONLY
+	</select>
+
+	<!-- 비밀번호 찾기: 로그인 아이디 + 이메일로 사용자 확인 -->
+	<select id="findUserByLoginIdAndEmail" parameterType="map" resultMap="userResultMap">
+		SELECT * FROM USERS
+		WHERE LOGIN_ID = #{loginId}
+		  AND EMAIL = #{email}
+		  AND IS_DELETED = 'N'
+		  AND OAUTH_PROVIDER IS NULL
+	</select>
+
+	<!-- 임시 비밀번호로 업데이트 -->
+	<update id="updatePassword" parameterType="map">
+		UPDATE USERS SET PASS_WD = #{encodedPwd}
+		WHERE LOGIN_ID = #{loginId} AND IS_DELETED = 'N'
+	</update>
+
 </mapper>

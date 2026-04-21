@@ -107,12 +107,12 @@
             <div class="form-content">
                 <div class="radio-group">
                     <label class="radio-label">
-                        <input type="radio" name="state" value="미개봉" checked>
-                        <span class="radio-text">미개봉</span>
+                        <input type="radio" name="state" value="신상" checked>
+                        <span class="radio-text">신상</span>
                     </label>
                     <label class="radio-label">
-                        <input type="radio" name="state" value="사용감 있음">
-                        <span class="radio-text">사용감 있음</span>
+                        <input type="radio" name="state" value="중고">
+                        <span class="radio-text">중고</span>
                     </label>
                 </div>
             </div>

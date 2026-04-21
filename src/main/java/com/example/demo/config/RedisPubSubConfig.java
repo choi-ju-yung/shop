@@ -27,10 +27,10 @@ public class RedisPubSubConfig {
         return template;
     }
 
-    // RedisSubscriber의 onMessage 메서드를 리스너로 등록
+    // RedisSubscriber의 onChatMessage 메서드를 리스너로 등록
     @Bean
     public MessageListenerAdapter messageListenerAdapter(RedisSubscriber redisSubscriber) {
-        return new MessageListenerAdapter(redisSubscriber, "onMessage");
+        return new MessageListenerAdapter(redisSubscriber, "onChatMessage");
     }
 
     // 컨테이너에 채널 + 리스너 등록

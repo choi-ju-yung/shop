@@ -71,5 +71,17 @@ public class ChatDao {
    public List<ChatRoom> getSingleChatRoomInfo(Map map){
 	   return session.selectList("ChatMapper.getSingleChatRoomInfo",map);
    }
-   
+
+   public int getTotalUnreadCount(long userNo) {
+	   return session.selectOne("ChatMapper.getTotalUnreadCount", userNo);
+   }
+
+   public Map getChatRoomDetail(Map map) {
+	   return session.selectOne("ChatMapper.getChatRoomDetail", map);
+   }
+
+   public List<Map> getChatBuyersByProductId(Map map) {
+	   return session.selectList("ChatMapper.getChatBuyersByProductId", map);
+   }
+
 }

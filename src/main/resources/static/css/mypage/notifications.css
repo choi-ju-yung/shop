@@ -1,0 +1,147 @@
+/* =====================================================
+   notifications.css - 알림 페이지
+   ===================================================== */
+section { display: flex; }
+
+.notiPageWrap {
+  flex: 1;
+  min-width: 0;
+  padding: 0 30px 80px;
+}
+
+.notiPageTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.notiPageTitle ion-icon { color: #20c997; font-size: 20px; }
+
+/* 채팅 요약 카드 */
+.notiChatSummary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f0fdf8;
+  border: 1.5px solid #6ee7b7;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  text-decoration: none;
+  color: #1f2937;
+  transition: background 0.2s;
+}
+
+.notiChatSummary:hover { background: #d1fae5; }
+
+.notiChatSummary ion-icon {
+  font-size: 22px;
+  color: #20c997;
+  flex-shrink: 0;
+}
+
+.notiChatSummaryText strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.notiChatSummaryText span {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* 알림 없음 */
+.notiEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 0;
+  color: #d1d5db;
+  gap: 10px;
+}
+
+.notiEmpty ion-icon { font-size: 48px; }
+.notiEmpty p { font-size: 13px; color: #9ca3af; }
+
+/* 알림 목록 */
+.notiList {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.notiItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #f3f4f6;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s;
+}
+
+.notiItem:last-child { border-bottom: none; }
+.notiItem:hover { background: #f9fafb; }
+
+.notiItem--unread { background: #fffbf0; }
+.notiItem--unread:hover { background: #fef3c7; }
+
+/* 아이콘 */
+.notiItemIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f0fdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 15px;
+  color: #20c997;
+}
+
+.notiItem--unread .notiItemIcon {
+  background: #fef3c7;
+  color: #f59e0b;
+}
+
+.notiItemBody { flex: 1; min-width: 0; }
+
+.notiItemMsg {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.45;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notiItem--unread .notiItemMsg {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.notiItemTime {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* 미읽음 점 */
+.notiUnreadDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f43f5e;
+  flex-shrink: 0;
+}

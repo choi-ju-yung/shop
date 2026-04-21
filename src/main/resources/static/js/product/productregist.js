@@ -459,16 +459,18 @@ const $searchTag = document.querySelector("#searchTag");
 const $autoComplete = document.querySelector(".autocomplete");
 const $relativeTagDiv = document.querySelector("#relativeTagDiv");
 
-let nowIndex = 0;
+let nowIndex = -1;
 let matchDataList = [];
 let searchDebounceTimer = null;
+let lastSearchedValue = "";
 
+// 네비게이션만 keyup으로 처리
 $searchTag.addEventListener("keyup", (event) => {
   const value = $searchTag.value.trim();
 
   switch (event.keyCode) {
     case 38: // ↑
-      nowIndex = Math.max(nowIndex - 1, 0);
+      nowIndex = Math.max(nowIndex - 1, -1);
       showList(matchDataList, value, nowIndex);
       break;
 
@@ -478,41 +480,44 @@ $searchTag.addEventListener("keyup", (event) => {
       break;
 
     case 13: // Enter
-      if (matchDataList.length === 0) return;
-      const selectedTag = matchDataList[nowIndex] || value;
-      addTag(selectedTag);
+      if (matchDataList.length === 0 || nowIndex < 0) return;
+      addTag(matchDataList[nowIndex]);
       resetAutoComplete();
       return;
 
     case 27: // ESC
       resetAutoComplete();
       return;
+  }
+});
 
-    default:
-      if (!value) {
+// 검색 AJAX — 값이 바뀔 때만 실행 (한글 ↓키가 input 이벤트 발생시켜도 같은 값이면 무시)
+$searchTag.addEventListener("input", () => {
+  const value = $searchTag.value.trim();
+  if (!value) {
+    matchDataList = [];
+    $autoComplete.innerHTML = "";
+    lastSearchedValue = "";
+    return;
+  }
+  if (value === lastSearchedValue) return;
+  lastSearchedValue = value;
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    $.ajax({
+      url: "/product/tags",
+      data: { keyword: value },
+      success: function(result) {
+        matchDataList = result;
+        nowIndex = 0;
+        showList(matchDataList, value, nowIndex);
+      },
+      error: function() {
         matchDataList = [];
         $autoComplete.innerHTML = "";
-        return;
       }
-      // 타이핑 멈추고 300ms 후 ES 검색 (debounce)
-      clearTimeout(searchDebounceTimer);
-      searchDebounceTimer = setTimeout(() => {
-        $.ajax({
-          url: "/product/tags",
-          data: { keyword: value },
-          success: function(result) {
-            matchDataList = result;
-            nowIndex = 0;
-            showList(matchDataList, value, nowIndex);
-          },
-          error: function() {
-            matchDataList = [];
-            $autoComplete.innerHTML = "";
-          }
-        });
-      }, 300);
-      break;
-  }
+    });
+  }, 200);
 });
 
 // 검색창 외부 클릭 시 자동완성 닫기
@@ -597,7 +602,8 @@ function addTag(tag) {
 
 function resetAutoComplete() {
   matchDataList.length = 0;
-  nowIndex = 0;
+  nowIndex = -1;
+  lastSearchedValue = "";
   $searchTag.value = "";
   $autoComplete.innerHTML = "";
 }

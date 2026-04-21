@@ -42,7 +42,7 @@ public class EmailService {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
         helper.setTo(toEmail);
-        helper.setSubject("[Demo] 회원가입 이메일 인증번호");
+        helper.setSubject("[니꺼내꺼] 회원가입 이메일 인증번호");
         helper.setText("<h3>인증 번호 : <span style='color:red'>" + code + "</span></h3>", true);
         mailSender.send(message);
     }
@@ -52,10 +52,25 @@ public class EmailService {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
         helper.setTo(toEmail);
-        helper.setSubject("[Shop] 회원가입을 축하합니다!");
+        helper.setSubject("[니꺼내꺼] 회원가입을 축하합니다!");
         helper.setText(
             "<h2>" + username + "님, 가입을 환영합니다! 🎉</h2>" +
             "<p>저희 서비스를 이용해 주셔서 감사합니다.</p>",
+            true
+        );
+        mailSender.send(message);
+    }
+
+    // 임시 비밀번호 발송
+    public void sendTempPasswordEmail(String toEmail, String tempPwd) throws MessagingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
+        helper.setTo(toEmail);
+        helper.setSubject("[니꺼내꺼] 임시 비밀번호 안내");
+        helper.setText(
+            "<h3>임시 비밀번호가 발급되었습니다.</h3>" +
+            "<p>임시 비밀번호 : <strong style='color:#20c997;font-size:18px'>" + tempPwd + "</strong></p>" +
+            "<p>로그인 후 반드시 비밀번호를 변경해 주세요.</p>",
             true
         );
         mailSender.send(message);

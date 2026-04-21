@@ -3,9 +3,7 @@
 /* ===================== 전체 레이아웃 ===================== */
 .regist-wrapper {
     background-color: #f5f6fa;
-    min-height: 100vh;
     padding: 250px 20px 80px;
-    flex: 1;
 }
 
 .regist-card {

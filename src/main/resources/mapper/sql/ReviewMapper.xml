@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ReviewMapper">
+
+    <!-- 리뷰 등록 -->
+    <insert id="insertReview" parameterType="com.example.demo.review.vo.ReviewVO">
+        INSERT INTO REVIEW (REVIEW_ID, PRODUCT_ID, REVIEWER_NO, REVIEWEE_NO, RATING, CONTENT)
+        VALUES (REVIEW_SEQ.NEXTVAL, #{productId}, #{reviewerNo}, #{revieweeNo}, #{rating}, #{content})
+    </insert>
+
+    <!-- 이미 리뷰 작성 여부 확인 (0: 미작성, 1: 작성완료) -->
+    <select id="hasReview" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM REVIEW
+        WHERE PRODUCT_ID = #{productId} AND REVIEWER_NO = #{reviewerNo}
+    </select>
+
+    <!-- 특정 판매자가 받은 리뷰 목록 -->
+    <select id="getReviewsByReviewee" parameterType="long" resultType="com.example.demo.review.vo.ReviewVO">
+        SELECT R.REVIEW_ID, R.PRODUCT_ID, R.REVIEWER_NO, R.REVIEWEE_NO,
+               R.RATING, R.CONTENT, R.REG_DATE,
+               COALESCE(MP.NICKNAME, U.NAME) AS REVIEWER_NAME,
+               P.PRODUCT_TITLE
+        FROM REVIEW R
+        JOIN USERS U              ON R.REVIEWER_NO = U.USER_NO
+        LEFT JOIN MY_USER_PAGE MP ON R.REVIEWER_NO = MP.USER_NO
+        JOIN PRODUCT P               ON R.PRODUCT_ID  = P.PRODUCT_ID
+        WHERE R.REVIEWEE_NO = #{revieweeNo}
+        ORDER BY R.REG_DATE DESC
+    </select>
+
+    <!-- 리뷰 작성용: 상품 정보 + 판매자 번호 조회 (구매자 본인 검증용) -->
+    <select id="getProductForReview" parameterType="map" resultType="map">
+        SELECT P.PRODUCT_ID, P.PRODUCT_TITLE, P.PRODUCT_PRICE,
+               P.USER_NO AS SELLER_NO, P.BUYER_NO,
+               PF.FILE_PATH AS IMG_PATH,
+               COALESCE(MP.NICKNAME, U.NAME) AS SELLER_NAME
+        FROM PRODUCT P
+        JOIN USERS U              ON P.USER_NO = U.USER_NO
+        LEFT JOIN MY_USER_PAGE MP ON P.USER_NO = MP.USER_NO
+        LEFT JOIN PRODUCT_FILE PF    ON P.PRODUCT_ID = PF.PRODUCT_ID AND PF.IS_MAIN = 1
+        WHERE P.PRODUCT_ID = #{productId}
+          AND P.TRADE_STATUS = 'SOLD'
+          AND P.BUYER_NO = #{buyerNo}
+    </select>
+
+    <!-- 특정 판매자가 받은 리뷰 수 -->
+    <select id="countReviewsByReviewee" parameterType="long" resultType="int">
+        SELECT COUNT(*) FROM REVIEW WHERE REVIEWEE_NO = #{revieweeNo}
+    </select>
+
+    <!-- 특정 판매자가 받은 리뷰 목록 (페이징) -->
+    <select id="getReviewsByRevieweePaged" parameterType="map" resultType="com.example.demo.review.vo.ReviewVO">
+        SELECT * FROM (
+            SELECT ROWNUM AS RN, T.* FROM (
+                SELECT R.REVIEW_ID, R.PRODUCT_ID, R.REVIEWER_NO, R.REVIEWEE_NO,
+                       R.RATING, R.CONTENT, R.REG_DATE,
+                       COALESCE(MP.NICKNAME, U.NAME) AS REVIEWER_NAME,
+                       P.PRODUCT_TITLE
+                FROM REVIEW R
+                JOIN USERS U              ON R.REVIEWER_NO = U.USER_NO
+                LEFT JOIN MY_USER_PAGE MP ON R.REVIEWER_NO = MP.USER_NO
+                JOIN PRODUCT P            ON R.PRODUCT_ID  = P.PRODUCT_ID
+                WHERE R.REVIEWEE_NO = #{revieweeNo}
+                ORDER BY R.REG_DATE DESC
+            ) T
+            WHERE ROWNUM &lt;= #{endRow}
+        )
+        WHERE RN &gt; #{startRow}
+    </select>
+
+    <!-- 매너온도 갱신: 별점별 증감 (5→+0.2, 4→+0.1, 3→0, 2→-0.1, 1→-0.2) -->
+    <update id="updateTemperature" parameterType="map">
+        UPDATE MY_USER_PAGE
+           SET TEMPERATURE = ROUND(
+               GREATEST(0, LEAST(99.9,
+                   NVL(TEMPERATURE, 36.5) +
+                   CASE #{rating}
+                       WHEN 5 THEN  0.2
+                       WHEN 4 THEN  0.1
+                       WHEN 3 THEN  0
+                       WHEN 2 THEN -0.1
+                       WHEN 1 THEN -0.2
+                       ELSE 0
+                   END
+               )), 1)
+         WHERE USER_NO = #{userNo}
+    </update>
+
+</mapper>

@@ -1,23 +1,39 @@
 {
-  "analysis": {
-    "analyzer": {
-      "nori_analyzer": {
-        "type": "custom",
-        "tokenizer": "nori_tokenizer",
-        "filter": ["lowercase"]
+  "index": {
+    "max_ngram_diff": 20,
+    "analysis": {
+      "char_filter": {
+        "hash_remover": {
+          "type": "pattern_replace",
+          "pattern": "#",
+          "replacement": ""
+        },
+        "script_boundary": {
+          "type": "pattern_replace",
+          "pattern": "(?<=[가-힣])(?=[a-zA-Z0-9])|(?<=[a-zA-Z0-9])(?=[가-힣])",
+          "replacement": " "
+        }
       },
-      "edge_ngram_analyzer": {
-        "type": "custom",
-        "tokenizer": "edge_ngram_tokenizer",
-        "filter": ["lowercase"]
-      }
-    },
-    "tokenizer": {
-      "edge_ngram_tokenizer": {
-        "type": "edge_ngram",
-        "min_gram": 1,
-        "max_gram": 20,
-        "token_chars": ["letter", "digit"]
+      "filter": {
+        "ngram_filter": {
+          "type": "ngram",
+          "min_gram": 1,
+          "max_gram": 20
+        }
+      },
+      "analyzer": {
+        "tag_index_analyzer": {
+          "type": "custom",
+          "char_filter": ["hash_remover", "script_boundary"],
+          "tokenizer": "whitespace",
+          "filter": ["lowercase", "ngram_filter"]
+        },
+        "tag_search_analyzer": {
+          "type": "custom",
+          "char_filter": ["hash_remover", "script_boundary"],
+          "tokenizer": "whitespace",
+          "filter": ["lowercase"]
+        }
       }
     }
   }

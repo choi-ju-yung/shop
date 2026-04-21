@@ -51,7 +51,7 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
-                .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/webjars/**", "/regist/insert");
+                .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/upload/**", "/webjars/**", "/regist/insert");
     }
 
 	// =====================================================
@@ -67,11 +67,14 @@ public class SecurityConfig {
 		"/logout",
 		"/processLogin",
 		"/regist/**",
+		"/regist/checkWithdraw",
 		"/emailDupCheck",
 		"/auth/kakao/callback",
 		"/popup/**",
+		"/find/**",
 		"/banner/list",
 		"/product/**",
+		"/user/profile/**",
 		"/board/check",
 		"/board/checkByCategory",
 		"/board/list",
@@ -119,11 +122,20 @@ public class SecurityConfig {
 		        			)
 		                .successHandler((request, response, authentication) -> {
 		                    if (authentication.getPrincipal() instanceof DefaultOAuth2User oauthUser) {
-		                        SecurityContextHolder.clearContext(); // authentication 객체를 null로 (메모리초기화)
+		                        SecurityContextHolder.clearContext();
 		                        HttpSession session = request.getSession();
-		                        session.removeAttribute("SPRING_SECURITY_CONTEXT"); // (세션초기화)
+		                        session.removeAttribute("SPRING_SECURITY_CONTEXT");
 
 		                        String email = (String) oauthUser.getAttribute("email");
+
+		                        // 탈퇴 후 30일 재가입 제한 체크 (이메일 기준)
+		                        try {
+		                            userService.checkWithdrawRestriction(email, null);
+		                        } catch (RuntimeException e) {
+		                            response.sendRedirect("/login?error=true&message=" + URLEncoder.encode(e.getMessage(), "UTF-8"));
+		                            return;
+		                        }
+
 		                        try {
 		                            if (userService.emailDupCheck(email) > 0) {
 		                                response.sendRedirect("/login?error=true&message=" + URLEncoder.encode("이미 회원가입한 이메일이 존재합니다.", "UTF-8"));

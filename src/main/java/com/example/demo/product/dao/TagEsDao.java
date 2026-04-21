@@ -1,5 +1,6 @@
 package com.example.demo.product.dao;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,15 +29,37 @@ public class TagEsDao {
         this.client = client;
     }
 
+    /** tags 인덱스 재생성 (서버 시작 시 항상 최신 settings/mappings 적용) */
+    public void setupIndex() {
+        try {
+            boolean exists = client.indices().exists(e -> e.index("tags")).value();
+            if (exists) {
+                client.indices().delete(d -> d.index("tags"));
+            }
+
+            InputStream productTagSettings = getClass().getResourceAsStream("/elasticsearch/tag-settings.json");
+            InputStream productTagMappings = getClass().getResourceAsStream("/elasticsearch/tag-mappings.json");
+
+            client.indices().create(c -> c
+                    .index("tags")
+                    .settings(s -> s.withJson(productTagSettings))
+                    .mappings(m -> m.withJson(productTagMappings))
+            );
+            log.info("tags 인덱스 재생성 완료");
+        } catch (Exception e) {
+            log.error("tags 인덱스 생성 실패: {}", e.getMessage());
+        }
+    }
+
     /** 키워드로 태그 검색 */
     public List<String> searchByKeyword(String keyword) {
         try {
-            return client.search(s -> s
+            List<String> result = client.search(s -> s
                     .index("tags")
-                    .query(q -> q
+                    .query(q -> q  // 쿼리 종류 설정 (match? term? range?)
                             .match(m -> m
                                     .field("tagName")
-                                    .query(keyword)
+                                    .query(keyword) 
                             )
                     )
                     .sort(sort -> sort
@@ -48,8 +71,10 @@ public class TagEsDao {
                     .map(Hit::source)
                     .map(TagDocument::getTagName)
                     .collect(Collectors.toList());
+            log.info("태그 검색 keyword={} 결과={}건", keyword, result.size());
+            return result;
         } catch (Exception e) {
-            log.error("태그 ES 검색 실패: {}", e.getMessage());
+            log.error("태그 ES 검색 실패 keyword={}", keyword, e);
             return List.of();
         }
     }
@@ -57,7 +82,7 @@ public class TagEsDao {
     /** ES에 태그 단건 저장 (DB 동기화용) */
     public void index(TagDocument tag) {
         try {
-            client.index(IndexRequest.of(i -> i
+            client.index(IndexRequest.of(i -> i   // 없으면 생성 있으면 덮어쓰기
                     .index("tags")
                     .id(String.valueOf(tag.getId()))
                     .document(tag)
@@ -86,7 +111,6 @@ public class TagEsDao {
     /** 전체 태그 bulk 인덱싱 (서버 시작 시 DB → ES 동기화) */
     public void bulkIndex(List<TagDocument> tags) {
         try {
-            // 태그 목록을 BulkOperation 리스트로 변환
             List<BulkOperation> operations = tags.stream()
                     .map(tag -> BulkOperation.of(op -> op
                             .index(i -> i
@@ -97,7 +121,6 @@ public class TagEsDao {
                     ))
                     .toList();
 
-            // 한 번의 HTTP 요청으로 전체 전송
             BulkResponse response = client.bulk(BulkRequest.of(b -> b
                     .operations(operations)
             ));
@@ -108,7 +131,7 @@ public class TagEsDao {
                         .forEach(item -> log.error("bulk 인덱싱 실패 id={} reason={}",
                                 item.id(), item.error().reason()));
             } else {
-                log.info("ES 태그 bulk 동기화 완료: {}건 (요청 1회)", tags.size());
+                log.info("ES 태그 bulk 동기화 완료: {}건", tags.size());
             }
         } catch (Exception e) {
             log.error("ES bulk 인덱싱 실패: {}", e.getMessage());

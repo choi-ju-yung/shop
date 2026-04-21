@@ -38,3 +38,6 @@ build/
 application.yml
 application-local.yml
 **/application-local.properties
+
+# Claude Code
+.claude/

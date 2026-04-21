@@ -1,132 +1,115 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="jakarta.tags.core"%>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <%@ include file="../common/header.jsp"%>
-<link rel="stylesheet" href="<%=request.getContextPath()%>/css/user/enrollmember.css"/> 
-<%-- <link rel="stylesheet" href="${pageContext.request.contextPath}/css/user/enrollmember.css?v=1.0" /> --%>
-<!--<form action="" class="container"> -->
-<section>
-	<form action="<%=request.getContextPath()%>/regist/insert" class="container" method="post" onsubmit="return fn_registEnrollMember();"> 
-        <br>
-        <div class="memberinfo">
-            <br>
-            <!-- 회원 정보 -->
-            <h2>회원정보를 입력해주세요</h2>
-            <br>
+<link rel="stylesheet" href="<%=request.getContextPath()%>/css/user/enrollmember.css"/>
+
+<div class="registSection">
+  <div class="registCard">
+
+    <div class="registHeader">
+      <img src="<%=request.getContextPath()%>/images/common/logo.svg" alt="니꺼내꺼" class="brandLogoImg">
+      <h2>카카오 회원가입</h2>
+      <p>추가 정보를 입력하고 가입을 완료하세요</p>
+    </div>
+
+    <div style="text-align:center;margin-bottom:20px;">
+      <span class="kakaoBadge">
+        <ion-icon name="logo-apple" style="display:none;"></ion-icon>
+        🟡 카카오 계정으로 가입 중
+      </span>
+    </div>
+
+    <form action="<%=request.getContextPath()%>/regist/insert" method="post"
+          onsubmit="return fn_registEnrollMember();">
+      <input type="hidden" id="id" name="oauthId" value="${oauthId}">
+
+      <%-- 이메일 (카카오에서 가져온 값, 읽기전용) --%>
+      <div class="registGroup">
+        <label>이메일</label>
+        <input class="registInput" type="email" id="email" name="email"
+               value="${email}" readonly>
+        <span class="registMsg ok">카카오 계정 이메일이 자동으로 입력되었습니다</span>
+      </div>
+
+      <%-- 이름 (카카오 닉네임, 읽기전용) --%>
+      <div class="registGroup">
+        <label>이름</label>
+        <input class="registInput" type="text" id="username" name="username"
+               value="${nickname}" readonly>
+        <span class="registMsg ok">카카오 프로필 이름이 자동으로 입력되었습니다</span>
+      </div>
+
+      <%-- 비밀번호 --%>
+      <div class="registGroup">
+        <label>비밀번호 <span class="req">*</span></label>
+        <input class="registInput" type="password" id="password" name="password"
+               placeholder="8자 이상 영문+숫자+특수문자" autocomplete="new-password">
+      </div>
+
+      <%-- 비밀번호 확인 --%>
+      <div class="registGroup">
+        <label>비밀번호 확인 <span class="req">*</span></label>
+        <input class="registInput" type="password" id="memberPwConfirm"
+               placeholder="비밀번호 재입력" autocomplete="new-password">
+        <span class="registMsg" id="pwMessage"></span>
+      </div>
+
+      <%-- 약관 동의 --%>
+      <div class="termsSection">
+        <div class="termsAllRow">
+          <label for="selectall">전체 동의</label>
+          <input class="termsCheck" type="checkbox" id="selectall" name="selectall"
+                 onclick="selectAll(this)">
         </div>
-
-
-        <!-- 회원 정보 -->
-        <div class="MemberInfo_box">
-
-
-            <!-- 이메일 주소 -->
-            <div class="email">
-                <input type="email" placeholder="이메일 주소" id=email name="email" value="${email}" required>
-<!--                 &nbsp;
-                &nbsp;
-                
-                <div>
-                  <input type="button" id="authEmail" value="이메일 인증">
-                 </div> -->
-            </div>
-             <span class="emailMessageClass" id="emailMessageId"></span>
- 			<!-- class="signUp-message" id="emailMessage"> -->
-
-			<!-- 인증번호 확인 -->
-			<!-- <div class="autNumber">
-				<input type="text" id="cNumber" placeholder="인증번호 입력" autocomplete="off">
-				<div>
-	            	<button type="button" id="cBtn">인증하기</button>
-	            </div>
-			 </div>
-			 <span class="timerMessageClass" id="timerMessageId" ></span> -->
-			
-			<input type="hidden" placeholder="아이디" id="id" name="oauthId" value="${oauthId}">
-            <!-- 아이디  -->
-<%--              <div class="id">
-                <input type="text" placeholder="아이디" id="userId_" name="userId" required readonly="readonly" value="${id}"> 
-                
-                &nbsp;
-                &nbsp;
-                
-              <div>
-                <input type="button" onclick="fn_duplicatedId();" value="증복확인">
-              </div> 
-            </div> 
-			<span class="idDupMessageClass" id="idDupMessageId" ></span> --%>
-				
-            <!-- 비밀번호 -->
-            <div>
-                <input type="password" id="password" placeholder="비밀번호" name="password" required>
-            </div>
-
-            <!-- 비밀번호 확인 -->
-            <div>
-                <input type="password" id="memberPwConfirm" placeholder="비밀번호 확인" required>
-            </div>
-			<span id="pwMessage"></span>
-
-            <!-- 이름 -->
-            <div>
-                <input type="text" placeholder="이름" id="username" name="username" required  readonly="readonly" value="${nickname}">
-            </div>
-			<span id="userNameMessage"></span>
-			
-            <!-- 닉네임 -->
-           <!--  <div>
-                <input type="text" placeholder="닉네임" id="nickNameId" name="nickName" required>
-            </div>
-			<span id="userNickNameMessage"></span> -->
-			
-            <div>
-                <!-- 회원가입 -->
-                <button>회원가입</button>
-            </div>
-
+        <div class="termsRow">
+          <label for="agree1">
+            <span class="req-badge">필수</span> 이용약관 동의
+          </label>
+          <div class="termsRowRight">
+            <button type="button" class="termsDetailBtn" onclick="fn_viewDetail1()">보기</button>
+            <input class="termsCheck" type="checkbox" id="agree1" name="agree"
+                   onclick="checkSelectAll()" required>
+          </div>
         </div>
+        <div class="termsRow">
+          <label for="agree2">
+            <span class="req-badge">필수</span> 개인정보 수집·이용 동의
+          </label>
+          <div class="termsRowRight">
+            <button type="button" class="termsDetailBtn" onclick="fn_viewDetail2()">보기</button>
+            <input class="termsCheck" type="checkbox" id="agree2" name="agree"
+                   onclick="checkSelectAll()" required>
+          </div>
+        </div>
+        <div class="termsRow">
+          <label for="agree3">
+            <span class="opt-badge">선택</span> 마케팅 수신 동의 (이메일)
+          </label>
+          <div class="termsRowRight">
+            <button type="button" class="termsDetailBtn" onclick="fn_viewDetail3()">보기</button>
+            <input class="termsCheck" type="checkbox" id="agree3" name="agree"
+                   onclick="checkSelectAll()">
+          </div>
+        </div>
+        <div class="termsRow">
+          <label for="agree4">
+            <span class="opt-badge">선택</span> 마케팅 수신 동의 (SMS)
+          </label>
+          <div class="termsRowRight">
+            <button type="button" class="termsDetailBtn" onclick="fn_viewDetail4()">보기</button>
+            <input class="termsCheck" type="checkbox" id="agree4" name="agree"
+                   onclick="checkSelectAll()">
+          </div>
+        </div>
+      </div>
 
-                <!-- 이용약관 -->
-              <!-- <div>
-                  <h2>약관 동의</h2>
-              </div> -->
-      
-              <!-- terms and conditions -->
-              <div class="TandC">
-                  <!-- 전체 동의 -->
-                  <div style="border-bottom: 1px solid gray;">
-                      <span>전체 동의</span>
-                      <input type="checkbox" name="selectall" onclick='selectAll(this)'>
-                  </div>
-      
-                  <!-- 필수 1 -->
-                  <div>
-                      <span><strong>(필수)</strong> 이용 약관에 동의 <button onclick="fn_viewDetail1();">상세 보기</button></span>
-                      <input type="checkbox" id="agree1" name="agree" onclick='checkSelectAll()' required>
-                  </div>
-      
-                  <!-- 필수 2 -->
-                  <div>
-                      <span><strong>(필수)</strong> 개인정보 수집 및 이용에 동의 <button onclick="fn_viewDetail2();">상세 보기</button></span>
-                      <input type="checkbox" id="agree2"  name="agree" onclick='checkSelectAll()' required>
-                  </div>
-      
-                  <!-- 선택 1 -->
-                  <div>
-                      <span>(선택) 마케팅 정보 수신 동의 - 이메일 <button onclick="fn_viewDetail3();">상세 보기</button></span>
-                      <input type="checkbox" id="agree3" name="agree" onclick='checkSelectAll()'>
-                  </div>
-      '
-                  <!-- 선택 2 -->
-                  <div>
-                      <span>(선택) 마케팅 정보 수신 동의 - SMS/MMS <button onclick="fn_viewDetail4();">상세 보기</button></span>
-                      <input type="checkbox" id="agree4" name="agree" onclick='checkSelectAll()'>
-                  </div>
-              </div>
+      <button type="submit" class="registSubmitBtn">가입 완료</button>
+
     </form>
-    
-    
-</section>
-<script src="<%=request.getContextPath() %>/js/user/kakaoEnrollmember.js"></script>
+
+  </div>
+</div>
+
+<script src="<%=request.getContextPath()%>/js/user/kakaoEnrollmember.js"></script>
 <%@ include file="../common/footer.jsp"%>
-    

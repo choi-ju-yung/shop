@@ -1,31 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-    
- <mapper namespace="MyPageMapper">
- 	
- 	<select id="findByMyPage" parameterType="long" resultType="com.example.demo.mypage.vo.MyPage">
- 		SELECT * FROM MY_USER_PAGE_TB WHERE USER_NO = #{userNo}
- 	</select>
- 	
- 	<insert id="registUserPage"> <!-- 실무에서는 명시적으로 Default 값을 넣는것이 더 안전해서 실무에서 권장 -->
-		INSERT INTO MY_USER_PAGE_TB(
-			USER_NO,
-			PROFILE_IMG,
-			INTRODUCE,
-			TEMPERATURE
-		) VALUES(
-		 	#{userId},
-		 	DEFAULT,
-		 	DEFAULT,
-		 	DEFAULT
-		)
-	</insert>
-	
-<!-- 	<parameterMap type="" id="">
-	
-	
-	</parameterMap> -->
- 	
- 	
- </mapper>
+
+<mapper namespace="MyPageMapper">
+
+    <select id="findByMyPage" parameterType="long" resultType="com.example.demo.mypage.vo.MyPage">
+        SELECT MU.NICKNAME, MU.PROFILE_IMG, MU.INTRODUCE, MU.TEMPERATURE, U.NAME, U.EMAIL, U.LOGIN_ID, U.OAUTH_PROVIDER
+          FROM MY_USER_PAGE MU 
+          JOIN USERS U ON MU.USER_NO = U.USER_NO
+         WHERE MU.USER_NO = #{userNo}
+    </select>
+
+    <!-- 회원가입 시 기본 레코드 생성 (닉네임은 NULL로, 추후 설정) -->
+    <insert id="registUserPage" parameterType="long">
+        INSERT INTO MY_USER_PAGE (USER_NO, PROFILE_IMG, INTRODUCE, TEMPERATURE, NICKNAME)
+        VALUES (#{userId}, DEFAULT, DEFAULT, DEFAULT, NULL)
+    </insert>
+
+    <!-- 닉네임 중복 확인 -->
+    <select id="checkNicknameDup" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM MY_USER_PAGE
+        WHERE NICKNAME = #{nickname}
+          AND USER_NO != #{userNo}
+    </select>
+
+    <!-- 프로필 통합 업데이트 (닉네임 + 소개글 + 이미지 선택적) -->
+    <update id="updateProfile" parameterType="com.example.demo.mypage.vo.ProfileUpdateDto">
+        UPDATE MY_USER_PAGE
+           SET NICKNAME = #{nickname},
+               INTRODUCE = #{introduce}
+               <if test="profileImg != null">, PROFILE_IMG = #{profileImg}</if>
+         WHERE USER_NO = #{userNo}
+    </update>
+
+    <!-- 마이페이지 통계 -->
+    <select id="getStats" parameterType="long" resultType="map">
+        SELECT
+            (SELECT COUNT(*) FROM PRODUCT WHERE USER_NO = #{userNo} AND TRADE_STATUS = 'SALE' AND IS_DELETED = 'N') AS "saleCount",
+            (SELECT COUNT(*) FROM PRODUCT WHERE USER_NO = #{userNo} AND TRADE_STATUS = 'SOLD' AND IS_DELETED = 'N') AS "tradeCount",
+            (SELECT COUNT(*) FROM CHAT_ROOM CR WHERE (CR.BUYER_NO = #{userNo} OR CR.SELLER_NO = #{userNo})
+               AND EXISTS (SELECT 1 FROM CHAT_MESSAGE CM WHERE CM.ROOM_ID = CR.ROOM_ID)) AS "chatCount",
+            (SELECT COUNT(*) FROM NOTIFICATION WHERE USER_NO = #{userNo} AND IS_READ = 'N') AS "unreadNoti",
+            (SELECT COUNT(*) FROM REVIEW WHERE REVIEWEE_NO = #{userNo}) AS "reviewCount",
+            0 AS "totalViews"
+        FROM DUAL
+    </select>
+
+    <!-- 최근 등록 상품 (최대 3개) -->
+    <select id="getRecentProducts" parameterType="long" resultType="map">
+        SELECT * FROM (
+            SELECT
+                P.PRODUCT_ID    AS "productId",
+                P.PRODUCT_TITLE AS "title",
+                P.PRODUCT_PRICE AS "price",
+                P.TRADE_STATUS  AS "status",
+                PF.FILE_PATH    AS "imgFile"
+            FROM PRODUCT P
+            LEFT JOIN PRODUCT_FILE PF ON P.PRODUCT_ID = PF.PRODUCT_ID AND PF.IS_MAIN = 1
+            WHERE P.USER_NO    = #{userNo}
+              AND P.IS_DELETED = 'N'
+            ORDER BY P.PRODUCT_ID DESC
+        ) WHERE ROWNUM &lt;= 3
+    </select>
+
+    <!-- 닉네임 설정 여부 확인 (NULL이면 0, 있으면 1) -->
+    <select id="hasNickname" parameterType="long" resultType="int">
+        SELECT CASE WHEN NICKNAME IS NOT NULL THEN 1 ELSE 0 END
+        FROM MY_USER_PAGE
+        WHERE USER_NO = #{userNo}
+    </select>
+
+</mapper>

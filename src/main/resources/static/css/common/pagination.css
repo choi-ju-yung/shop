@@ -1,0 +1,57 @@
+/* ===== 공통 페이지네이션 ===== */
+.pgWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  margin-top: 32px;
+  padding-bottom: 8px;
+}
+
+.pgBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: .875rem;
+  font-weight: 600;
+  color: #374151;
+  text-decoration: none;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  transition: background .15s, border-color .15s, color .15s;
+  cursor: pointer;
+}
+
+.pgBtn:hover {
+  background: #f0fdf9;
+  border-color: #6ee7b7;
+  color: #059669;
+}
+
+.pgActive {
+  background: #20c997 !important;
+  border-color: #20c997 !important;
+  color: #fff !important;
+}
+
+.pgArrow ion-icon {
+  font-size: 1rem;
+  display: flex;
+}
+
+.pgDisabled {
+  opacity: .35;
+  cursor: default;
+  pointer-events: none;
+}
+
+.pgEllipsis {
+  font-size: .875rem;
+  color: #9ca3af;
+  padding: 0 4px;
+  line-height: 36px;
+}

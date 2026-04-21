@@ -1,9 +1,11 @@
 <%@page import="com.example.demo.user.vo.UserVO"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
    pageEncoding="UTF-8"%>
-   <%@ taglib prefix="c" uri="jakarta.tags.core"%>
+   <%@ taglib prefix="c"  uri="jakarta.tags.core"%>
+   <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
 <%-- <%@page import="com.semi.category.model.vo.Category"%>
 <%@page import="java.util.List"%> --%>
 
@@ -20,9 +22,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="ctx" content="<%=request.getContextPath()%>" />
+<meta name="isLoggedIn" content="${not empty sessionScope.loginUser ? 'true' : 'false'}" />
 <!-- css 파일 -->
 <link rel="stylesheet"
    href="<%=request.getContextPath()%>/css/default.css" />
+<link rel="stylesheet"
+   href="<%=request.getContextPath()%>/css/footer.css" />
 <link rel="icon"
    href="<%=request.getContextPath()%>/images/common/fivicon.png"
    type="image/x-icon" />
@@ -35,7 +40,7 @@
 <%-- <script src="<%=request.getContextPath()%>/js/jquery-3.7.0.min.js"></script> --%>
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <!--  -->
-<title>중고 거래 HiFive</title>
+<title>중고 거래 니꺼내꺼</title>
 </head>
 <body>
 
@@ -61,7 +66,7 @@
 						<a href="<%=request.getContextPath()%>/admin/adminMode">관리자모드</a>
 					</c:if> 
 					<a href="#"
-						onclick="location.replace('<%=request.getContextPath()%>/logout')"
+						onclick="localStorage.removeItem('recentProducts'); location.replace('<%=request.getContextPath()%>/logout')"
 						id="logout">로그아웃</a> <a
 						href="<%=request.getContextPath()%>/board/list?notice=N"
 						id="service">고객센터</a>
@@ -121,14 +126,26 @@
                   <a
                      href="<%=request.getContextPath()%>/member/mypage">
                      <ion-icon name="person-outline" class="myIcon"></ion-icon> 내정보
-                  </a> <a href="<%=request.getContextPath()%>/myPage/wishList.do"> <ion-icon name="heart-outline" class="heartIcon"></ion-icon>
+                  </a> <a href="<%=request.getContextPath()%>/member/wishlist"> <ion-icon name="heart-outline" class="heartIcon"></ion-icon>
                      찜한상품
                   </a>
-                  <a href="<%=request.getContextPath()%>/member/chat"> <ion-icon name="mail-outline" class="heartIconr"></ion-icon>
-                     채팅
+                  <a href="<%=request.getContextPath()%>/member/chat" id="chatBell" style="position:relative;">
+                    <ion-icon name="mail-outline" class="heartIconr"></ion-icon>
+                    채팅
+                    <span id="chat-badge" style="
+                      display:none; position:absolute; top:-2px; left:14px;
+                      background:#ff4d6d; color:#fff; font-size:10px; font-weight:700;
+                      min-width:16px; height:16px; line-height:16px; text-align:center;
+                      border-radius:8px; padding:0 4px; white-space:nowrap; pointer-events:none;">0</span>
                   </a>
-                  <a href="<%=request.getContextPath()%>/"> <ion-icon name="mail-outline" class="heartIconr"></ion-icon>
-                     알림 
+                  <a href="<%=request.getContextPath()%>/member/notilist" id="notiBell" style="position:relative;">
+                    <ion-icon name="notifications-outline" style="font-size:27px; color:#20c997; padding-right:4px;"></ion-icon>
+                    알림
+                    <span id="noti-badge" style="
+                      display:none; position:absolute; top:-2px; left:14px;
+                      background:#ff4d6d; color:#fff; font-size:10px; font-weight:700;
+                      min-width:16px; height:16px; line-height:16px; text-align:center;
+                      border-radius:8px; padding:0 4px; white-space:nowrap; pointer-events:none;">0</span>
                   </a>
                   <div id="toast-container"></div>
 <%--                   <%
@@ -156,29 +173,21 @@
                
                <p>카테고리</p>
                
-               <div id="printSearch">
-              <div id="rankSearch">
-                <button>버튼</button>
-              </div>
-         
             </div>
-             
-            </div>
-               
+
          </div>
          <hr width="1280px" color="#eeeeee" noshade />
-             <div id="rankAllSearch">
-            <div>
-               <p>인기검색어 순</p><button>버튼</button>
-               </div>
-              </div>
       </div>
 
       <div id="itemBox">
-         <div id="recentProduct">
-            <p>최근본상품</p>
-            <div class="rpCount">0</div>
-            <div id="recently" ><a><img alt="" src=""></a></div>
+         <div id="rpHeader">
+            <span class="rpIcon"><ion-icon name="time-outline"></ion-icon></span>
+            <span class="rpLabel">최근 본 상품</span>
+            <span class="rpBadge" id="rpBadge">0</span>
+         </div>
+         <div id="recently"></div>
+         <div id="rpFooter" style="display:none;">
+            <button id="rpClearBtn" onclick="clearRecentProducts()">기록 지우기</button>
          </div>
       </div>
    </header>
@@ -186,54 +195,124 @@
   
  /* ---------------------------------------------------------  */	
    
+   <c:if test="${not empty sessionScope.loginUser}">
+   var ctx = document.querySelector('meta[name="ctx"]').getAttribute('content');
+
+   /* ── WebSocket 연결 (로그인 시에만) ── */
    let socket = new SockJS('/ws');
    let stompClient = Stomp.over(socket);
-   let userNo = '${sessionScope.loginUser.userNo}';
+   stompClient.debug = null;
 
-    stompClient.connect({}, function () {
+   /* ── 페이지 로드 시 미읽음 배지 초기화 ── */
+   $.ajax({
+       url: ctx + '/member/notification/count',
+       success: function(res) {
+           updateNotiBadge(res.wishCount);
+           updateChatBadge(res.chatCount);
+       }
+   });
+
+   stompClient.connect({}, function () {
        stompClient.subscribe("/user/queue/notify", function (message) {
            const data = JSON.parse(message.body);
-           //increaseNotificationCount();
-           createToast(data.notiMessage);
+           if (data.type === 'MESSAGE') {
+               // 채팅 메시지 → 채팅 아이콘 뱃지 증가
+               updateChatBadge((parseInt(document.getElementById('chat-badge').textContent) || 0) + 1);
+           } else {
+               // 찜 알림 → 알림 벨 뱃지
+               updateNotiBadge(data.noReadCnt);
+               createToast(data.notiMessage);
+           }
+       });
+   }, function(error) {
+       console.warn('WebSocket 연결 실패:', error);
+   });
+
+   /* ── 알림 벨 클릭 → 읽음 처리 + 뱃지 초기화 ── */
+   document.getElementById('notiBell').addEventListener('click', function() {
+       $.ajax({
+           url: ctx + '/member/notification/read',
+           type: 'POST',
+           success: function() { updateNotiBadge(0); }
        });
    });
 
-   
+   /* ── 채팅 팝업에서 읽음 처리 시 뱃지 즉시 갱신 ── */
+   window.addEventListener('message', function(e) {
+       if (e.data && e.data.type === 'CHAT_READ') {
+           $.ajax({
+               url: ctx + '/member/notification/count',
+               success: function(res) { updateChatBadge(res.chatCount); }
+           });
+       }
+   });
+   </c:if>
 
-   function increaseNotificationCount() {
-       const countEl = document.getElementById("notification-count");
-       let count = parseInt(countEl.innerText) || 0;
-       countEl.innerText = count + 1;
+   function updateNotiBadge(count) {
+       const badge = document.getElementById('noti-badge');
+       if (!badge) return;
+       if (count > 0) {
+           badge.style.display = 'inline-block';
+           badge.textContent = count > 99 ? '99+' : count;
+       } else {
+           badge.style.display = 'none';
+           badge.textContent = '0';
+       }
+   }
+
+   function updateChatBadge(count) {
+       const badge = document.getElementById('chat-badge');
+       if (!badge) return;
+       if (count > 0) {
+           badge.style.display = 'inline-block';
+           badge.textContent = count > 99 ? '99+' : count;
+       } else {
+           badge.style.display = 'none';
+           badge.textContent = '0';
+       }
    }
 
    function createToast(message) {
-       /* const container = document.getElementById("toast-container");
-       const toast = document.createElement("div");
-       toast.className = "toast";
-       toast.innerHTML = message;
-       toast.style.cssText = `
-           background: #333; color: #fff; padding: 10px 20px;
-           margin-top: 10px; border-radius: 5px;
-           box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-           animation: fadein 0.3s, fadeout 0.5s 4.5s;
-    	   white-space: pre-wrap;
-       `;
-       container.appendChild(toast);
-       setTimeout(() => container.removeChild(toast), 4000); */
-	   const notificationArea = document.querySelector(".memberIcon a:last-child"); // 알림 버튼 선택
-	    const rect = notificationArea.getBoundingClientRect();
-	    const toast = document.createElement("div");
-	    toast.className = "toast";
-	    toast.innerHTML = message;
-	    toast.style.position = "fixed";
-	    toast.style.top = (rect.top + rect.height + 10) + "px";
-	    toast.style.left = rect.left + "px";
-	    toast.style.zIndex = "1000";
-	    // ... 나머지 스타일
-	    document.body.appendChild(toast);
-	    setTimeout(() => toast.remove(), 4000);
+       const toast = document.createElement('div');
+       toast.innerHTML =
+           '<div style="display:flex;align-items:center;gap:10px;">' +
+               '<div style="width:36px;height:36px;border-radius:50%;background:#ecfdf5;display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+                   '<svg width="18" height="18" viewBox="0 0 24 24" fill="#20c997"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>' +
+               '</div>' +
+               '<div style="flex:1;min-width:0;">' +
+                   '<div style="font-size:11px;color:#6b7280;margin-bottom:2px;">찜 알림</div>' +
+                   '<div style="font-size:13px;color:#111827;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + message + '</div>' +
+               '</div>' +
+           '</div>';
+       var p = toast.style;
+       p.setProperty('position',      'fixed',                              'important');
+       p.setProperty('bottom',        '28px',                               'important');
+       p.setProperty('right',         '24px',                               'important');
+       p.setProperty('display',       'inline-block',                       'important');
+       p.setProperty('background',    '#ffffff',                            'important');
+       p.setProperty('border-radius', '14px',                               'important');
+       p.setProperty('border',        '1px solid rgba(0,0,0,0.08)',         'important');
+       p.setProperty('padding',       '14px 16px',                          'important');
+       p.setProperty('width',         '280px',                              'important');
+       p.setProperty('height',        'auto',                               'important');
+       p.setProperty('min-height',    '0',                                  'important');
+       p.setProperty('box-shadow',    '0 8px 30px rgba(0,0,0,0.18)',        'important');
+       p.setProperty('z-index',       '100000',                             'important');
+       p.setProperty('opacity',       '0',                                  'important');
+       p.setProperty('transition',    'opacity .25s,transform .25s',        'important');
+       p.setProperty('transform',     'translateY(12px)',                   'important');
+       document.body.appendChild(toast);
+       requestAnimationFrame(function() {
+           p.setProperty('opacity',   '1',                'important');
+           p.setProperty('transform', 'translateY(0)',    'important');
+       });
+       setTimeout(function() {
+           p.setProperty('opacity',   '0',                 'important');
+           p.setProperty('transform', 'translateY(12px)',  'important');
+           setTimeout(function() { toast.remove(); }, 260);
+       }, 3500);
    }
-/* ---------------------------------------------------------  */	
+/* ---------------------------------------------------------  */
    
 function changePage(pageNo) {
     $.ajax({
@@ -304,39 +383,7 @@ function HeaderCategoryMenu() {
         }
     });
 }
-/* function makeCategoryHeader(name, index) {
-    const $li = $("<li>");
-    const $a = $("<a>").attr("id", "category" + (index + 1)).data('categoryname', "CATEGORY_NAME = '" + name + "'").text(name);
 
-    $a.click(function() {
-        const conditions = {};
-        conditions['categoryname'] = $(this).data('categoryname');
-        console.log(conditions);
-        getselectproduct(conditions);
-    });
-
-    $li.append($a);
-    $("#menuList>ul").append($li);
-} */
-
-<%-- function getselectproduct(conditions) {
-    console.log(conditions);
-    $.ajax({
-        url: "<%=request.getContextPath()%>/test",
-        dataType: 'html',
-        data: conditions,
-        success: function(data) {
-            $("section").html(data);
-        }
-    });
-} --%>
-/* function makeCategoryHeader(name, index) {
-   
-    const $li = $("<li>");
-    const $a = $("<a>").attr("id", "category" + (index + 1)).text(name).attr("onclick", "searchCategory('" + name + "');");
-    $li.append($a);
-    $("#menuList>ul").append($li);
-} */
 function makeCategoryHeader(name, index) {
 	categoryname = "CATEGORY_NAME = '" + name + "'";
     const $li = $("<li>");
@@ -361,21 +408,6 @@ $("div#menuList").after($div);
 
 }
 
-     /* function makeCatetorySub(subcateList, index) {
-       const $div=$("<div>").attr({"id":"sideMenu-category"+(index+1),"class":"sideMenu"});
-       const $ul=$("<ul>");
-       subcateList.forEach(sub=>{
-              const $a = $("<a href='javascript:void(0);'>").text(sub.subCategory.subcategoryName).attr("onclick", "searchsubcategory('" + sub.subCategory.subcategoryName + "');");
-              const $li = $("<li>").append($a);
-              $ul.append($li);
-       });
-       $div.html($ul);
-       $("div#menuList").after($div); */
 
-     
-     <%-- const subcategoryName = sub.subCategory.subcategoryName;
-      const encodedSubcategoryName = encodeURIComponent(subcategoryName);
-      const href = '<%= request.getContextPath() %>/headersearchcategory.do?subcategoryname=' + encodedSubcategoryName;
-      const $a = $("<a>").attr("href", href).text(subcategoryName); --%>
 </script>
    <script src="<%=request.getContextPath()%>/js/common/header.js"></script>

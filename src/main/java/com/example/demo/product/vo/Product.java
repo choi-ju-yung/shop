@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class Product {
-    private String productId;
+    private Long productId;
     private Long userNo;       // 판매자 유저번호
     private String title;      // 제목
     private String subCate;    // 서브카테고리
@@ -23,8 +23,15 @@ public class Product {
     private String tag;        // 태그
     private List<ProductFile> productFiles;
 
+    // 거래 상태
+    private String tradeStatus;    // SALE / RESERVED / SOLD
+    private Long buyerNo;          // 구매자 유저번호 (SOLD 시 세팅)
+
     // 상세 조회 시 추가 필드
-    private String sellerName;     // 판매자 이름 (JOIN)
-    private String mainFilePath;   // 대표 이미지 경로 (목록용)
-    private String regDate;        // 등록일
+    private String sellerName;     // 판매자 닉네임 (JOIN)
+    private String buyerName;      // 구매자 닉네임 (구매내역 조회 시)
+    private String mainFilePath;      // 대표 이미지 경로 (목록용)
+    private String regDate;           // 등록일
+    private boolean hasReview;        // 구매자가 리뷰를 작성했는지 여부
+    private String sellerProfileImg;  // 판매자 프로필 이미지
 }

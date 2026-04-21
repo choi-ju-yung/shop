@@ -51,10 +51,8 @@ const fn_viewDetail4 = () => {
 /**/
 
 const checkObj = {  // 해당 회원가입 정보입력할 때, 정상적으로 처리됬는지 구분하는 객체
-	"memberEmail": false,  
 	"memberPw": false,
 	"memberPwConfirm": false,
-	"memberId": false,
 };
 
 
@@ -62,63 +60,10 @@ const memberEmail = document.getElementById("email");
 /*const emailMessage = document.getElementById("emailMessageId");*/
 const emailMessage = $("#emailMessageId");
 
-memberEmail.addEventListener("keyup", function() {
-	//입력이 되지 않은경우
-
-	if (memberEmail.value.length == 0) {
-		emailMessage.text("");
-		checkObj.memberEmail = false;             // 기록할객체에 유효X 기록X  
-		return;
-	}
-
-	//입력이 된 경우 (이메일 정규표현식)
-	const regExp = /^[\w\-\_]{4,}@[\w\-\_]+(\.\w+){1,3}$/;
-
-
-	if (regExp.test(memberEmail.value)) {   // 정규표현식 유효한경유
-		// 이메일 중복검사 (ajax) 진행****************
-		
-		$.ajax({
-			url: "/emailDupCheck",  // 필수속성 url ,
-			method: 'POST',
-			/*contentType: "application/x-www-form-urlencoded",*/
-			// 현재주소 : /community/member/signUp
-			// 상대경로 : /community/member/emailDupCheck
-			data: { "memberEmail": memberEmail.value },
-			// data속성 : 비동기통신시 서버로 전달할값을 작성(JS객체 형식)
-			//  --> 비동기통신시 input에 입력된 값을
-			// "memberEmail" 이라는 key값(파라미터) 으로 전달
-			success: function(result) {
-				// 비동기통신(.ajax)가 오류없이 요청/응답 성공한경우
-				// 매개변수 result : Servlet에서 출력된 result값이 담겨있음
-				if (result == 1) {    // 중복 O
-					emailMessage.text("이미 사용중인 이메일입니다.").css("color", "red");
-
-					checkObj.memberEmail = false;
-				} else {     // 중복 X
-					emailMessage.text("사용 가능한 이메일입니다.").css("color", "green");
-					checkObj.memberEmail = true;          // 사용가능함. true 세팅
-				}
-			},
-			error: function() {
-				// 비동기통신(.ajax)중 오류가 발생한 경우
-				console.log("에러발생");
-			}
-
-		});
-	} else {            // 정규표현식 유효하지 않은경우
-		emailMessage.text("이메일 형식이 유효하지 않습니다!!").css("color", "red");
-		checkObj.memberEmail = false;           // 기록할객체에 유효X 기록X  
-	}
-});
-
-
 
 
 const cNumber = document.getElementById("cNumber");
 const cBtn = document.getElementById("cBtn");
-
-
 
 
 
@@ -191,7 +136,7 @@ memberPw.addEventListener("keyup", function() {
 
 
 function fn_registEnrollMember(){ 
-	if(checkObj.memberEmail && checkObj.memberPw && checkObj.memberPwConfirm){
+	if(checkObj.memberPw && checkObj.memberPwConfirm){
 			return true;	
 	}
 	return false;

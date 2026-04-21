@@ -11,9 +11,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.http.ResponseEntity;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.demo.config.KakaoConfig;
@@ -151,14 +157,75 @@ public class UserController {
 		return "redirect:/main";
 	}
 	
+	/** 회원탈퇴 */
+	@DeleteMapping("/member/withdraw")
+	@ResponseBody
+	public ResponseEntity<?> withdrawUser(HttpSession session, HttpServletRequest request) {
+		UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+		if (loginUser == null) {
+			return ResponseEntity.status(401).body("로그인이 필요합니다.");
+		}
+		userService.withdrawUser(loginUser.getUserNo());
+
+		// 세션 무효화 (로그아웃 처리)
+		SecurityContextHolder.clearContext();
+		session.invalidate();
+
+		return ResponseEntity.ok().build();
+	}
+
 	@GetMapping("/regist/duplicateId")
 	@ResponseBody
 	public String duplicateId(HttpServletRequest request, HttpServletResponse response) {
 		String loginId = request.getParameter("loginId");
 		int duplicateId = userService.duplicateId(loginId);
-		
+
 		return Integer.toString(duplicateId);
 	}
-	
-	
+
+	/** 아이디 찾기 페이지 */
+	@GetMapping("/find/id")
+	public String findIdPage() {
+		return "user/findId";
+	}
+
+	/** 아이디 찾기 처리 */
+	@PostMapping("/find/id")
+	@ResponseBody
+	public Map<String, Object> findId(@RequestParam String name,
+	                                  @RequestParam String email) {
+		Map<String, Object> result = new HashMap<>();
+		String loginId = userService.findLoginId(name.trim(), email.trim());
+		if (loginId != null) {
+			result.put("found", true);
+			result.put("loginId", loginId);
+		} else {
+			result.put("found", false);
+		}
+		return result;
+	}
+
+	/** 비밀번호 찾기 페이지 */
+	@GetMapping("/find/pwd")
+	public String findPwdPage() {
+		return "user/findPwd";
+	}
+
+	/** 비밀번호 찾기 처리 (임시 비밀번호 발급) */
+	@PostMapping("/find/pwd")
+	@ResponseBody
+	public Map<String, Object> findPwd(@RequestParam String loginId,
+	                                   @RequestParam String email) {
+		Map<String, Object> result = new HashMap<>();
+		try {
+			boolean sent = userService.resetPassword(loginId.trim(), email.trim());
+			result.put("sent", sent);
+		} catch (RuntimeException e) {
+			result.put("sent", false);
+			result.put("message", e.getMessage());
+		}
+		return result;
+	}
+
+
 }

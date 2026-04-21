@@ -14,7 +14,6 @@ import org.springframework.stereotype.Controller;
 
 import com.example.demo.chat.service.ChatService;
 import com.example.demo.chat.vo.ChatMessage;
-import com.example.demo.chat.vo.ChatRoom;
 import com.example.demo.config.KafkaConfig;
 
 @Controller
@@ -52,20 +51,18 @@ public class ChatMessageController {
         int userNo       = Integer.parseInt(payload.get("userNo"));
         int otherUserNo  = Integer.parseInt(payload.get("otherUserNo"));
 
-        Map<String, Object> readMap = new HashMap<>();
-        readMap.put("roomId", roomId);
-        readMap.put("userNo", userNo);
-
         // DB 읽음 처리
         chatService.markMessagesAsRead(roomId, userNo);
-
-        // 읽은 사람 채팅 목록 업데이트
-        ChatRoom rooms = chatService.getSingleChatRoomInfo(readMap).get(0);
-        messagingTemplate.convertAndSend("/topic/chat-list/" + userNo, rooms);
 
         // 발신자(상대방)에게 읽음 확인 → 채팅방 "읽음" 표시
         Map<String, Object> readReceipt = new HashMap<>();
         readReceipt.put("roomId", roomId);
         messagingTemplate.convertAndSendToUser(String.valueOf(otherUserNo), "/queue/read", readReceipt);
+
+        // 내 채팅 목록 미읽음 뱃지 제거 (lastMessage 없이 보내면 뱃지만 갱신, 순서 변경 없음)
+        Map<String, Object> clearBadge = new HashMap<>();
+        clearBadge.put("roomId", roomId);
+        clearBadge.put("unreadCount", 0);
+        messagingTemplate.convertAndSend("/topic/chat-list/" + userNo, clearBadge);
     }
 }

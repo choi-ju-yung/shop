@@ -30,7 +30,7 @@ public class RedisSubscriber {
      * Redis "chat-channel" 에 메시지가 들어오면 자동 호출
      * RedisPubSubConfig 의 MessageListenerAdapter 가 이 메서드를 지정함
      */
-    public void onMessage(String message, String channel) {
+    public void onChatMessage(String message, String channel) {
         try {
             ChatMessage chatMessage = objectMapper.readValue(message, ChatMessage.class);
             String roomId   = chatMessage.getRoomId();
@@ -62,22 +62,13 @@ public class RedisSubscriber {
                 messagingTemplate.convertAndSend("/topic/chat-list/" + receiverNo, receiverRooms.get(0));
             }
 
-            // 3. 수신자 알림 처리
-            Map<String, Object> notiMap = new HashMap<>();
-            notiMap.put("userNo",           receiverNo);
-            notiMap.put("senderName",        chatMessage.getSenderName());
-            notiMap.put("notiMessage",       chatMessage.getSenderName() + "\n[수신메시지]:" + chatMessage.getMessage());
-            notiMap.put("notiUrl",           "/chatList");
-            notiMap.put("notificationType",  "MESSAGE");
-            notiService.insertNotification(notiMap);
-
-            int noReadCnt  = notiService.selectNoReadNotiByN(receiverNo);
-            int noReadMCnt = notiService.selectNoReadNotiByNFromM(receiverNo);
+            // 3. 수신자 실시간 알림 (DB 저장 없이 WebSocket만 전송)
+            // 채팅 메시지는 CHAT_MESSAGE 테이블에 이미 저장됨 → 별도 NOTIFICATION 불필요
+            String toastMsg = chatMessage.getSenderName() + ": " + chatMessage.getMessage();
 
             Map<String, Object> notifyPayload = new HashMap<>();
-            notifyPayload.put("noReadCnt",   noReadCnt);
-            notifyPayload.put("noReadMCnt",  noReadMCnt);
-            notifyPayload.put("notiMessage", notiMap.get("notiMessage"));
+            notifyPayload.put("notiMessage", toastMsg);
+            notifyPayload.put("type", "MESSAGE");
 
             messagingTemplate.convertAndSendToUser(
                     String.valueOf(receiverNo), "/queue/notify", notifyPayload);

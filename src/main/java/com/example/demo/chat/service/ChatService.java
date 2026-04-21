@@ -82,5 +82,23 @@ public class ChatService {
     public List<ChatRoom> getSingleChatRoomInfo(Map map){
     	return chatDao.getSingleChatRoomInfo(map);
     }
-    
+
+    public int getTotalUnreadCount(long userNo) {
+        return chatDao.getTotalUnreadCount(userNo);
+    }
+
+    public Map getChatRoomDetail(String roomId, long userNo) {
+        Map map = new HashMap();
+        map.put("roomId", roomId);
+        map.put("userNo", userNo);
+        return chatDao.getChatRoomDetail(map);
+    }
+
+    public List<Map> getChatBuyersByProductId(Long productId, long userNo) {
+        Map map = new HashMap();
+        map.put("productId", productId);
+        map.put("userNo", userNo);
+        return chatDao.getChatBuyersByProductId(map);
+    }
+
 }

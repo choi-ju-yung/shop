@@ -34,7 +34,7 @@ public class ChatKafkaConsumer {
      * 3. Redis Publish → RedisSubscriber → STOMP 전송
      */
     @KafkaListener(topics = KafkaConfig.CHAT_TOPIC, groupId = "chat-group")
-    public void consume(ChatMessage chatMessage) {
+    public void consumeSendChat(ChatMessage chatMessage) {
         try {
             // 1. DB 저장
             Map<String, Object> map = new HashMap<>();

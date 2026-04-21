@@ -1,0 +1,340 @@
+/* ===== 판매자 받은 후기 페이지 (2열 그리드) ===== */
+
+.srWrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 230px 20px 60px;
+}
+
+/* ── 뒤로가기 ── */
+.srBackBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 10px 16px 10px 12px;
+  margin-bottom: 28px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  transition: box-shadow .2s, border-color .2s, transform .15s;
+}
+.srBackBtn:hover {
+  border-color: #20c997;
+  box-shadow: 0 4px 12px rgba(32,201,151,.12);
+  transform: translateY(-1px);
+}
+
+.srBackArrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f0fdf9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #20c997;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: background .2s;
+}
+.srBackBtn:hover .srBackArrow {
+  background: #20c997;
+  color: #fff;
+}
+
+.srBackInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.srBackName {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.3;
+}
+.srBackSub {
+  font-size: 11px;
+  color: #9ca3af;
+  line-height: 1.3;
+}
+
+/* ── 헤더 영역 ── */
+.srHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.srHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.srHeaderIcon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(245,158,11,.3);
+}
+
+.srHeaderTitle {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 3px;
+}
+
+.srHeaderSub {
+  font-size: .8rem;
+  color: #9ca3af;
+}
+
+/* ── 평점 요약 카드 ── */
+.srSummaryCard {
+  background: linear-gradient(135deg, #fff8ed, #fffbf0);
+  border: 1.5px solid #fed7aa;
+  border-radius: 14px;
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(245,158,11,.1);
+}
+
+.srSummaryScore {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.srSummaryNum {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #d97706;
+  line-height: 1;
+}
+
+.srSummaryMax {
+  font-size: .8rem;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.srSummaryRight {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.srSummaryStars { display: flex; gap: 2px; }
+
+.srSummaryCount {
+  font-size: .75rem;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+/* ── 2열 그리드 ── */
+.srGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 680px) {
+  .srGrid { grid-template-columns: 1fr; }
+}
+
+/* ── 리뷰 카드 ── */
+.srCard {
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow .2s, transform .2s, border-color .2s;
+}
+
+.srCard:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,.08);
+  transform: translateY(-2px);
+  border-color: #d1fae5;
+}
+
+/* 카드 상단: 아바타 + 이름/날짜 + 별점 */
+.srCardTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.srCardAvatar {
+  font-size: 32px;
+  color: #d1d5db;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.srCardMeta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.srCardName {
+  font-size: .875rem;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.srCardDate {
+  font-size: .72rem;
+  color: #9ca3af;
+}
+
+.srCardStars {
+  display: flex;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+/* 상품 링크 태그 */
+.srProductTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  font-size: .72rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-decoration: none;
+  align-self: flex-start;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.srProductTag ion-icon {
+  font-size: .8rem;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.srProductTag:hover {
+  background: #f0fdf9;
+  border-color: #6ee7b7;
+  color: #059669;
+}
+
+/* 후기 내용 */
+.srContent {
+  font-size: .85rem;
+  color: #374151;
+  line-height: 1.7;
+  margin: 0;
+  background: #fafafa;
+  border-left: 3px solid #f59e0b;
+  padding: 8px 12px;
+  border-radius: 0 8px 8px 0;
+}
+
+.srNoContent {
+  font-size: .78rem;
+  color: #c4c4c4;
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── 빈 상태 ── */
+.srEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  gap: 12px;
+}
+
+.srEmpty ion-icon {
+  font-size: 60px;
+  color: #e5e7eb;
+}
+
+.srEmptyTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #374151;
+  margin: 0;
+}
+
+.srEmptySub {
+  font-size: .82rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* ── 페이징 ── */
+.srPaging {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 32px;
+}
+
+.srPageBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: .875rem;
+  font-weight: 600;
+  color: #374151;
+  text-decoration: none;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.srPageBtn:hover {
+  background: #f0fdf9;
+  border-color: #6ee7b7;
+  color: #059669;
+}
+
+.srPageActive {
+  background: #20c997 !important;
+  border-color: #20c997 !important;
+  color: #fff !important;
+}
+
+.srPageArrow ion-icon { font-size: 1rem; }

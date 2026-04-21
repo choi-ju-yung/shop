@@ -18,9 +18,14 @@
         <result property="price"        column="PRODUCT_PRICE"/>
         <result property="explanation"  column="PRODUCT_EXPLANATION"/>
         <result property="tag"          column="PRODUCT_KEYWORD"/>
+        <result property="tradeStatus"  column="TRADE_STATUS"/>
+        <result property="buyerNo"      column="BUYER_NO"/>
         <result property="sellerName"   column="SELLER_NAME"/>
-        <result property="mainFilePath" column="MAIN_FILE_PATH"/>
-        <result property="regDate"      column="REG_DATE"/>
+        <result property="buyerName"    column="BUYER_NAME"/>
+        <result property="mainFilePath"     column="MAIN_FILE_PATH"/>
+        <result property="regDate"          column="REG_DATE"/>
+        <result property="hasReview"        column="HAS_REVIEW"/>
+        <result property="sellerProfileImg" column="SELLER_PROFILE_IMG"/>
     </resultMap>
 
     <!-- ===== 카테고리 조회 ===== -->
@@ -39,26 +44,63 @@
     <select id="selectMainProducts" resultMap="productMap">
         SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.PRODUCT_STATE,
                P.PRODUCT_PRICE, P.SUB_CATEGORY_NAME, P.PRODUCT_PLACE,
-               F.FILE_PATH AS MAIN_FILE_PATH
+               P.TRADE_STATUS, F.FILE_PATH AS MAIN_FILE_PATH
         FROM PRODUCT P
         LEFT JOIN PRODUCT_FILE F ON P.PRODUCT_ID = F.PRODUCT_ID AND F.IS_MAIN = 1
+        WHERE P.IS_DELETED = 'N'
         ORDER BY P.PRODUCT_ID DESC
         FETCH FIRST 16 ROWS ONLY
     </select>
 
-    <!-- ===== 상품 상세 조회 (판매자 이름 포함) ===== -->
-    <select id="selectProductById" parameterType="String" resultMap="productMap">
+    <!-- ===== 상품 상세 조회 (판매자 이름 + 프로필 이미지 + 대표 이미지 포함) ===== -->
+    <select id="selectProductById" parameterType="long" resultMap="productMap">
         SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.SUB_CATEGORY_NAME,
                P.PRODUCT_PLACE, P.PRODUCT_STATE, P.PRODUCT_PRICE,
                P.PRODUCT_EXPLANATION, P.PRODUCT_KEYWORD,
-               U.NAME AS SELLER_NAME
+               P.TRADE_STATUS, P.BUYER_NO,
+               MUP.NICKNAME        AS SELLER_NAME,
+               MUP.PROFILE_IMG     AS SELLER_PROFILE_IMG,
+               F.FILE_PATH         AS MAIN_FILE_PATH
         FROM PRODUCT P
-        JOIN USERS_TB U ON P.USER_NO = U.USER_NO
+        JOIN MY_USER_PAGE MUP ON P.USER_NO = MUP.USER_NO
+        LEFT JOIN PRODUCT_FILE F ON P.PRODUCT_ID = F.PRODUCT_ID AND F.IS_MAIN = 1
         WHERE P.PRODUCT_ID = #{productId}
+          AND P.IS_DELETED = 'N'
+    </select>
+
+    <!-- ===== 추천 상품 (같은 서브카테고리, 현재 상품 제외, 판매중만, 랜덤 4개) ===== -->
+    <select id="selectRelatedProducts" parameterType="map" resultMap="productMap">
+        SELECT * FROM (
+            SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.PRODUCT_STATE,
+                   P.PRODUCT_PRICE, P.SUB_CATEGORY_NAME, P.PRODUCT_PLACE,
+                   P.TRADE_STATUS, F.FILE_PATH AS MAIN_FILE_PATH
+            FROM PRODUCT P
+            LEFT JOIN PRODUCT_FILE F ON P.PRODUCT_ID = F.PRODUCT_ID AND F.IS_MAIN = 1
+            WHERE P.IS_DELETED = 'N'
+              AND P.TRADE_STATUS = 'SALE'
+              AND P.SUB_CATEGORY_NAME = #{subCate}
+              AND P.PRODUCT_ID != #{productId}
+            ORDER BY DBMS_RANDOM.VALUE
+        ) WHERE ROWNUM &lt;= 4
+    </select>
+
+    <!-- ===== 판매자 상품 목록 (외부에서 특정 유저 조회, 상태 필터 가능) ===== -->
+    <select id="selectSellerProducts" parameterType="map" resultMap="productMap">
+        SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.PRODUCT_STATE,
+               P.PRODUCT_PRICE, P.SUB_CATEGORY_NAME, P.PRODUCT_PLACE,
+               P.TRADE_STATUS, F.FILE_PATH AS MAIN_FILE_PATH
+        FROM PRODUCT P
+        LEFT JOIN PRODUCT_FILE F ON P.PRODUCT_ID = F.PRODUCT_ID AND F.IS_MAIN = 1
+        WHERE P.USER_NO    = #{userNo}
+          AND P.IS_DELETED = 'N'
+        <if test="tradeStatus != null and tradeStatus != 'ALL'">
+          AND P.TRADE_STATUS = #{tradeStatus}
+        </if>
+        ORDER BY P.PRODUCT_ID DESC
     </select>
 
     <!-- ===== 상품 이미지 파일 목록 ===== -->
-    <select id="selectProductFilesById" parameterType="String"
+    <select id="selectProductFilesById" parameterType="long"
             resultType="com.example.demo.product.vo.ProductFile">
         SELECT FILE_ID   AS fileId,
                PRODUCT_ID AS productId,
@@ -75,11 +117,23 @@
     <select id="searchProducts" parameterType="String" resultMap="productMap">
         SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.PRODUCT_STATE,
                P.PRODUCT_PRICE, P.SUB_CATEGORY_NAME, P.PRODUCT_PLACE,
-               F.FILE_PATH AS MAIN_FILE_PATH
+               P.TRADE_STATUS, F.FILE_PATH AS MAIN_FILE_PATH
         FROM PRODUCT P
         LEFT JOIN PRODUCT_FILE F ON P.PRODUCT_ID = F.PRODUCT_ID AND F.IS_MAIN = 1
-        WHERE UPPER(P.PRODUCT_TITLE) LIKE UPPER('%' || #{keyword} || '%')
-           OR UPPER(P.PRODUCT_KEYWORD) LIKE UPPER('%' || #{keyword} || '%')
+        WHERE P.IS_DELETED = 'N'
+          AND (UPPER(P.PRODUCT_TITLE)   LIKE UPPER('%' || #{keyword} || '%')
+           OR  UPPER(P.PRODUCT_KEYWORD) LIKE UPPER('%' || #{keyword} || '%'))
+        ORDER BY P.PRODUCT_ID DESC
+    </select>
+
+    <!-- ES 초기 동기화용: 삭제되지 않은 전체 상품 조회 -->
+    <select id="selectAllForEs" resultMap="productMap">
+        SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.PRODUCT_STATE,
+               P.PRODUCT_PRICE, P.PRODUCT_PLACE, P.TRADE_STATUS,
+               P.PRODUCT_KEYWORD, F.FILE_PATH AS MAIN_FILE_PATH
+        FROM PRODUCT P
+        LEFT JOIN PRODUCT_FILE F ON P.PRODUCT_ID = F.PRODUCT_ID AND F.IS_MAIN = 1
+        WHERE P.IS_DELETED = 'N'
         ORDER BY P.PRODUCT_ID DESC
     </select>
 
@@ -89,10 +143,11 @@
     <select id="selectProductsByCategory" parameterType="String" resultMap="productMap">
         SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.PRODUCT_STATE,
                P.PRODUCT_PRICE, P.SUB_CATEGORY_NAME, P.PRODUCT_PLACE,
-               F.FILE_PATH AS MAIN_FILE_PATH
+               P.TRADE_STATUS, F.FILE_PATH AS MAIN_FILE_PATH
         FROM PRODUCT P
         LEFT JOIN PRODUCT_FILE F ON P.PRODUCT_ID = F.PRODUCT_ID AND F.IS_MAIN = 1
-        WHERE P.SUB_CATEGORY_NAME IN (
+        WHERE P.IS_DELETED = 'N'
+          AND P.SUB_CATEGORY_NAME IN (
             SELECT S.SUB_CATEGORY_NAME
             FROM SUBCATEGORY S
             JOIN CATEGORY C ON S.PARENT_CATEGORY_ID = C.CATEGORY_ID
@@ -113,7 +168,7 @@
 
     <!-- ===== 상품 등록 ===== -->
     <insert id="insertProduct" parameterType="com.example.demo.product.vo.Product">
-        <selectKey keyProperty="productId" resultType="string" order="BEFORE">
+        <selectKey keyProperty="productId" resultType="long" order="BEFORE">
             SELECT product_id_seq.NEXTVAL FROM dual
         </selectKey>
         INSERT INTO product (
@@ -135,5 +190,92 @@
             #{fileId}, #{productId}, #{originalName}, #{savedName}, #{filePath}, #{isMain}
         )
     </insert>
+	
+	<!-- 회원탈퇴 시 해당 유저의 상품 일괄 소프트 딜리트 -->
+	<update id="softDeleteProductsByUserNo" parameterType="long">
+		UPDATE PRODUCT
+		   SET IS_DELETED = 'Y',
+		       DELETED_AT = SYSTIMESTAMP
+		 WHERE USER_NO = #{userNo}
+		   AND IS_DELETED = 'N'
+	</update>
+
+	<!-- 회원탈퇴 시 해당 유저 상품의 찜 목록 일괄 삭제 -->
+	<delete id="deleteWishlistByUserProducts" parameterType="long">
+		DELETE FROM WISHLIST
+		 WHERE PRODUCT_ID IN (
+		     SELECT PRODUCT_ID FROM PRODUCT WHERE USER_NO = #{userNo}
+		 )
+	</delete>
+
+	<!-- 상품 소프트 딜리트 -->
+	<update id="softDeleteProduct" parameterType="long">
+		UPDATE PRODUCT
+		   SET IS_DELETED = 'Y',
+		       DELETED_AT = SYSTIMESTAMP
+		 WHERE PRODUCT_ID = #{productId}
+	</update>
+
+	<!-- 삭제된 상품의 찜 목록 제거 (NOTIFICATION은 히스토리로 남김) -->
+	<delete id="deleteWishlistByProductId" parameterType="long">
+		DELETE FROM WISHLIST WHERE PRODUCT_ID = #{productId}
+	</delete>
+
+	<!-- 삭제 권한 확인용: 상품 소유자 조회 (삭제 여부 무관하게 조회) -->
+	<select id="selectSellerNoByProductId" parameterType="long" resultType="long">
+		SELECT USER_NO FROM PRODUCT WHERE PRODUCT_ID = #{productId}
+	</select>
+
+	<!-- ===== TRADE 기록 (SOLD 처리 시 1회만 INSERT, 거래완료는 되돌릴 수 없음) ===== -->
+	<insert id="insertTrade" parameterType="map">
+		INSERT INTO TRADE (PRODUCT_ID, SELLER_NO, BUYER_NO)
+		VALUES (#{productId}, #{userNo}, #{buyerNo})
+	</insert>
+
+	<!-- ===== 거래 상태 변경 (판매자 본인만) ===== -->
+	<!-- tradeStatus: SALE / RESERVED / SOLD -->
+	<!-- SOLD 시에만 buyerNo 세팅, 나머지는 NULL 유지 -->
+	<update id="updateTradeStatus" parameterType="map">
+		UPDATE PRODUCT
+		   SET TRADE_STATUS = #{tradeStatus}
+		   <if test="buyerNo != null">
+		   		,BUYER_NO = #{buyerNo}
+		   	</if>
+		 WHERE PRODUCT_ID = #{productId}
+		   AND USER_NO    = #{userNo}
+		   AND IS_DELETED = 'N'
+		   AND TRADE_STATUS != 'SOLD'
+	</update>
+
+	<!-- ===== 내 판매 목록 (상태 필터 가능) ===== -->
+	<select id="selectMySellingProducts" parameterType="map" resultMap="productMap">
+		SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.PRODUCT_STATE,
+		       P.PRODUCT_PRICE, P.SUB_CATEGORY_NAME, P.PRODUCT_PLACE,
+		       P.TRADE_STATUS, P.BUYER_NO,
+		       F.FILE_PATH AS MAIN_FILE_PATH
+		FROM PRODUCT P
+		LEFT JOIN PRODUCT_FILE F ON P.PRODUCT_ID = F.PRODUCT_ID AND F.IS_MAIN = 1
+		WHERE P.USER_NO    = #{userNo}
+		  AND P.IS_DELETED = 'N'
+		<if test="tradeStatus != null and tradeStatus != 'ALL'">
+		  AND P.TRADE_STATUS = #{tradeStatus}
+		</if>
+		ORDER BY P.PRODUCT_ID DESC
+	</select>
+
+	<!-- ===== 내 구매 목록 (거래완료 + 리뷰 작성 여부 포함) ===== -->
+	<select id="selectMyPurchasedProducts" parameterType="long" resultMap="productMap">
+		SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.PRODUCT_STATE,
+		       P.PRODUCT_PRICE, P.SUB_CATEGORY_NAME, P.PRODUCT_PLACE,
+		       P.TRADE_STATUS, P.BUYER_NO,
+		       F.FILE_PATH  AS MAIN_FILE_PATH,
+		       CASE WHEN R.REVIEW_ID IS NOT NULL THEN 1 ELSE 0 END AS HAS_REVIEW
+		FROM PRODUCT P
+		LEFT JOIN PRODUCT_FILE F ON P.PRODUCT_ID = F.PRODUCT_ID AND F.IS_MAIN = 1
+		LEFT JOIN REVIEW R     ON R.PRODUCT_ID = P.PRODUCT_ID AND R.REVIEWER_NO = #{userNo}
+		WHERE P.BUYER_NO     = #{userNo}
+		  AND P.TRADE_STATUS = 'SOLD'
+		ORDER BY P.PRODUCT_ID DESC
+	</select>
 
 </mapper>

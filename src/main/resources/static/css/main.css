@@ -330,3 +330,224 @@ div.btnContainer{
                     transform: scale(1);
                 }
             }
+
+/* =====================================================
+   메인 최신 상품 섹션
+   ===================================================== */
+.mainSection {
+    margin-bottom: 60px;
+}
+
+.mainSectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.mainSectionTitle {
+    font-size: 22px;
+    font-weight: 700;
+    color: #313030;
+}
+
+.mainMoreBtn {
+    font-size: 14px;
+    color: #20c997;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.mainMoreBtn:hover { text-decoration: underline; }
+
+.mainSkeleton {
+    width: calc(25% - 15px);
+    aspect-ratio: 3/4;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s infinite;
+    border-radius: 12px;
+}
+
+@keyframes skeleton-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.mainProductGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.mainCard {
+    position: relative;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.mainCard:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    transform: translateY(-4px);
+}
+
+.mainCardLink {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.mainCardImg {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #f8f8f8;
+    position: relative;
+}
+
+.mainCardImg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.mainCard:hover .mainCardImg img { transform: scale(1.05); }
+
+.mainSaleBadge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #20c997;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+.mainSoldDim {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-radius: 10px;
+}
+
+.mainReservedBadge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #f59e0b;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+.mainRecentClear {
+    font-size: 12px;
+    color: #aaa;
+    background: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color 0.2s, border-color 0.2s;
+}
+.mainRecentClear:hover {
+    color: #ef4444;
+    border-color: #fca5a5;
+}
+
+.mainWishBtn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 34px;
+    height: 34px;
+    background: rgba(255,255,255,0.92);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ccc;
+    font-size: 18px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: color 0.2s, transform 0.15s;
+    z-index: 1;
+}
+
+.mainWishBtn:hover { color: #ff4d6d; transform: scale(1.1); }
+.mainWishBtn--active { color: #ff4d6d; }
+
+.mainCardBody { padding: 12px 14px 14px; }
+
+.mainCardTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: #313030;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 6px;
+}
+
+.mainCardPrice {
+    font-size: 17px;
+    font-weight: 700;
+    color: #313030;
+    margin-bottom: 8px;
+}
+
+.mainCardMeta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #aaa;
+    gap: 6px;
+    min-width: 0;
+}
+
+.mainCardState {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #f0fdf4;
+    color: #20c997;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.mainCardPlace {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.mainCardPlace ion-icon { font-size: 12px; }
+
+.mainEmpty {
+    grid-column: 1 / -1;
+    padding: 40px;
+    color: #999;
+    text-align: center;
+}

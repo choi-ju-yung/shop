@@ -3,6 +3,9 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="NotificationMapper">
+	<!--
+	  일반 알림 INSERT (MESSAGE 타입 등 중복 허용 알림에 사용)
+	-->
 	<insert id="insertNotification" parameterType="Map">
 		<selectKey keyProperty="id" resultType="String" order="BEFORE">
 			SELECT 'NOTI' || LPAD(noti_seq.NEXTVAL, 5, '0') FROM DUAL
@@ -10,7 +13,18 @@
 		INSERT INTO NOTIFICATION(NOTI_ID, USER_NO, NOTI_MESSAGE, NOTI_URL, NOTIFICATION_TYPE)
 		VALUES (#{id}, #{userNo}, #{notiMessage}, #{notiUrl}, #{notificationType})
 	</insert>
-	
+
+	<!-- 미읽음 알림 갱신 (메시지·시간 업데이트) -->
+	<update id="updateUnreadNotification" parameterType="Map">
+		UPDATE NOTIFICATION
+		SET NOTI_MESSAGE = #{notiMessage},
+		    CREATED_AT   = SYSTIMESTAMP
+		WHERE USER_NO           = #{userNo}
+		  AND NOTI_URL          = #{notiUrl}
+		  AND NOTIFICATION_TYPE = #{notificationType}
+		  AND IS_READ           = 'N'
+	</update>
+
 	<select id="selectNoReadNotiByN" resultType="int">
 		SELECT COUNT(*) FROM NOTIFICATION 
 		WHERE USER_NO = #{userNo} 
@@ -18,9 +32,29 @@
 	</select>
 	
 	<select id="selectNoReadNotiByNFromM" resultType="int">
-		SELECT COUNT(*) FROM NOTIFICATION 
+		SELECT COUNT(*) FROM NOTIFICATION
 		WHERE USER_NO = #{userNo}
 		AND IS_READ = 'N'
 		AND NOTIFICATION_TYPE = 'MESSAGE'
 	</select>
+
+	<!-- 알림 목록 조회 (PageHelper 페이징 적용) -->
+	<select id="selectNotifications" resultType="com.example.demo.notification.Notification" parameterType="long">
+		SELECT NOTI_ID, USER_NO, NOTI_MESSAGE, NOTI_URL, IS_READ,
+		       CREATED_AT,
+		       NOTIFICATION_TYPE
+		FROM NOTIFICATION
+		WHERE USER_NO = #{userNo}
+		ORDER BY CREATED_AT DESC
+	</select>
+
+	<update id="markAllAsRead" parameterType="long">
+		UPDATE NOTIFICATION SET IS_READ = 'Y'
+		WHERE USER_NO = #{userNo} AND IS_READ = 'N'
+	</update>
+
+	<!-- 회원탈퇴 시 알림 전체 삭제 -->
+	<delete id="deleteNotificationsByUserNo" parameterType="long">
+		DELETE FROM NOTIFICATION WHERE USER_NO = #{userNo}
+	</delete>
 </mapper>

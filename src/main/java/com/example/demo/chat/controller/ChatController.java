@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -16,7 +17,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.demo.chat.service.ChatService;
 import com.example.demo.chat.vo.ChatMessage;
 import com.example.demo.chat.vo.ChatRoom;
+import com.example.demo.mypage.service.MyPageService;
 import com.example.demo.user.vo.UserVO;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -24,41 +28,65 @@ import jakarta.servlet.http.HttpSession;
 public class ChatController {
 	
     private final ChatService chatService;
-    
-    @Autowired
-    public ChatController(ChatService chatService) {
-    	this.chatService = chatService;
-	}
+    private final MyPageService myPageService;
 
+    @Autowired
+    public ChatController(ChatService chatService, MyPageService myPageService) {
+        this.chatService = chatService;
+        this.myPageService = myPageService;
+    }
+
+    /** 채팅방 생성 or 기존 방 조회 → roomId 반환 (AJAX용) — 닉네임 없으면 차단 */
+    @PostMapping("/member/chat/room/enter")
+    @ResponseBody
+    public ResponseEntity<String> enterChatRoom(@RequestParam int productId, @RequestParam int targetUserNo, HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+        long userNo = loginUser.getUserNo();
+        if (!myPageService.hasNickname(userNo)) {
+            return ResponseEntity.status(403).body("NICKNAME_REQUIRED");
+        }
+        ChatRoom room = chatService.getOrCreateRoom(productId, (int) userNo, targetUserNo);
+        return ResponseEntity.ok(String.valueOf(room.getRoomId()));
+    }
+
+    /** 채팅방 화면 렌더링 (폼 submit용) */
     @PostMapping("/member/chat/room")
-    public String chatRoom(@RequestParam int productId, @RequestParam int targetUserNo, @RequestParam String roomId,Model model) {
-        model.addAttribute("productId", productId);
-        model.addAttribute("targetUserNo", targetUserNo);
-        model.addAttribute("roomId",roomId);
-        
+    public String chatRoom(@RequestParam int productId, @RequestParam int targetUserNo,
+                           @RequestParam String roomId, Model model, HttpSession session) {
+        UserVO loginUser = (UserVO) session.getAttribute("loginUser");
+        long userNo = loginUser.getUserNo();
+
         Map map = new HashMap();
         map.put("roomId", roomId);
         map.put("targetUserNo", targetUserNo);
-        
+
         List<ChatMessage> messages = chatService.getChatMessagesByRoomId(map);
-       
-        model.addAttribute("messages",messages);
-        
+        Map roomDetail = chatService.getChatRoomDetail(roomId, userNo);
+
+        model.addAttribute("roomId", roomId);
+        model.addAttribute("targetUserNo", targetUserNo);
+        model.addAttribute("messages", messages);
+        model.addAttribute("room", roomDetail);
+
         return "chat/chatroom";
     }
 
-    @GetMapping("/member/notifications")
+    @GetMapping("/member/chat/unread")
     @ResponseBody
     public int getUnreadCount(@RequestParam int roomId, @RequestParam int userNo) {
         return chatService.getUnreadMessageCount(roomId, userNo);
     }
     
     @GetMapping("/member/chat")
-    public String chatList(HttpSession session, Model model) {
-    	long userNo = ((UserVO)session.getAttribute("loginUser")).getUserNo();
-
+    public String chatList(@RequestParam(defaultValue = "1") int page,
+                           HttpSession session, Model model) {
+        long userNo = ((UserVO)session.getAttribute("loginUser")).getUserNo();
+        PageHelper.startPage(page, 12);
         List<ChatRoom> rooms = chatService.getUserChatRooms(userNo);
+        PageInfo<ChatRoom> pageInfo = new PageInfo<>(rooms);
         model.addAttribute("rooms", rooms);
+        model.addAttribute("currentPage", pageInfo.getPageNum());
+        model.addAttribute("totalPages",  pageInfo.getPages());
         return "chat/chatList";
     }
 

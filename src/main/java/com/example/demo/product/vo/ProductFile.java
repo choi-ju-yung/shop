@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProductFile {
     private int fileId;
-    private String productId;
+    private Long productId;
     private String originalName;  // 사용자가 업로드한 원본 파일명
     private String savedName;     // 서버에 저장된 랜덤 파일명
     private String filePath;      // 웹에서 접근 가능한 경로

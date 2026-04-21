@@ -1,0 +1,192 @@
+/* =====================================================
+   wishList.css - 찜한 상품 목록 페이지
+   ===================================================== */
+
+/* 마이페이지 공통 레이아웃 - 사이드바 옆에 flex item으로 배치 */
+section {
+  display: flex;
+}
+
+.wishPageWrap {
+  flex: 1;
+  min-width: 0;
+  padding: 0 30px 80px;
+}
+
+.wishPageTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #313030;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wishPageTitle ion-icon {
+  color: #ff4d6d;
+  font-size: 24px;
+}
+
+.wishCount {
+  font-size: 14px;
+  font-weight: 400;
+  color: #888;
+  margin-left: 4px;
+}
+
+/* ── 빈 상태 ── */
+.wishEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  color: #aaa;
+  gap: 16px;
+}
+
+.wishEmpty ion-icon {
+  font-size: 64px;
+  color: #ddd;
+}
+
+.wishEmpty p {
+  font-size: 16px;
+}
+
+.wishEmptyBtn {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 10px 24px;
+  background: #20c997;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.wishEmptyBtn:hover {
+  background: #17a87e;
+}
+
+/* ── 카드 그리드 ── */
+.wishGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.wishCard {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+  position: relative;
+}
+
+.wishCard:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+}
+
+/* 찜 취소 버튼 */
+.wishRemoveBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.92);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff4d6d;
+  font-size: 18px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transition: background 0.2s, transform 0.15s;
+  z-index: 1;
+}
+
+.wishRemoveBtn:hover {
+  background: #ff4d6d;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+/* 이미지 */
+.wishCardImg {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #f8f8f8;
+}
+
+.wishCardImg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.wishCard:hover .wishCardImg img {
+  transform: scale(1.04);
+}
+
+/* 상품 정보 */
+.wishCardInfo {
+  padding: 12px 14px 14px;
+}
+
+.wishCardTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #313030;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wishCardPrice {
+  font-size: 16px;
+  font-weight: 700;
+  color: #20c997;
+  margin-bottom: 6px;
+}
+
+.wishCardMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.wishCardState {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #f0fdf4;
+  color: #20c997;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.wishCardLink {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.wishCardSeller {
+  font-size: 12px;
+  color: #999;
+  margin-top: 4px;
+}

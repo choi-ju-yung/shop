@@ -1,89 +1,73 @@
 @charset "UTF-8";
 
-/* 왼쪽 section(카테고리) */
-.pageChoice {
-	color: #20C997 !important;
-	font-weight: 700;
-}
+/* =====================================================
+   마이페이지 공통 사이드바
+   ===================================================== */
 
 .mypageCategory {
-	/* border: 1px solid darkblue; */
-	width: 220px;
-	height: 600px;
+  width: 200px;
+  flex-shrink: 0;
+  padding: 0 20px 40px 0;
 }
 
-.mypageCategory a {
-	text-decoration: none;
-	color: #313030;
+/* 섹션 그룹 */
+.mypageSideSection {
+  margin-bottom: 24px;
 }
 
-.mypage {
-	margin-bottom: 30px;
+.mypageSideLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #aaa;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding-left: 4px;
 }
 
-.myInfo {
-	height: 120px;
-	margin-bottom: 25px;
+.mypageSideMenu {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.myInfo>h3 {
-	color: #313030
+.mypageSideMenu li a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #555;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
 }
 
-.myprofileInfo {
-	height: 90px;
-	margin-bottom: 25px;
+.mypageSideMenu li a ion-icon {
+  font-size: 17px;
+  color: #bbb;
+  flex-shrink: 0;
 }
 
-.myprofileInfo>h3 {
-	color: #313030
+.mypageSideMenu li a:hover {
+  background: #f5f5f5;
+  color: #313030;
 }
 
-.mypageAll {
-	font-size: 16px;
-	color: #8F8F8F !important;
+.mypageSideMenu li a:hover ion-icon { color: #20c997; }
+
+.mypageSideMenu li a.active {
+  background: #f0fdf8;
+  color: #20c997;
+  font-weight: 700;
 }
 
-.mypageAll:hover {
-	font-size: 16px;
-	color: #20C997 !important;
-	font-weight: 700;
-}
+.mypageSideMenu li a.active ion-icon { color: #20c997; }
 
-.mypageMargin {
-	margin-bottom: 14px;
-}
-
-/* 내 상점 가기 */
-.goToStore {
-	font-size: 18px;
-	color: #20C997;
-}
-
-.goToStoreIcon {
-	font-size: 20px;
-	color: #20C997;
-	padding-right: 3px;
-}
-
-.goToStoreBtn {
-	background-color: white;
-	border: #20C997 2px solid;
-	border-radius: 10px;
-	width: 150px;
-	height: 40px;
-	/* margin-top: 130px; */
-	margin-bottom: 30px;
-	cursor: pointer;
-	transition: ease-out 0.2s;
-}
-
-.goToStoreDiv {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-}
-
-.goToStoreBtn:active {
-	transform: scale(0.9);
+/* 구분선 */
+.mypageSideDivider {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: 16px 0;
 }

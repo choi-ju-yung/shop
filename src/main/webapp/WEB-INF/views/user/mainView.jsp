@@ -1,9 +1,9 @@
-	<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ include file="../common/header.jsp"%>
 <link rel="stylesheet" href="<%=request.getContextPath()%>/css/main.css" />
 
 <section>
-   <!-- 광고배너 (DB에서 동적 로드) -->
+   <!-- 배너 슬라이드 -->
    <div class="slideContainer">
       <div class="btnContainer">
          <ul class="slide" id="bannerSlide"></ul>
@@ -47,14 +47,17 @@
       </a>
    </div>
 
-   <!-- 최신 상품 목록 (AJAX로 실시간 로드) -->
-   <div class="popularProDiv">
-      <div class="proTitleDiv">
-         <h1 class="proTitle">최신 상품</h1>
-         <a href="<%=request.getContextPath()%>/product/category" class="moreBtn">더보기</a>
+   <!-- 최신 상품 -->
+   <div class="mainSection">
+      <div class="mainSectionHeader">
+         <h2 class="mainSectionTitle">최신 상품</h2>
+         <a href="<%=request.getContextPath()%>/product/category" class="mainMoreBtn">더보기 &rsaquo;</a>
       </div>
-      <div class="productDiv" id="mainProductList">
-         <p style="padding:20px;color:#999;">상품을 불러오는 중...</p>
+      <div class="mainProductGrid" id="mainProductList">
+         <div class="mainSkeleton"></div>
+         <div class="mainSkeleton"></div>
+         <div class="mainSkeleton"></div>
+         <div class="mainSkeleton"></div>
       </div>
    </div>
 </section>
@@ -62,6 +65,8 @@
 <script>
 (function() {
     var ctx = '<%=request.getContextPath()%>';
+    var isLoggedIn  = ${ not empty sessionScope.loginUser ? 'true' : 'false' };
+    var loginUserNo = ${ not empty sessionScope.loginUser ? sessionScope.loginUser.userNo : 0 };
 
     $.ajax({
         url: ctx + '/product/list',
@@ -70,39 +75,91 @@
         success: function(products) {
             var html = '';
             if (!products || products.length === 0) {
-                html = '<p style="padding:20px;color:#999;">등록된 상품이 없습니다.</p>';
+                html = '<p class="mainEmpty">등록된 상품이 없습니다.</p>';
             } else {
                 products.forEach(function(p) {
                     var imgSrc = p.mainFilePath
                         ? ctx + p.mainFilePath
                         : ctx + '/images/common/hifiveLogo.png';
                     var detailUrl = ctx + '/product/' + p.productId;
-                    var stateLabel = (p.state === '미개봉') ? 'NEW ' + p.state : p.state;
+                    var ts    = p.tradeStatus || 'SALE';
                     var price = p.price ? p.price.toLocaleString() + '원' : '가격 미정';
-                    html += '<div class="productAll">' +
-                        '<div class="product">' +
-                        '<div class="productImg">' +
-                        '<a class="productLink" href="' + detailUrl + '">' +
-                        '<img src="' + imgSrc + '" alt="' + p.title + '" onerror="this.src=\'' + ctx + '/images/common/hifiveLogo.png\'">' +
-                        '</a>' +
-                        '</div>' +
-                        '<div class="proContent">' +
-                        '<h4 class="contentMargin"><a href="' + detailUrl + '" class="aTag productTitle">' + p.title + '</a></h4>' +
-                        '<div class="PriceNStatus">' +
-                        '<h3 class="price">' + price + '</h3>' +
-                        '<div class="statusBtnDiv"><span class="statusBtn">' + stateLabel + '</span></div>' +
-                        '</div>' +
-                        '</div>' +
-                        '</div>' +
+                    var isMyProduct = isLoggedIn && (p.userNo == loginUserNo);
+                    var wishBtn = (isLoggedIn && !isMyProduct)
+                        ? '<button class="mainWishBtn" data-product-id="' + p.productId + '" data-trade-status="' + ts + '" title="찜하기"><ion-icon name="heart-outline"></ion-icon></button>'
+                        : '';
+                    var badge = ts === 'SOLD'     ? '<span class="mainSoldDim">거래완료</span>'
+                              : ts === 'RESERVED' ? '<span class="mainReservedBadge">예약중</span>'
+                              : '<span class="mainSaleBadge">판매중</span>';
+                    html +=
+                        '<div class="mainCard">' +
+                          wishBtn +
+                          '<a href="' + detailUrl + '" class="mainCardLink">' +
+                            '<div class="mainCardImg">' +
+                              '<img src="' + imgSrc + '" alt="' + p.title + '"' +
+                                   ' onerror="this.src=\'' + ctx + '/images/common/hifiveLogo.png\'">' +
+                              badge +
+                            '</div>' +
+                            '<div class="mainCardBody">' +
+                              '<p class="mainCardTitle">' + p.title + '</p>' +
+                              '<p class="mainCardPrice">' + price + '</p>' +
+                              '<div class="mainCardMeta">' +
+                                '<span class="mainCardState">' + p.state + '</span>' +
+                                '<span class="mainCardPlace"><ion-icon name="location-outline"></ion-icon>' + (p.place || '지역 미설정') + '</span>' +
+                              '</div>' +
+                            '</div>' +
+                          '</a>' +
                         '</div>';
                 });
             }
             $('#mainProductList').html(html);
+
+            /* 찜 상태 초기화 */
+            if (isLoggedIn) {
+                document.querySelectorAll('.mainWishBtn').forEach(function(btn) {
+                    $.ajax({
+                        url: ctx + '/member/wish/status',
+                        data: { productId: btn.dataset.productId },
+                        success: function(res) { applyMainWish(btn, res.wished); }
+                    });
+                });
+            }
         },
         error: function() {
-            $('#mainProductList').html('<p style="padding:20px;color:#f00;">상품 목록을 불러오지 못했습니다.</p>');
+            $('#mainProductList').html('<p class="mainEmpty">상품 목록을 불러오지 못했습니다.</p>');
         }
     });
+
+    /* 찜 버튼 클릭 */
+    $(document).on('click', '.mainWishBtn', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if ($(this).data('trade-status') === 'SOLD') {
+            alert('이미 판매된 상품입니다.');
+            return;
+        }
+        var btn = this;
+        $.ajax({
+            url: ctx + '/member/wish/toggle',
+            type: 'POST',
+            data: { productId: btn.dataset.productId },
+            success: function(res) { applyMainWish(btn, res.wished); },
+            error: function() { alert('로그인이 필요합니다.'); }
+        });
+    });
+
+    function applyMainWish(btn, wished) {
+        var icon = btn.querySelector('ion-icon');
+        if (wished) {
+            icon.setAttribute('name', 'heart');
+            btn.classList.add('mainWishBtn--active');
+        } else {
+            icon.setAttribute('name', 'heart-outline');
+            btn.classList.remove('mainWishBtn--active');
+        }
+    }
+
+
 })();
 </script>
 

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="WishMapper">
+
+    <insert id="insertWish" parameterType="map">
+        INSERT INTO WISHLIST(WISH_ID, USER_NO, PRODUCT_ID)
+        VALUES(WISH_SEQ.NEXTVAL, #{userNo}, #{productId})
+    </insert>
+
+    <delete id="deleteWish" parameterType="map">
+        DELETE FROM WISHLIST
+        WHERE USER_NO = #{userNo} AND PRODUCT_ID = #{productId}
+    </delete>
+
+    <select id="isWished" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM WISHLIST
+        WHERE USER_NO = #{userNo} AND PRODUCT_ID = #{productId}
+    </select>
+
+    <select id="selectWishList" parameterType="long" resultType="com.example.demo.wish.vo.WishVO">
+        SELECT
+            W.WISH_ID,
+            W.USER_NO,
+            W.PRODUCT_ID,
+            TO_CHAR(W.CREATED_AT, 'YYYY-MM-DD') AS CREATED_AT,
+            P.PRODUCT_TITLE,
+            P.PRODUCT_PRICE,
+            P.PRODUCT_STATE,
+            P.PRODUCT_PLACE,
+            PF.FILE_PATH        AS MAIN_FILE_PATH,
+            U.NAME              AS SELLER_NAME
+        FROM WISHLIST W
+        JOIN PRODUCT P        ON W.PRODUCT_ID = P.PRODUCT_ID AND P.IS_DELETED = 'N'
+        LEFT JOIN PRODUCT_FILE PF ON P.PRODUCT_ID = PF.PRODUCT_ID AND PF.IS_MAIN = 1
+        JOIN USERS U       ON P.USER_NO = U.USER_NO
+        WHERE W.USER_NO = #{userNo}
+        ORDER BY W.CREATED_AT DESC
+    </select>
+
+    <!-- 회원탈퇴 시 내가 찜한 목록 전체 삭제 -->
+    <delete id="deleteWishlistByUserNo" parameterType="long">
+        DELETE FROM WISHLIST WHERE USER_NO = #{userNo}
+    </delete>
+
+    <!-- 찜 시 판매자 번호 조회 -->
+    <select id="selectSellerNo" parameterType="long" resultType="long">
+        SELECT USER_NO FROM PRODUCT WHERE PRODUCT_ID = #{productId}
+    </select>
+
+</mapper>
