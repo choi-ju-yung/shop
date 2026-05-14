@@ -99,16 +99,6 @@
 		    <artifactId>oraclepki</artifactId>
 		    <version>${oracle-database.version}</version>
 		</dependency>
-		<dependency>
-		    <groupId>com.oracle.database.security</groupId>
-		    <artifactId>osdt_cert</artifactId>
-		    <version>${oracle-database.version}</version>
-		</dependency>
-		<dependency>
-		    <groupId>com.oracle.database.security</groupId>
-		    <artifactId>osdt_core</artifactId>
-		    <version>${oracle-database.version}</version>
-		</dependency>
 		
 		<dependency>
 		    <groupId>org.mybatis.spring.boot</groupId>
