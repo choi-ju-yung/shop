@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.coupon.dao.CouponDao">
+
+    <select id="selectAllCoupons" resultType="com.example.demo.coupon.vo.CouponVO">
+        SELECT COUPON_ID, NAME, TOTAL_COUNT, REMAINING_COUNT, START_DATE, END_DATE, CREATED_AT
+        FROM COUPON
+        ORDER BY CREATED_AT DESC
+    </select>
+
+    <select id="selectCouponById" parameterType="long" resultType="com.example.demo.coupon.vo.CouponVO">
+        SELECT COUPON_ID, NAME, TOTAL_COUNT, REMAINING_COUNT, START_DATE, END_DATE, CREATED_AT
+        FROM COUPON
+        WHERE COUPON_ID = #{couponId}
+    </select>
+
+    <insert id="insertCoupon" parameterType="com.example.demo.coupon.vo.CouponVO">
+        <selectKey keyProperty="couponId" resultType="long" order="BEFORE">
+            SELECT COUPON_SEQ.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO COUPON (COUPON_ID, NAME, TOTAL_COUNT, REMAINING_COUNT, START_DATE, END_DATE)
+        VALUES (#{couponId}, #{name}, #{totalCount}, #{totalCount}, #{startDate}, #{endDate})
+    </insert>
+
+    <insert id="insertUserCoupon" parameterType="com.example.demo.coupon.vo.UserCouponVO">
+        <selectKey keyProperty="userCouponId" resultType="long" order="BEFORE">
+            SELECT USER_COUPON_SEQ.NEXTVAL FROM DUAL
+        </selectKey>
+        INSERT INTO USER_COUPON (USER_COUPON_ID, USER_ID, COUPON_ID)
+        VALUES (#{userCouponId}, #{userId}, #{couponId})
+    </insert>
+
+    <select id="existsUserCoupon" resultType="boolean">
+        SELECT COUNT(*) FROM USER_COUPON
+        WHERE USER_ID = #{userId} AND COUPON_ID = #{couponId}
+    </select>
+
+</mapper>
