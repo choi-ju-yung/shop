@@ -1,7 +1,6 @@
 package com.example.demo.user.service;
 
 import java.sql.Timestamp;
-import java.util.UUID;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -70,7 +69,9 @@ public class UserService {
 	@Transactional
 	public void registKakaoUser(UserVO userVO) {
 		
-		userVO.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+		String encoder = passwordEncoder.encode(userVO.getPassword());
+		userVO.setOauthId(userVO.getOauthId());
+		userVO.setPassword(encoder);
 		userVO.setRole("ROLE_USER");
 		userVO.setOauthProvider("kakao");
 		

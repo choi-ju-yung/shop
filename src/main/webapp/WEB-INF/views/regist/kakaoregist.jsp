@@ -40,6 +40,21 @@
         <span class="registMsg ok">카카오 프로필 이름이 자동으로 입력되었습니다</span>
       </div>
 
+      <%-- 비밀번호 --%>
+      <div class="registGroup">
+        <label>비밀번호 <span class="req">*</span></label>
+        <input class="registInput" type="password" id="password" name="password"
+               placeholder="8자 이상 영문+숫자+특수문자" autocomplete="new-password">
+      </div>
+
+      <%-- 비밀번호 확인 --%>
+      <div class="registGroup">
+        <label>비밀번호 확인 <span class="req">*</span></label>
+        <input class="registInput" type="password" id="memberPwConfirm"
+               placeholder="비밀번호 재입력" autocomplete="new-password">
+        <span class="registMsg" id="pwMessage"></span>
+      </div>
+
       <%-- 약관 동의 --%>
       <div class="termsSection">
         <div class="termsAllRow">
