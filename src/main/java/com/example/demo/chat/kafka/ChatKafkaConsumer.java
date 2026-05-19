@@ -51,7 +51,11 @@ public class ChatKafkaConsumer {
             if (sentAtObj instanceof Timestamp) {
                 chatMessage.setSentAt((Timestamp) sentAtObj);
             } else if (sentAtObj != null) {
-                chatMessage.setSentAt(new Timestamp(((java.util.Date) sentAtObj).getTime()));
+                try {
+                    chatMessage.setSentAt((Timestamp) sentAtObj.getClass().getMethod("timestampValue").invoke(sentAtObj));
+                } catch (Exception ex) {
+                    chatMessage.setSentAt(new Timestamp(System.currentTimeMillis()));
+                }
             }
 
             // 3. Redis Publish (모든 서버에 브로드캐스트)
