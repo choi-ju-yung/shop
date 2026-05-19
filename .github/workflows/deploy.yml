@@ -54,7 +54,10 @@ jobs:
 
             set -a; source $APP_DIR/.env; set +a
 
-            nohup java -Xms128m -Xmx256m -jar $APP_DIR/demo-0.0.1-SNAPSHOT.war \
+            nohup java -Xms128m -Xmx256m \
+              -Dserver.servlet.session.cookie.secure=false \
+              -Dserver.servlet.session.cookie.same-site=lax \
+              -jar $APP_DIR/demo-0.0.1-SNAPSHOT.war \
               >> $APP_DIR/app.log 2>&1 &
 
             echo $! > $PID_FILE
