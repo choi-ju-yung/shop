@@ -47,7 +47,12 @@ public class ChatKafkaConsumer {
             // 2. DB에서 발신자 이름 + 저장된 시간 조회
             Map<?, ?> info = chatService.getLatestMessageNameTimeInfo(chatMessage.getRoomId());
             chatMessage.setSenderName((String) info.get("NAME"));
-            chatMessage.setSentAt((Timestamp) info.get("SENT_AT"));
+            Object sentAtObj = info.get("SENT_AT");
+            if (sentAtObj instanceof Timestamp) {
+                chatMessage.setSentAt((Timestamp) sentAtObj);
+            } else if (sentAtObj != null) {
+                chatMessage.setSentAt(new Timestamp(((java.util.Date) sentAtObj).getTime()));
+            }
 
             // 3. Redis Publish (모든 서버에 브로드캐스트)
             String json = objectMapper.writeValueAsString(chatMessage);
