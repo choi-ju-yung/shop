@@ -138,7 +138,7 @@ ORDER BY COALESCE(M.SENT_AT, R.CREATED_AT) DESC
 	</select>
 	
 	<update id="updateReadMessage" parameterType="Map">
-			UPDATE CHAT_MESSAGE SET IS_READ = 'Y' WHERE ROOM_ID = #{roomId} AND IS_READ = 'N' AND SENDER_NO = #{targetUserNo}
+			UPDATE /*+ NO_PARALLEL(CHAT_MESSAGE) */ CHAT_MESSAGE SET IS_READ = 'Y' WHERE ROOM_ID = #{roomId} AND IS_READ = 'N' AND SENDER_NO = #{targetUserNo}
 	</update>
 	
 	<select id="getLatestMessageNameTimeInfo" resultType="Map">
