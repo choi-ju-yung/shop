@@ -193,7 +193,7 @@
 	
 	<!-- 회원탈퇴 시 해당 유저의 상품 일괄 소프트 딜리트 -->
 	<update id="softDeleteProductsByUserNo" parameterType="long">
-		UPDATE PRODUCT
+		UPDATE /*+ NO_PARALLEL(PRODUCT) */ PRODUCT
 		   SET IS_DELETED = 'Y',
 		       DELETED_AT = SYSTIMESTAMP
 		 WHERE USER_NO = #{userNo}
@@ -202,7 +202,7 @@
 
 	<!-- 회원탈퇴 시 해당 유저 상품의 찜 목록 일괄 삭제 -->
 	<delete id="deleteWishlistByUserProducts" parameterType="long">
-		DELETE FROM WISHLIST
+		DELETE /*+ NO_PARALLEL(WISHLIST) */ FROM WISHLIST
 		 WHERE PRODUCT_ID IN (
 		     SELECT PRODUCT_ID FROM PRODUCT WHERE USER_NO = #{userNo}
 		 )
