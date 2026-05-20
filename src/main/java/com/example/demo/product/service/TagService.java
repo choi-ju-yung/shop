@@ -35,15 +35,11 @@ public class TagService {
         TagVO existing = tagDao.selectByTagName(tagName);
 
         if (existing != null) {
-            // DB useCount 증가
             tagDao.incrementUseCount(existing.getTagId());
-            // ES useCount 동기화
             tagEsDao.updateUseCount(existing.getTagId(), existing.getUseCount() + 1);
         } else {
-            // DB 신규 등록
             TagVO newTag = TagVO.builder().tagName(tagName).build();
             tagDao.insertTag(newTag);
-            // DB에서 다시 읽어 TAG_ID(시퀀스 값) 획득 후 ES 인덱싱
             TagVO saved = tagDao.selectByTagName(tagName);
             tagEsDao.index(TagDocument.builder()
                     .id(saved.getTagId())
@@ -51,18 +47,5 @@ public class TagService {
                     .useCount(1)
                     .build());
         }
-    }
-
-    /** 서버 시작 시 DB 전체 태그 → ES 동기화 */
-    public void syncAllToEs() {
-        List<TagVO> allTags = tagDao.selectAllTags();
-        List<TagDocument> docs = allTags.stream()
-                .map(t -> TagDocument.builder()
-                        .id(t.getTagId())
-                        .tagName(t.getTagName())
-                        .useCount(t.getUseCount())
-                        .build())
-                .toList();
-        tagEsDao.bulkIndex(docs);
     }
 }
