@@ -1,11 +1,9 @@
 package com.example.demo.mypage.controller;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +21,7 @@ import com.example.demo.mypage.service.MyPageService;
 import com.example.demo.mypage.vo.MyPage;
 import com.example.demo.user.service.UserService;
 import com.example.demo.user.vo.UserVO;
+import com.example.demo.util.FileStorageService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -32,14 +31,14 @@ public class MyPageController {
 
     private final UserService userService;
     private final MyPageService myPageService;
-
-    @Value("${app.upload.dir:C:/upload}")
-    private String uploadDir;
+    private final FileStorageService fileStorageService;
 
     @Autowired
-    public MyPageController(UserService userService, MyPageService myPageService) {
+    public MyPageController(UserService userService, MyPageService myPageService,
+                            FileStorageService fileStorageService) {
         this.userService = userService;
         this.myPageService = myPageService;
+        this.fileStorageService = fileStorageService;
     }
 
     /** 마이페이지 홈 */
@@ -91,7 +90,7 @@ public class MyPageController {
         try {
             long userNo = getLoginUserNo(session);
 
-            String savedName = null;
+            String profileUrl = null;
             if (file != null && !file.isEmpty()) {
                 String contentType = file.getContentType();
                 if (contentType == null || !contentType.startsWith("image/")) {
@@ -99,16 +98,10 @@ public class MyPageController {
                     result.put("message", "이미지 파일만 업로드 가능합니다.");
                     return ResponseEntity.badRequest().body(result);
                 }
-                String orig = file.getOriginalFilename();
-                String ext = orig.substring(orig.lastIndexOf(".")).toLowerCase();
-                savedName = "profile_" + userNo + "_" + UUID.randomUUID().toString().substring(0, 8) + ext;
-
-                File dir = new File(uploadDir + "/profile");
-                if (!dir.exists()) dir.mkdirs();
-                file.transferTo(new File(dir, savedName));
+                profileUrl = fileStorageService.upload("profile", file);
             }
 
-            myPageService.updateProfile(userNo, nickname, introduce, savedName);
+            myPageService.updateProfile(userNo, nickname, introduce, profileUrl);
             result.put("success", true);
         } catch (RuntimeException e) {
             result.put("success", false);

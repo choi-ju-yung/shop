@@ -20,14 +20,19 @@ public class ProductEsService {
         this.productEsDao = productEsDao;
     }
 
-    /** 상품 등록 시 ES 인덱싱 */
+    /** 상품 등록/수정 시 ES 인덱싱 */
     public void indexProduct(Product product) {
         productEsDao.index(toDocument(product));
     }
 
-    /** 상품 삭제 또는 거래완료 시 ES에서 제거 */
+    /** 상품 삭제 시 ES에서 제거 */
     public void removeProduct(Long productId) {
         productEsDao.delete(productId);
+    }
+
+    /** 거래 상태 변경 시 ES 상태 업데이트 (RESERVED / SOLD) */
+    public void updateProductStatus(Long productId, String tradeStatus) {
+        productEsDao.updateTradeStatus(productId, tradeStatus);
     }
 
     /** 상품명 + 태그 검색 → Product 리스트 반환 */
@@ -35,18 +40,6 @@ public class ProductEsService {
         return productEsDao.search(keyword).stream()
                 .map(this::toProduct)
                 .collect(Collectors.toList());
-    }
-
-    /** 전체 상품 bulk 인덱싱 */
-    public void bulkIndex(List<Product> products) {
-        List<ProductDocument> docs = products.stream()
-                .map(this::toDocument)
-                .collect(Collectors.toList());
-        productEsDao.bulkIndex(docs);
-    }
-
-    public long count() {
-        return productEsDao.count();
     }
 
     // ── 변환 ──────────────────────────────────────────

@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core"%>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ include file="../common/header.jsp"%>
 <link rel="stylesheet" href="<%=request.getContextPath()%>/css/user/sellerProfile.css"/>
 
@@ -11,7 +12,7 @@
     <div class="spAvatar">
       <c:choose>
         <c:when test="${not empty seller.profileImg}">
-          <img src="<%=request.getContextPath()%>/upload/profile/${seller.profileImg}"
+          <img src="${fn:startsWith(seller.profileImg, 'http') ? seller.profileImg : pageContext.request.contextPath.concat('/upload/profile/').concat(seller.profileImg)}"
                alt="프로필"
                onerror="this.src='<%=request.getContextPath()%>/images/profile/default_profile.png'">
         </c:when>

@@ -46,6 +46,11 @@ public class ProductRegistService {
         } catch (Exception e) {
             throw new RuntimeException("상품 등록 중 오류 발생", e);
         }
+        product.getProductFiles().stream()
+                .filter(ProductFile::isMain)
+                .map(ProductFile::getFilePath)
+                .findFirst()
+                .ifPresent(product::setMainFilePath);
         productEsService.indexProduct(product);
         return 1;
     }
@@ -115,8 +120,8 @@ public class ProductRegistService {
         }
         if ("SOLD".equals(tradeStatus)) {
             productRegistDao.insertTrade(map);
-            productEsService.removeProduct(productId);
         }
+        productEsService.updateProductStatus(productId, tradeStatus);
     }
 
     /** 내 판매 목록 (상태 필터: ALL / SALE / RESERVED / SOLD) */

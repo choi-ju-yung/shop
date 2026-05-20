@@ -1,10 +1,7 @@
 package com.example.demo.banner.controller;
 
-import java.io.File;
 import java.util.List;
-import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,17 +15,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.banner.service.BannerService;
 import com.example.demo.banner.vo.Banner;
+import com.example.demo.util.FileStorageService;
 
 @Controller
 public class BannerController {
 
     private final BannerService bannerService;
+    private final FileStorageService fileStorageService;
 
-    @Value("${app.upload.dir:C:/upload}")
-    private String uploadDir;
-
-    public BannerController(BannerService bannerService) {
+    public BannerController(BannerService bannerService, FileStorageService fileStorageService) {
         this.bannerService = bannerService;
+        this.fileStorageService = fileStorageService;
     }
 
     /** 메인페이지 AJAX - 활성 배너 목록 JSON 반환 */
@@ -61,16 +58,10 @@ public class BannerController {
                 return ResponseEntity.badRequest().body("이미지 파일만 업로드 가능합니다.");
             }
 
-            String bannerDir = uploadDir + "/banner";
-            File dir = new File(bannerDir);
-            if (!dir.exists()) dir.mkdirs();
-
-            String fileName  = UUID.randomUUID().toString() + "_" + imageFile.getOriginalFilename();
-            File   savedFile = new File(bannerDir + "/" + fileName);
-            imageFile.transferTo(savedFile);
+            String imageUrl = fileStorageService.upload("banner", imageFile);
 
             Banner banner = Banner.builder()
-                    .imageUrl("/upload/banner/" + fileName)
+                    .imageUrl(imageUrl)
                     .linkUrl(linkUrl)
                     .sortOrder(sortOrder)
                     .isActive("Y")

@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ include file="../common/header.jsp"%>
 <%@ include file="../mypage/myPageCategory.jsp"%>
 <link rel="stylesheet" href="<%=request.getContextPath()%>/css/mypage/myPageMain.css" />
@@ -9,9 +10,16 @@
   <%-- 프로필 카드 --%>
   <div class="mpProfileCard">
     <div class="mpProfileAvatar">
-      <img src="<%=request.getContextPath()%>/upload/profile/${myPage.profileImg}"
-           alt="프로필"
-           onerror="this.src='<%=request.getContextPath()%>/images/profile/default_profile.png'">
+      <c:choose>
+        <c:when test="${fn:startsWith(myPage.profileImg, 'http')}">
+          <img src="${myPage.profileImg}" alt="프로필"
+               onerror="this.src='<%=request.getContextPath()%>/images/profile/default_profile.png'">
+        </c:when>
+        <c:otherwise>
+          <img src="<%=request.getContextPath()%>/upload/profile/${myPage.profileImg}" alt="프로필"
+               onerror="this.src='<%=request.getContextPath()%>/images/profile/default_profile.png'">
+        </c:otherwise>
+      </c:choose>
     </div>
     <div class="mpProfileInfo">
       <div class="mpProfileName">

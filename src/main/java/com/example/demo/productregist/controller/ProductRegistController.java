@@ -1,11 +1,8 @@
 package com.example.demo.productregist.controller;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Locale.Category;
 import java.util.stream.Collectors;
 
@@ -36,6 +33,7 @@ import com.example.demo.product.vo.Product;
 import com.example.demo.product.vo.ProductFile;
 import com.example.demo.productregist.service.ProductRegistService;
 import com.example.demo.user.vo.UserVO;
+import com.example.demo.util.FileStorageService;
 import com.example.demo.util.UserIdEncoder;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,21 +49,21 @@ public class ProductRegistController {
     private final TagService tagService;
     private final ChatService chatService;
     private final MyPageService myPageService;
-
-    @Value("${app.upload.dir:C:/upload}")
-    private String uploadDir;
+    private final FileStorageService fileStorageService;
 
     @Autowired
     public ProductRegistController(ProductRegistService productRegistService,
                                    ProductEsService productEsService,
                                    TagService tagService,
                                    ChatService chatService,
-                                   MyPageService myPageService) {
+                                   MyPageService myPageService,
+                                   FileStorageService fileStorageService) {
         this.productRegistService = productRegistService;
         this.productEsService = productEsService;
         this.tagService = tagService;
         this.chatService = chatService;
         this.myPageService = myPageService;
+        this.fileStorageService = fileStorageService;
     }
 
     /** 상품 등록 화면 — 닉네임 없으면 설정 페이지로 */
@@ -105,36 +103,25 @@ public class ProductRegistController {
 
         long userNo = ((UserVO) session.getAttribute("loginUser")).getUserNo();
 
-        String productUploadDir = uploadDir + "/productRegist";
-        File dir = new File(productUploadDir);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
         List<ProductFile> fileList = new ArrayList<>();
         for (int i = 0; i < files.size(); i++) {
             MultipartFile file = files.get(i);
             if (!file.isEmpty()) {
-                // 이미지 파일 검증 (보안)
                 String contentType = file.getContentType();
                 if (contentType == null || !contentType.startsWith("image/")) {
                     log.warn("이미지가 아닌 파일 업로드 시도: {}", contentType);
                     continue;
                 }
                 try {
-                    String originalFilename = file.getOriginalFilename();
-                    String ext = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
-                    String savedName = UUID.randomUUID().toString() + ext;
-                    File dest = new File(productUploadDir, savedName);
-                    file.transferTo(dest);
+                    String url = fileStorageService.upload("productRegist", file);
                     fileList.add(ProductFile.builder()
-                            .originalName(originalFilename)
-                            .savedName(savedName)
-                            .filePath("/upload/productRegist/" + savedName)
+                            .originalName(file.getOriginalFilename())
+                            .savedName(url)
+                            .filePath(url)
                             .isMain(i == mainImageIndex)
                             .build());
-                } catch (IOException e) {
-                    log.error("파일 저장 실패", e);
+                } catch (Exception e) {
+                    log.error("파일 업로드 실패", e);
                 }
             }
         }

@@ -29,13 +29,11 @@ public class TagEsDao {
         this.client = client;
     }
 
-    /** tags 인덱스 재생성 (서버 시작 시 항상 최신 settings/mappings 적용) */
-    public void setupIndex() {
+    /** 인덱스가 없을 때만 생성 (기존 데이터 유지) */
+    public void ensureIndex() {
         try {
             boolean exists = client.indices().exists(e -> e.index("tags")).value();
-            if (exists) {
-                client.indices().delete(d -> d.index("tags"));
-            }
+            if (exists) return;
 
             InputStream productTagSettings = getClass().getResourceAsStream("/elasticsearch/tag-settings.json");
             InputStream productTagMappings = getClass().getResourceAsStream("/elasticsearch/tag-mappings.json");
@@ -45,7 +43,7 @@ public class TagEsDao {
                     .settings(s -> s.withJson(productTagSettings))
                     .mappings(m -> m.withJson(productTagMappings))
             );
-            log.info("tags 인덱스 재생성 완료");
+            log.info("tags 인덱스 생성 완료");
         } catch (Exception e) {
             log.error("tags 인덱스 생성 실패: {}", e.getMessage());
         }
@@ -56,10 +54,10 @@ public class TagEsDao {
         try {
             List<String> result = client.search(s -> s
                     .index("tags")
-                    .query(q -> q  // 쿼리 종류 설정 (match? term? range?)
+                    .query(q -> q
                             .match(m -> m
                                     .field("tagName")
-                                    .query(keyword) 
+                                    .query(keyword)
                             )
                     )
                     .sort(sort -> sort
@@ -79,10 +77,10 @@ public class TagEsDao {
         }
     }
 
-    /** ES에 태그 단건 저장 (DB 동기화용) */
+    /** ES에 태그 단건 저장 */
     public void index(TagDocument tag) {
         try {
-            client.index(IndexRequest.of(i -> i   // 없으면 생성 있으면 덮어쓰기
+            client.index(IndexRequest.of(i -> i
                     .index("tags")
                     .id(String.valueOf(tag.getId()))
                     .document(tag)
@@ -92,24 +90,9 @@ public class TagEsDao {
         }
     }
 
-    /** useCount 업데이트 */
-    public void updateUseCount(Long id, int useCount) {
-        try {
-            client.update(u -> u
-                    .index("tags")
-                    .id(String.valueOf(id))
-                    .doc(TagDocument.builder()
-                            .useCount(useCount)
-                            .build()),
-                    TagDocument.class
-            );
-        } catch (Exception e) {
-            log.error("태그 ES useCount 업데이트 실패: {}", e.getMessage());
-        }
-    }
-
-    /** 전체 태그 bulk 인덱싱 (서버 시작 시 DB → ES 동기화) */
-    public void bulkIndex(List<TagDocument> tags) {
+    /** 전체 태그 bulk 인덱싱 (관리자 수동 재동기화용) */
+    public int bulkIndex(List<TagDocument> tags) {
+        if (tags.isEmpty()) return 0;
         try {
             List<BulkOperation> operations = tags.stream()
                     .map(tag -> BulkOperation.of(op -> op
@@ -120,29 +103,30 @@ public class TagEsDao {
                             )
                     ))
                     .toList();
-
-            BulkResponse response = client.bulk(BulkRequest.of(b -> b
-                    .operations(operations)
-            ));
-
+            BulkResponse response = client.bulk(BulkRequest.of(b -> b.operations(operations)));
             if (response.errors()) {
                 response.items().stream()
                         .filter(item -> item.error() != null)
-                        .forEach(item -> log.error("bulk 인덱싱 실패 id={} reason={}",
-                                item.id(), item.error().reason()));
-            } else {
-                log.info("ES 태그 bulk 동기화 완료: {}건", tags.size());
+                        .forEach(item -> log.error("태그 bulk 실패 id={} reason={}", item.id(), item.error().reason()));
             }
+            return tags.size();
         } catch (Exception e) {
-            log.error("ES bulk 인덱싱 실패: {}", e.getMessage());
+            log.error("태그 ES bulk 인덱싱 실패: {}", e.getMessage());
+            return 0;
         }
     }
 
-    public long count() {
+    /** useCount 업데이트 */
+    public void updateUseCount(Long id, int useCount) {
         try {
-            return client.count(c -> c.index("tags")).count();
+            client.update(u -> u
+                    .index("tags")
+                    .id(String.valueOf(id))
+                    .doc(java.util.Map.of("useCount", useCount)),
+                    TagDocument.class
+            );
         } catch (Exception e) {
-            return 0;
+            log.error("태그 ES useCount 업데이트 실패: {}", e.getMessage());
         }
     }
 }

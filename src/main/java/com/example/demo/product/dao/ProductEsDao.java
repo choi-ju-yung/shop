@@ -31,11 +31,11 @@ public class ProductEsDao {
         this.client = client;
     }
 
-    /** products 인덱스 재생성 */
-    public void setupIndex() {
+    /** 인덱스가 없을 때만 생성 (기존 데이터 유지) */
+    public void ensureIndex() {
         try {
             boolean exists = client.indices().exists(e -> e.index(INDEX)).value();
-            if (exists) client.indices().delete(d -> d.index(INDEX));
+            if (exists) return;
 
             InputStream settings = getClass().getResourceAsStream("/elasticsearch/product-settings.json");
             InputStream mappings = getClass().getResourceAsStream("/elasticsearch/product-mappings.json");
@@ -45,7 +45,7 @@ public class ProductEsDao {
                     .settings(s -> s.withJson(settings))
                     .mappings(m -> m.withJson(mappings))
             );
-            log.info("products 인덱스 재생성 완료");
+            log.info("products 인덱스 생성 완료");
         } catch (Exception e) {
             log.error("products 인덱스 생성 실패: {}", e.getMessage(), e);
         }
@@ -90,18 +90,9 @@ public class ProductEsDao {
         }
     }
 
-    /** 거래 상태 변경 (SOLD 되면 인덱스에서 제거) */
-    public void delete(Long productId) {
-        try {
-            client.delete(d -> d.index(INDEX).id(String.valueOf(productId)));
-        } catch (Exception e) {
-            log.error("상품 ES 삭제 실패 productId={}: {}", productId, e.getMessage());
-        }
-    }
-
-    /** 전체 상품 bulk 인덱싱 (서버 시작 시 DB → ES 동기화) */
-    public void bulkIndex(List<ProductDocument> docs) {
-        if (docs.isEmpty()) return;
+    /** 전체 상품 bulk 인덱싱 (관리자 수동 재동기화용) */
+    public int bulkIndex(List<ProductDocument> docs) {
+        if (docs.isEmpty()) return 0;
         try {
             List<BulkOperation> ops = docs.stream()
                     .map(doc -> BulkOperation.of(op -> op
@@ -112,26 +103,39 @@ public class ProductEsDao {
                             )
                     ))
                     .toList();
-
             BulkResponse response = client.bulk(BulkRequest.of(b -> b.operations(ops)));
             if (response.errors()) {
                 response.items().stream()
                         .filter(item -> item.error() != null)
-                        .forEach(item -> log.error("bulk 실패 id={} reason={}",
-                                item.id(), item.error().reason()));
-            } else {
-                log.info("상품 ES bulk 동기화 완료: {}건", docs.size());
+                        .forEach(item -> log.error("bulk 실패 id={} reason={}", item.id(), item.error().reason()));
             }
+            return docs.size();
         } catch (Exception e) {
             log.error("상품 ES bulk 인덱싱 실패: {}", e.getMessage());
+            return 0;
         }
     }
 
-    public long count() {
+    /** 상품 tradeStatus 업데이트 (RESERVED / SOLD 등) */
+    public void updateTradeStatus(Long productId, String tradeStatus) {
         try {
-            return client.count(c -> c.index(INDEX)).count();
+            client.update(u -> u
+                    .index(INDEX)
+                    .id(String.valueOf(productId))
+                    .doc(java.util.Map.of("tradeStatus", tradeStatus)),
+                    ProductDocument.class
+            );
         } catch (Exception e) {
-            return 0;
+            log.error("상품 ES tradeStatus 업데이트 실패 productId={}: {}", productId, e.getMessage());
+        }
+    }
+
+    /** 상품 ES에서 제거 (삭제 시) */
+    public void delete(Long productId) {
+        try {
+            client.delete(d -> d.index(INDEX).id(String.valueOf(productId)));
+        } catch (Exception e) {
+            log.error("상품 ES 삭제 실패 productId={}: {}", productId, e.getMessage());
         }
     }
 }

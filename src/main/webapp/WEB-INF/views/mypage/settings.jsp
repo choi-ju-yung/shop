@@ -14,10 +14,18 @@
     <%-- 프로필 이미지 --%>
     <div class="profileImgArea">
       <div class="profileImgPreview" id="profileImgPreview">
-        <img id="profileImgTag"
-             src="<%=request.getContextPath()%>/upload/profile/${myPage.profileImg}"
-             onerror="this.src='<%=request.getContextPath()%>/images/profile/default_profile.png'"
-             alt="프로필">
+        <c:choose>
+          <c:when test="${fn:startsWith(myPage.profileImg, 'http')}">
+            <img id="profileImgTag" src="${myPage.profileImg}" alt="프로필"
+                 onerror="this.src='<%=request.getContextPath()%>/images/profile/default_profile.png'">
+          </c:when>
+          <c:otherwise>
+            <img id="profileImgTag"
+                 src="<%=request.getContextPath()%>/upload/profile/${myPage.profileImg}"
+                 onerror="this.src='<%=request.getContextPath()%>/images/profile/default_profile.png'"
+                 alt="프로필">
+          </c:otherwise>
+        </c:choose>
         <label class="profileImgEdit" for="profileFileInput">
           <ion-icon name="camera-outline"></ion-icon>
         </label>
