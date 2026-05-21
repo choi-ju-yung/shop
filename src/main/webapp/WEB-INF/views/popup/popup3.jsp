@@ -4,7 +4,7 @@
 <html>
 <head>
     <title>가이드 텍스트</title>
-    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
     <link rel="stylesheet"
 	href="<%=request.getContextPath()%>/css/user/enrollMemberPopup.css" />
 </head>
