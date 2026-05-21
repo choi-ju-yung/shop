@@ -1,0 +1,535 @@
+@charset "UTF-8";
+
+/* ===== COUPON EVENT PAGE ===== */
+
+.coupon-page {
+    background: #f0fdf8;
+    min-height: 100vh;
+}
+
+/* ---------- Hero ---------- */
+.coupon-hero {
+    background: linear-gradient(135deg, #0f766e 0%, #20c997 55%, #06b6d4 100%);
+    padding-top: 230px; /* fixed header height */
+    padding-bottom: 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.coupon-hero-circles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.coupon-hero-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    animation: heroFloat 8s ease-in-out infinite;
+}
+
+.coupon-hero-circle:nth-child(1) { width: 240px; height: 240px; top: -80px; left: 5%; animation-delay: 0s; }
+.coupon-hero-circle:nth-child(2) { width: 140px; height: 140px; top: 30px; right: 12%; animation-delay: 1.5s; }
+.coupon-hero-circle:nth-child(3) { width: 90px;  height: 90px;  bottom: 0;  left: 28%; animation-delay: 3s; }
+.coupon-hero-circle:nth-child(4) { width: 60px;  height: 60px;  top: 80px; left: 40%; animation-delay: 5s; }
+
+@keyframes heroFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50%       { transform: translateY(-18px) scale(1.04); }
+}
+
+.coupon-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.coupon-hero-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    padding: 5px 16px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+}
+
+.coupon-hero-icon {
+    font-size: 52px;
+    display: block;
+    margin: 0 auto 10px;
+    color: rgba(255, 255, 255, 0.9);
+    animation: iconPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.08); }
+}
+
+.coupon-hero-title {
+    color: #fff;
+    font-size: 38px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    letter-spacing: -0.5px;
+}
+
+.coupon-hero-sub {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 15px;
+    margin: 0;
+}
+
+/* ---------- Content area ---------- */
+.coupon-content {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 48px 24px 100px;
+}
+
+/* ---------- Login notice ---------- */
+.coupon-login-notice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #ecfdf5, #e0f2fe);
+    border: 1px solid #a7f3d0;
+    border-radius: 14px;
+    padding: 18px 24px;
+    margin-bottom: 28px;
+    font-size: 14px;
+    color: #0f766e;
+}
+
+.coupon-login-notice ion-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    color: #20c997;
+}
+
+.coupon-login-notice a {
+    color: #0f766e;
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 1px solid #20c997;
+}
+
+.coupon-login-notice a:hover { opacity: 0.75; }
+
+/* ---------- Section header ---------- */
+.coupon-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.coupon-section-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.coupon-section-count {
+    font-size: 13px;
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+/* ---------- Coupon ticket card ---------- */
+.coupon-ticket {
+    display: flex;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+    margin-bottom: 20px;
+    position: relative;
+    overflow: visible;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.coupon-ticket:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.11);
+}
+
+.coupon-ticket.state-expired,
+.coupon-ticket.state-soldout {
+    opacity: 0.6;
+}
+
+.coupon-ticket.state-expired:hover,
+.coupon-ticket.state-soldout:hover {
+    transform: none;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+}
+
+/* Left colored stub */
+.coupon-stub {
+    width: 155px;
+    flex-shrink: 0;
+    background: linear-gradient(155deg, #20c997 0%, #0891b2 100%);
+    border-radius: 20px 0 0 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 14px;
+    color: #fff;
+    text-align: center;
+    position: relative;
+}
+
+.coupon-ticket.state-expired .coupon-stub  { background: linear-gradient(155deg, #94a3b8, #64748b); }
+.coupon-ticket.state-soldout .coupon-stub  { background: linear-gradient(155deg, #f97316, #ef4444); }
+.coupon-ticket.state-issued  .coupon-stub  { background: linear-gradient(155deg, #10b981, #059669); }
+.coupon-ticket.state-upcoming .coupon-stub { background: linear-gradient(155deg, #f59e0b, #d97706); }
+
+.coupon-stub-icon {
+    font-size: 34px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.coupon-stub-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    opacity: 0.8;
+    font-weight: 700;
+}
+
+/* Circle notches at divider */
+.coupon-notch-top,
+.coupon-notch-bottom {
+    position: absolute;
+    right: -11px;
+    width: 22px;
+    height: 22px;
+    background: #f0fdf8;
+    border-radius: 50%;
+    z-index: 2;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.coupon-notch-top    { top: -11px; }
+.coupon-notch-bottom { bottom: -11px; }
+
+/* Dashed divider line */
+.coupon-divider {
+    width: 1px;
+    flex-shrink: 0;
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 5px,
+        #e2e8f0 5px,
+        #e2e8f0 10px
+    );
+    margin: 14px 0;
+}
+
+/* Right body */
+.coupon-body {
+    flex: 1;
+    padding: 26px 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 150px;
+}
+
+.coupon-body-top { }
+
+.coupon-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.coupon-status-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 10px;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+}
+
+.badge-active   { background: #dcfce7; color: #15803d; }
+.badge-issued   { background: #d1fae5; color: #065f46; }
+.badge-expired  { background: #f1f5f9; color: #64748b; }
+.badge-soldout  { background: #fee2e2; color: #b91c1c; }
+.badge-upcoming { background: #fef3c7; color: #b45309; }
+
+.coupon-valid {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.coupon-valid ion-icon { font-size: 14px; flex-shrink: 0; }
+
+/* Progress bar */
+.coupon-progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.coupon-progress-info .remaining-strong { color: #20c997; font-weight: 700; }
+.coupon-progress-info .remaining-low    { color: #ef4444; font-weight: 700; }
+
+.coupon-progress-track {
+    height: 7px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+
+.coupon-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #20c997, #0891b2);
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.coupon-progress-fill.fill-low {
+    background: linear-gradient(90deg, #f97316, #ef4444);
+}
+
+/* Bottom row */
+.coupon-body-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/* Receive button */
+.coupon-receive-btn {
+    background: linear-gradient(135deg, #20c997 0%, #0891b2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 11px 28px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: "NEXON Lv2 Gothic", sans-serif;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    min-width: 100px;
+    text-align: center;
+}
+
+.coupon-receive-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0);
+    transition: background 0.15s;
+}
+
+.coupon-receive-btn:hover {
+    transform: scale(1.06);
+    box-shadow: 0 6px 20px rgba(32, 201, 151, 0.45);
+}
+
+.coupon-receive-btn:hover::after { background: rgba(255, 255, 255, 0.08); }
+.coupon-receive-btn:active { transform: scale(0.97); }
+
+.coupon-receive-btn.btn-issued {
+    background: #e2e8f0;
+    color: #64748b;
+    cursor: default;
+}
+
+.coupon-receive-btn.btn-issued:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.coupon-receive-btn.btn-disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: default;
+}
+
+.coupon-receive-btn.btn-disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.coupon-receive-btn.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    animation: successPop 0.35s ease;
+}
+
+@keyframes successPop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.12); }
+    100% { transform: scale(1); }
+}
+
+/* ---------- Empty state ---------- */
+.coupon-empty {
+    text-align: center;
+    padding: 80px 0;
+    color: #94a3b8;
+}
+
+.coupon-empty ion-icon {
+    font-size: 64px;
+    display: block;
+    margin: 0 auto 16px;
+    color: #cbd5e1;
+}
+
+.coupon-empty p {
+    font-size: 15px;
+}
+
+/* ---------- Toast ---------- */
+.coupon-toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    padding: 14px 26px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.28s, transform 0.28s;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+}
+
+.coupon-toast.toast-success { background: #0f766e; color: #fff; }
+.coupon-toast.toast-error   { background: #b91c1c; color: #fff; }
+.coupon-toast.toast-info    { background: #1e293b; color: #fff; }
+
+.coupon-toast.toast-show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ---------- Login modal ---------- */
+.coupon-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+}
+
+.coupon-modal-overlay.modal-show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.coupon-modal {
+    background: #fff;
+    border-radius: 24px;
+    padding: 44px 36px 36px;
+    text-align: center;
+    width: 340px;
+    transform: scale(0.93) translateY(8px);
+    transition: transform 0.25s ease;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.coupon-modal-overlay.modal-show .coupon-modal {
+    transform: scale(1) translateY(0);
+}
+
+.coupon-modal-icon {
+    font-size: 52px;
+    display: block;
+    margin-bottom: 16px;
+    color: #20c997;
+}
+
+.coupon-modal-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.coupon-modal-desc {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+.coupon-modal-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.coupon-modal-btn-primary {
+    flex: 1;
+    background: linear-gradient(135deg, #20c997, #0891b2);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 15px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: "NEXON Lv2 Gothic", sans-serif;
+    transition: opacity 0.2s;
+}
+
+.coupon-modal-btn-primary:hover { opacity: 0.88; }
+
+.coupon-modal-btn-cancel {
+    flex: 1;
+    background: #f1f5f9;
+    color: #64748b;
+    border: none;
+    border-radius: 14px;
+    padding: 15px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: "NEXON Lv2 Gothic", sans-serif;
+    transition: background 0.2s;
+}
+
+.coupon-modal-btn-cancel:hover { background: #e2e8f0; }

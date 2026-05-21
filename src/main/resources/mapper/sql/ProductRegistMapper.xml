@@ -126,7 +126,7 @@
         ORDER BY P.PRODUCT_ID DESC
     </select>
 
-    <!-- ES 초기 동기화용: 삭제되지 않은 전체 상품 조회 -->
+    <!-- 관리자 ES 재동기화용: 삭제되지 않은 전체 상품 조회 -->
     <select id="selectAllForEs" resultMap="productMap">
         SELECT P.PRODUCT_ID, P.USER_NO, P.PRODUCT_TITLE, P.PRODUCT_STATE,
                P.PRODUCT_PRICE, P.PRODUCT_PLACE, P.TRADE_STATUS,

@@ -12,4 +12,7 @@ public interface CouponDao {
     void insertCoupon(CouponVO coupon);
     void insertUserCoupon(UserCouponVO userCoupon);
     boolean existsUserCoupon(long userId, long couponId);
+    List<Long> selectIssuedCouponIds(long userId);
+    int countIssuedByCouponId(long couponId);
+    void decrementRemainingCount(long couponId);
 }

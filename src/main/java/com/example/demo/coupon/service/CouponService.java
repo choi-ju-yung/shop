@@ -9,7 +9,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -39,6 +41,41 @@ public class CouponService {
 
     public List<CouponVO> getAllCoupons() {
         return couponDao.selectAllCoupons();
+    }
+
+    public List<Long> getIssuedCouponIds(long userId) {
+        return couponDao.selectIssuedCouponIds(userId);
+    }
+
+    public Map<Long, Integer> getRemainingCounts(List<CouponVO> coupons) {
+        Map<Long, Integer> map = new HashMap<>();
+        for (CouponVO c : coupons) {
+            String val = redisTemplate.opsForValue().get(COUNT_KEY + c.getCouponId());
+            int remaining = (val != null) ? Math.max(0, Integer.parseInt(val)) : c.getRemainingCount();
+            map.put(c.getCouponId(), remaining);
+        }
+        return map;
+    }
+
+    /**
+     * 서버 기동 시 DB 쿠폰 → Redis 동기화
+     * - Redis 키가 없는 쿠폰만 초기화 (기존 키는 건드리지 않음)
+     * - 재시작 복구: DB 발급 수(USER_COUPON) 기준으로 잔여수량 계산
+     */
+    public void syncAllCouponsToRedis() {
+        List<CouponVO> coupons = couponDao.selectAllCoupons();
+        int synced = 0;
+        for (CouponVO c : coupons) {
+            String key = COUNT_KEY + c.getCouponId();
+            if (Boolean.FALSE.equals(redisTemplate.hasKey(key))) {
+                int issued    = couponDao.countIssuedByCouponId(c.getCouponId());
+                int remaining = Math.max(0, c.getTotalCount() - issued);
+                redisTemplate.opsForValue().set(key, String.valueOf(remaining));
+                log.info("Redis 쿠폰 초기화 - couponId={}, remaining={}/{}", c.getCouponId(), remaining, c.getTotalCount());
+                synced++;
+            }
+        }
+        if (synced > 0) log.info("Redis 쿠폰 동기화 완료 - {}개 초기화", synced);
     }
 
     public boolean issueCoupon(long couponId, long userId) {

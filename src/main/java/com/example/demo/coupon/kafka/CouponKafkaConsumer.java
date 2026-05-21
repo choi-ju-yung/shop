@@ -25,6 +25,7 @@ public class CouponKafkaConsumer {
             userCoupon.setUserId(event.getUserId());
             userCoupon.setCouponId(event.getCouponId());
             couponDao.insertUserCoupon(userCoupon);
+            couponDao.decrementRemainingCount(event.getCouponId());
         } catch (Exception e) {
             log.error("쿠폰 DB 저장 실패 - couponId={}, userId={}", event.getCouponId(), event.getUserId(), e);
         }

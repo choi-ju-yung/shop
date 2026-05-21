@@ -36,4 +36,20 @@
         WHERE USER_ID = #{userId} AND COUPON_ID = #{couponId}
     </select>
 
+    <select id="selectIssuedCouponIds" parameterType="long" resultType="long">
+        SELECT COUPON_ID FROM USER_COUPON
+        WHERE USER_ID = #{userId}
+    </select>
+
+    <select id="countIssuedByCouponId" parameterType="long" resultType="int">
+        SELECT COUNT(*) FROM USER_COUPON
+        WHERE COUPON_ID = #{couponId}
+    </select>
+
+    <update id="decrementRemainingCount" parameterType="long">
+        UPDATE COUPON
+        SET REMAINING_COUNT = REMAINING_COUNT - 1
+        WHERE COUPON_ID = #{couponId} AND REMAINING_COUNT > 0
+    </update>
+
 </mapper>

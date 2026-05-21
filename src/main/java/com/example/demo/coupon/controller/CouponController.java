@@ -10,6 +10,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -20,8 +24,17 @@ public class CouponController {
     private final CouponService couponService;
 
     @GetMapping("/list")
-    public String list(Model model) {
-        model.addAttribute("coupons", couponService.getAllCoupons());
+    public String list(Model model, @AuthenticationPrincipal CustomUserDetails user) {
+        List<CouponVO> coupons = couponService.getAllCoupons();
+        model.addAttribute("coupons", coupons);
+        model.addAttribute("remainingCounts", couponService.getRemainingCounts(coupons));
+        model.addAttribute("today", new Date());
+        if (user != null) {
+            model.addAttribute("issuedIds",
+                    new HashSet<>(couponService.getIssuedCouponIds(user.getUser().getUserNo())));
+        } else {
+            model.addAttribute("issuedIds", Collections.emptySet());
+        }
         return "coupon/list";
     }
 
@@ -30,7 +43,7 @@ public class CouponController {
     @ResponseBody
     public ResponseEntity<?> create(@RequestBody CouponVO coupon) {
         couponService.createCoupon(coupon);
-        return ResponseEntity.ok(Map.of("message", "쿠폰이 생성되었습니다."));
+        return ResponseEntity.ok(Map.of("message", "쿠폰이 생성되었습니다.", "couponId", coupon.getCouponId()));
     }
 
     /** 쿠폰 발급 API - k6 부하테스트 대상 */
