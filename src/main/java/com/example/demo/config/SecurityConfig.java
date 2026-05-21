@@ -172,7 +172,10 @@ public class SecurityConfig {
 						        }
 						        SecurityContextHolder.clearContext();
 
-						        String currentHost = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
+						        String scheme = request.getScheme();
+						        int port = request.getServerPort();
+						        boolean defaultPort = ("https".equals(scheme) && port == 443) || ("http".equals(scheme) && port == 80);
+						        String currentHost = scheme + "://" + request.getServerName() + (defaultPort ? "" : ":" + port);
 
 						        if (authentication == null) {
 						            response.sendRedirect(currentHost + "/login");
