@@ -41,11 +41,15 @@ jobs:
             APP_DIR=/home/ubuntu/app
             PID_FILE=$APP_DIR/app.pid
 
+            PID_FILE2=$APP_DIR/app2.pid
+
             if [ -f $PID_FILE ] && kill -0 $(cat $PID_FILE) 2>/dev/null; then
-              kill $(cat $PID_FILE)
-              sleep 5
+              kill $(cat $PID_FILE); sleep 3
             fi
-            rm -f $PID_FILE
+            if [ -f $PID_FILE2 ] && kill -0 $(cat $PID_FILE2) 2>/dev/null; then
+              kill $(cat $PID_FILE2); sleep 3
+            fi
+            rm -f $PID_FILE $PID_FILE2
 
             mkdir -p $APP_DIR /home/ubuntu/uploads
 
@@ -54,11 +58,20 @@ jobs:
 
             set -a; source $APP_DIR/.env; set +a
 
-            nohup java -Xms512m -Xmx1g \
-              -Dserver.servlet.session.cookie.secure=true \
-              -Dserver.servlet.session.cookie.same-site=lax \
+            JAVA_OPTS="-Dserver.servlet.session.cookie.secure=true -Dserver.servlet.session.cookie.same-site=lax"
+
+            nohup java -Xms512m -Xmx1g $JAVA_OPTS \
+              -Dserver.port=8080 \
               -jar $APP_DIR/demo-0.0.1-SNAPSHOT.war \
               >> $APP_DIR/app.log 2>&1 &
-
             echo $! > $PID_FILE
-            echo "Started PID $(cat $PID_FILE)"
+
+            sleep 5
+
+            nohup java -Xms512m -Xmx1g $JAVA_OPTS \
+              -Dserver.port=8081 \
+              -jar $APP_DIR/demo-0.0.1-SNAPSHOT.war \
+              >> $APP_DIR/app2.log 2>&1 &
+            echo $! > $PID_FILE2
+
+            echo "Started :8080 PID=$(cat $PID_FILE), :8081 PID=$(cat $PID_FILE2)"
