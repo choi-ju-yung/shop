@@ -16,7 +16,7 @@
                onerror="this.src='<%=request.getContextPath()%>/images/profile/default_profile.png'">
         </c:when>
         <c:otherwise>
-          <img src="<%=request.getContextPath()%>/upload/profile/${myPage.profileImg}" alt="프로필"
+          <img src="<%=request.getContextPath()%>${myPage.profileImg}" alt="프로필"
                onerror="this.src='<%=request.getContextPath()%>/images/profile/default_profile.png'">
         </c:otherwise>
       </c:choose>

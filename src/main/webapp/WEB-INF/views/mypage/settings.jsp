@@ -21,7 +21,7 @@
           </c:when>
           <c:otherwise>
             <img id="profileImgTag"
-                 src="<%=request.getContextPath()%>/upload/profile/${myPage.profileImg}"
+                 src="<%=request.getContextPath()%>${myPage.profileImg}"
                  onerror="this.src='<%=request.getContextPath()%>/images/profile/default_profile.png'"
                  alt="프로필">
           </c:otherwise>
@@ -237,11 +237,27 @@ if (pwdBtn) {
 }
 
 function setMsg(id, text, ok) {
+   <c:if test="${empty myPage.nickname}">
+	 document.getElementById('nicknameInput').focus();
+   </c:if>
   var el = document.getElementById(id);
   if (!el) return;
   el.textContent = text;
   el.style.color = ok ? '#059669' : '#dc2626';
 }
+
+
+<c:if test="${empty myPage.nickname}">
+(function() {
+  var input = document.getElementById('nicknameInput');
+  input.focus();
+  input.classList.add('nicknameRequired');
+  input.addEventListener('input', function() {
+    input.classList.remove('nicknameRequired');
+  }, { once: true });
+})();
+</c:if>
+
 </script>
 
 <%@ include file="../common/footer.jsp"%>

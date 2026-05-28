@@ -10,7 +10,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Value("${app.upload.dir:C:/upload}")
     private String uploadDir;
-
+    
+    // 브라우저가 /upload/xxx 요청하면 → 서버의 C:/upload/xxx 파일을 찾아서 반환
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String resourceLocation = "file:///" + uploadDir.replace("\\", "/") + "/";
