@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="쿠폰 동시성 부하테스트" enabled="true">
+      <stringProp name="TestPlan.comments">
+        로컬: jmeter -n -t jmeter/coupon_test.jmx -l result.jtl -e -o report/
+        운영: jmeter -n -t jmeter/coupon_test.jmx -JBASE_HOST=운영서버주소 -JBASE_PORT=443 -JBASE_SCHEME=https -l result.jtl -e -o report/
+        파라미터 변경: -JCOUPON_SLOTS=1000 -JTOTAL_VUS=2000 -JTEST_PWD=admin1234
+      </stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="사용자 정의 변수" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="BASE_HOST" elementType="Argument">
+            <stringProp name="Argument.name">BASE_HOST</stringProp>
+            <stringProp name="Argument.value">${__P(BASE_HOST,localhost)}</stringProp>
+            <stringProp name="Argument.desc">서버 호스트 (CLI: -JBASE_HOST=prod.server.com)</stringProp>
+          </elementProp>
+          <elementProp name="BASE_PORT" elementType="Argument">
+            <stringProp name="Argument.name">BASE_PORT</stringProp>
+            <stringProp name="Argument.value">${__P(BASE_PORT,8080)}</stringProp>
+            <stringProp name="Argument.desc">포트 (CLI: -JBASE_PORT=443)</stringProp>
+          </elementProp>
+          <elementProp name="BASE_SCHEME" elementType="Argument">
+            <stringProp name="Argument.name">BASE_SCHEME</stringProp>
+            <stringProp name="Argument.value">${__P(BASE_SCHEME,http)}</stringProp>
+            <stringProp name="Argument.desc">프로토콜 (CLI: -JBASE_SCHEME=https)</stringProp>
+          </elementProp>
+          <elementProp name="COUPON_SLOTS" elementType="Argument">
+            <stringProp name="Argument.name">COUPON_SLOTS</stringProp>
+            <stringProp name="Argument.value">${__P(COUPON_SLOTS,1000)}</stringProp>
+            <stringProp name="Argument.desc">쿠폰 발급 가능 수량</stringProp>
+          </elementProp>
+          <elementProp name="TOTAL_VUS" elementType="Argument">
+            <stringProp name="Argument.name">TOTAL_VUS</stringProp>
+            <stringProp name="Argument.value">${__P(TOTAL_VUS,2000)}</stringProp>
+            <stringProp name="Argument.desc">동시 요청 유저 수 (k6test0001~k6testNNNN)</stringProp>
+          </elementProp>
+          <elementProp name="SETUP_USER" elementType="Argument">
+            <stringProp name="Argument.name">SETUP_USER</stringProp>
+            <stringProp name="Argument.value">${__P(SETUP_USER,k6test0001)}</stringProp>
+            <stringProp name="Argument.desc">쿠폰 생성용 계정 loginId</stringProp>
+          </elementProp>
+          <elementProp name="SETUP_PWD" elementType="Argument">
+            <stringProp name="Argument.name">SETUP_PWD</stringProp>
+            <stringProp name="Argument.value">${__P(SETUP_PWD,admin1234)}</stringProp>
+            <stringProp name="Argument.desc">쿠폰 생성용 계정 비밀번호</stringProp>
+          </elementProp>
+          <elementProp name="TEST_PWD" elementType="Argument">
+            <stringProp name="Argument.name">TEST_PWD</stringProp>
+            <stringProp name="Argument.value">${__P(TEST_PWD,admin1234)}</stringProp>
+            <stringProp name="Argument.desc">k6test 계정 공통 비밀번호</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+
+      <!-- 전체 샘플러 공통 host/port/scheme -->
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${BASE_HOST}</stringProp>
+        <stringProp name="HTTPSampler.port">${BASE_PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${BASE_SCHEME}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path"></stringProp>
+        <boolProp name="HTTPSampler.image_parser">false</boolProp>
+      </ConfigTestElement>
+      <hashTree/>
+
+      <!-- ================================================================
+           setUp Thread Group: 쿠폰 생성 후 couponId를 JMeter Property로 저장
+           - 1개 스레드, 1회 실행
+           - 실패 시 전체 테스트 중단 (stoptest)
+           ================================================================ -->
+      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="[setUp] 쿠폰 생성" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">stoptest</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+      </SetupThreadGroup>
+      <hashTree>
+
+        <!-- 날짜 계산 (Groovy: today, nextMonth) -->
+        <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="날짜 계산" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="script">
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+def fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+vars.put("today", LocalDate.now().format(fmt))
+vars.put("nextMonth", LocalDate.now().plusDays(30).format(fmt))
+          </stringProp>
+        </JSR223PreProcessor>
+        <hashTree/>
+
+        <!-- 쿠키 매니저 (JSESSIONID 자동 관리) -->
+        <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="Cookie Manager" enabled="true">
+          <collectionProp name="CookieManager.cookies"/>
+          <boolProp name="CookieManager.clearEachIteration">true</boolProp>
+          <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
+        </CookieManager>
+        <hashTree/>
+
+        <!-- 로그인 -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="[setUp] 로그인" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="loginId" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${SETUP_USER}</stringProp>
+                <stringProp name="Argument.name">loginId</stringProp>
+              </elementProp>
+              <elementProp name="password" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${SETUP_PWD}</stringProp>
+                <stringProp name="Argument.name">password</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.path">/processLogin</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="로그인 성공 확인 (302)" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">302</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message">setUp 로그인 실패 - SETUP_USER/SETUP_PWD 확인 필요</stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">8</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- 쿠폰 생성 (POST /coupon/create) -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="[setUp] 쿠폰 생성" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{"name":"[JMeter] 동시성 테스트 쿠폰 ${COUPON_SLOTS}장","totalCount":${COUPON_SLOTS},"startDate":"${today}","endDate":"${nextMonth}"}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.path">/coupon/create</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Content-Type: application/json" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="쿠폰 생성 성공 (200)" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">200</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message">쿠폰 생성 실패 - 서버 로그 확인</stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">8</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <!-- 응답 JSON에서 couponId 추출 -->
+          <JSONPathExtractor guiclass="JSONPathExtractorGui" testclass="JSONPathExtractor" testname="couponId 추출" enabled="true">
+            <stringProp name="JSONPathExtractor.referenceName">couponId</stringProp>
+            <stringProp name="JSONPathExtractor.jsonPathExpr">$.couponId</stringProp>
+            <stringProp name="JSONPathExtractor.defaultValue">NOT_FOUND</stringProp>
+          </JSONPathExtractor>
+          <hashTree/>
+          <!-- couponId를 JMeter Property로 저장 (스레드 그룹 간 공유) -->
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="couponId → JMeter Property 저장" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">
+def id = vars.get("couponId")
+if (!id || id == "NOT_FOUND") {
+    log.error("[setUp] couponId 추출 실패. 응답 본문: " + prev.getResponseDataAsString())
+    throw new RuntimeException("couponId 추출 실패 - 테스트 중단")
+}
+props.put("COUPON_ID", id)
+log.info("[setUp] ✅ 쿠폰 생성 완료")
+log.info("[setUp]    couponId  = " + id)
+log.info("[setUp]    수량      = " + vars.get("COUPON_SLOTS") + "장")
+log.info("[setUp]    유효기간  = " + vars.get("today") + " ~ " + vars.get("nextMonth"))
+log.info("[setUp]    동시 요청 = " + vars.get("TOTAL_VUS") + "명 준비 완료")
+            </stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+
+      <!-- ================================================================
+           Main Thread Group: TOTAL_VUS명이 동시에 쿠폰 발급 요청
+           - ramp_time=0 → 모든 스레드 즉시 동시 시작
+           - 각 스레드: k6test0001 ~ k6testNNNN 으로 로그인 후 쿠폰 발급
+           ================================================================ -->
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="[메인] 쿠폰 동시 발급" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${TOTAL_VUS}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">0</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+      </ThreadGroup>
+      <hashTree>
+
+        <!-- 스레드별 독립 쿠키 (독립 세션 보장) -->
+        <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="Cookie Manager (스레드별 독립)" enabled="true">
+          <collectionProp name="CookieManager.cookies"/>
+          <boolProp name="CookieManager.clearEachIteration">true</boolProp>
+          <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
+        </CookieManager>
+        <hashTree/>
+
+        <!-- 유저ID 생성: 스레드 번호 기반 k6test0001~k6testNNNN -->
+        <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="유저 ID + couponId 세팅" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="script">
+int num = ctx.getThreadNum() + 1  // 1-based (스레드 0 → k6test0001)
+vars.put("loginId", String.format("k6test%04d", num))
+vars.put("couponId", props.get("COUPON_ID") ?: "0")
+          </stringProp>
+        </JSR223PreProcessor>
+        <hashTree/>
+
+        <!-- 로그인 -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="로그인" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="loginId" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${loginId}</stringProp>
+                <stringProp name="Argument.name">loginId</stringProp>
+              </elementProp>
+              <elementProp name="password" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${TEST_PWD}</stringProp>
+                <stringProp name="Argument.name">password</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.path">/processLogin</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="로그인 성공 (302)" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">302</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">8</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+
+        <!-- 쿠폰 발급 (핵심 타겟) -->
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="쿠폰 발급" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.path">/coupon/${couponId}/issue</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Content-Type: application/json" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <!-- 200 = 발급 성공, 400 = 품절/중복 (둘 다 정상) -->
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="정상 응답 (200 or 400)" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="1">200</stringProp>
+              <stringProp name="2">400</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">33</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <!-- 비정상 응답(401/500 등) 워닝 로그 -->
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="비정상 응답 로깅" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">
+def code = prev.getResponseCode()
+if (code != "200" &amp;&amp; code != "400") {
+    log.warn("[" + vars.get("loginId") + "] 예상외 응답: HTTP " + code + " → " + prev.getResponseDataAsString())
+}
+            </stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
+        </hashTree>
+
+      </hashTree>
+
+      <!-- 결과: Summary Report (총계) -->
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time><latency>true</latency><timestamp>true</timestamp>
+            <success>true</success><label>true</label><code>true</code>
+            <message>true</message><threadName>true</threadName>
+            <dataType>true</dataType><encoding>false</encoding>
+            <assertions>true</assertions><subresults>true</subresults>
+            <responseData>false</responseData><samplerData>false</samplerData>
+            <xml>false</xml><fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders><requestHeaders>false</requestHeaders>
+            <responseDataOnError>true</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <bytes>true</bytes><sentBytes>true</sentBytes><url>true</url>
+            <threadCounts>true</threadCounts><idleTime>true</idleTime><connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename">jmeter/result.jtl</stringProp>
+      </ResultCollector>
+      <hashTree/>
+
+      <!-- 결과: Aggregate Report (요청별 통계) -->
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time><latency>true</latency><timestamp>true</timestamp>
+            <success>true</success><label>true</label><code>true</code>
+            <message>true</message><threadName>true</threadName>
+            <dataType>true</dataType><encoding>false</encoding>
+            <assertions>true</assertions><subresults>true</subresults>
+            <responseData>false</responseData><samplerData>false</samplerData>
+            <xml>false</xml><fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders><requestHeaders>false</requestHeaders>
+            <responseDataOnError>true</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <bytes>true</bytes><sentBytes>true</sentBytes><url>true</url>
+            <threadCounts>true</threadCounts><idleTime>true</idleTime><connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename">jmeter/result.jtl</stringProp>
+      </ResultCollector>
+      <hashTree/>
+
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
