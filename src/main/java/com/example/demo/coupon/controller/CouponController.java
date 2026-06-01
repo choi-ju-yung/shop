@@ -38,6 +38,25 @@ public class CouponController {
         return "coupon/list";
     }
 
+    @GetMapping("/{couponId}")
+    public String detail(@PathVariable long couponId, Model model,
+                         @AuthenticationPrincipal CustomUserDetails user) {
+        CouponVO coupon = couponService.getCouponById(couponId);
+        if (coupon == null) return "redirect:/coupon/list";
+        List<CouponVO> list = List.of(coupon);
+        Map<Long, Integer> remainingCounts = couponService.getRemainingCounts(list);
+        model.addAttribute("coupon", coupon);
+        model.addAttribute("remaining", remainingCounts.get(couponId));
+        model.addAttribute("today", new Date());
+        if (user != null) {
+            List<Long> issuedIds = couponService.getIssuedCouponIds(user.getUser().getUserNo());
+            model.addAttribute("alreadyIssued", issuedIds.contains(couponId));
+        } else {
+            model.addAttribute("alreadyIssued", false);
+        }
+        return "coupon/detail";
+    }
+
     /** 관리자용 쿠폰 생성 */
     @PostMapping("/create")
     @ResponseBody

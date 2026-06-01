@@ -74,6 +74,8 @@ public class SecurityConfig {
 		"/find/**",
 		"/banner/list",
 		"/product/**",
+		"/coupon/list",
+		"/coupon/*",
 		"/user/profile/**",
 		"/board/check",
 		"/board/checkByCategory",

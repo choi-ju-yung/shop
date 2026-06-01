@@ -52,8 +52,8 @@
 				<div class="loginSerivce">
 					<a href="<%=request.getContextPath()%>/login" id="login">로그인</a>
 					<a href="<%=request.getContextPath()%>/regist/nomalregist" id="enroll">회원가입</a>
-					<a
-						href="<%=request.getContextPath()%>/board/list?notice=N"
+					<a href="<%=request.getContextPath()%>/coupon/list" id="eventBtn">쿠폰</a>
+					<a href="<%=request.getContextPath()%>/board/list?notice=N"
 						id="service">고객센터</a>
 				</div>
 				</c:if>
@@ -67,8 +67,9 @@
 					</c:if> 
 					<a href="#"
 						onclick="localStorage.removeItem('recentProducts'); location.replace('<%=request.getContextPath()%>/logout')"
-						id="logout">로그아웃</a> <a
-						href="<%=request.getContextPath()%>/board/list?notice=N"
+						id="logout">로그아웃</a>
+					<a href="<%=request.getContextPath()%>/coupon/list" id="eventBtn">쿠폰</a>
+					<a href="<%=request.getContextPath()%>/board/list?notice=N"
 						id="service">고객센터</a>
 				</div>
  				</c:if>

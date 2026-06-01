@@ -43,6 +43,10 @@ public class CouponService {
         return couponDao.selectAllCoupons();
     }
 
+    public CouponVO getCouponById(long couponId) {
+        return couponDao.selectCouponById(couponId);
+    }
+
     public List<Long> getIssuedCouponIds(long userId) {
         return couponDao.selectIssuedCouponIds(userId);
     }

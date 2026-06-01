@@ -52,6 +52,13 @@
     font-size: 22px;
     color: #20c997;
     flex-shrink: 0;
+    overflow: hidden;
+}
+.cl-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 /* ── 가운데: 닉네임 + 메시지 ── */
@@ -168,9 +175,21 @@
                          class="cl-item"
                          onclick="openChatRoom('${room.productId}', '${room.otherUserNo}', '${room.roomId}')">
 
-                        <%-- 왼쪽: 고정 원형 프로필 아이콘 --%>
+                        <%-- 왼쪽: 상대방 프로필 이미지 --%>
                         <div class="cl-avatar">
-                            <ion-icon name="person-circle-outline"></ion-icon>
+                            <c:choose>
+                                <c:when test="${fn:startsWith(room.otherUserImg, 'http')}">
+                                    <img src="${room.otherUserImg}" alt="프로필"
+                                         onerror="this.outerHTML='<ion-icon name=person-circle-outline></ion-icon>'">
+                                </c:when>
+                                <c:when test="${not empty room.otherUserImg}">
+                                    <img src="<%=request.getContextPath()%>${room.otherUserImg}" alt="프로필"
+                                         onerror="this.outerHTML='<ion-icon name=person-circle-outline></ion-icon>'">
+                                </c:when>
+                                <c:otherwise>
+                                    <ion-icon name="person-circle-outline"></ion-icon>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
 
                         <%-- 가운데: 닉네임 + 마지막 메시지 --%>
