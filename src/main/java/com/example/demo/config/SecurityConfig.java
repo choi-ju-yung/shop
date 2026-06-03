@@ -80,7 +80,8 @@ public class SecurityConfig {
 		"/board/check",
 		"/board/checkByCategory",
 		"/board/list",
-		"/WEB-INF/views/**"
+		"/WEB-INF/views/**",
+		"/actuator/**"
 	};
 
 	// 로그인한 일반 유저 + 관리자 접근 가능 경로
