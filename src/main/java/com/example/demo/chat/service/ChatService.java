@@ -81,12 +81,6 @@ public class ChatService {
 
     @Async
     @Transactional
-    public void insertChatMessageAsync(Map map) {
-        chatDao.insertChatMessage(map);
-    }
-
-    @Async
-    @Transactional
     public void updateReadMessageAsync(Map map) {
         chatDao.updateReadMessage(map);
     }

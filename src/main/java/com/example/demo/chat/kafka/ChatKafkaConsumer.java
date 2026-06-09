@@ -1,8 +1,6 @@
 package com.example.demo.chat.kafka;
 
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -10,7 +8,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.chat.redis.ChatRedisService;
-import com.example.demo.chat.service.ChatService;
 import com.example.demo.chat.vo.ChatMessage;
 import com.example.demo.config.KafkaConfig;
 import com.example.demo.config.RedisPubSubConfig;
@@ -23,19 +20,16 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class ChatKafkaConsumer {
 
-    private final ChatService chatService;
     private final ChatRedisService chatRedisService;
     private final RedisTemplate<String, String> chatRedisTemplate;
     private final ObjectMapper objectMapper;
 
-    public ChatKafkaConsumer(ChatService chatService,
-                             ChatRedisService chatRedisService,
+    public ChatKafkaConsumer(ChatRedisService chatRedisService,
                              @Qualifier("chatRedisTemplate") RedisTemplate<String, String> chatRedisTemplate,
                              ObjectMapper objectMapper) {
-        this.chatService      = chatService;
-        this.chatRedisService = chatRedisService;
+        this.chatRedisService  = chatRedisService;
         this.chatRedisTemplate = chatRedisTemplate;
-        this.objectMapper     = objectMapper;
+        this.objectMapper      = objectMapper;
     }
 
     @KafkaListener(topics = KafkaConfig.CHAT_TOPIC, groupId = "chat-group")
@@ -48,16 +42,9 @@ public class ChatKafkaConsumer {
             chatMessage.setSentAt(new Timestamp(System.currentTimeMillis()));
 
             // 3. Redis Publish → RedisSubscriber → 즉시 WebSocket 전송
+            // DB 저장은 chat-db-writer 그룹의 ChatDbWriterConsumer가 별도로 처리
             String json = objectMapper.writeValueAsString(chatMessage);
             chatRedisTemplate.convertAndSend(RedisPubSubConfig.CHAT_CHANNEL, json);
-
-            // 4. Oracle INSERT는 비동기 처리 (응답 지연에 영향 없음)
-            Map<String, Object> map = new HashMap<>();
-            map.put("roomId",     chatMessage.getRoomId());
-            map.put("senderNo",   chatMessage.getSenderNo());
-            map.put("message",    chatMessage.getMessage());
-            map.put("receiverNo", chatMessage.getReceiverNo());
-            chatService.insertChatMessageAsync(map);
 
         } catch (JsonProcessingException e) {
             log.error("ChatKafkaConsumer JSON 직렬화 오류", e);
