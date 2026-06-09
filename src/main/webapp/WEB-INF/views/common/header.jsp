@@ -3,9 +3,6 @@
    pageEncoding="UTF-8"%>
    <%@ taglib prefix="c"  uri="jakarta.tags.core"%>
    <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-
 <%-- <%@page import="com.semi.category.model.vo.Category"%>
 <%@page import="java.util.List"%> --%>
 
@@ -23,6 +20,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="ctx" content="<%=request.getContextPath()%>" />
 <meta name="isLoggedIn" content="${not empty sessionScope.loginUser ? 'true' : 'false'}" />
+<link rel="preload" href="<%=request.getContextPath()%>/images/common/logo.svg" as="image" fetchpriority="high">
 <!-- css 파일 -->
 <link rel="stylesheet"
    href="<%=request.getContextPath()%>/css/default.css" />
@@ -32,14 +30,13 @@
    href="<%=request.getContextPath()%>/images/common/fivicon.png"
    type="image/x-icon" />
 <!-- js 파일 -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js" defer></script>
 <script type="module"
-   src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-   
+   src="https://cdn.jsdelivr.net/npm/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <script nomodule
-   src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-<%-- <script src="<%=request.getContextPath()%>/js/jquery-3.7.0.min.js"></script> --%>
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<!--  -->
+   src="https://cdn.jsdelivr.net/npm/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
 <title>중고 거래 니꺼내꺼</title>
 </head>
 <body>
@@ -78,7 +75,7 @@
                <div class="logo">
                   <a href="<%=request.getContextPath()%>/"> <img
                      src="<%=request.getContextPath()%>/images/common/logo.svg"
-                     alt="" />
+                     alt="" fetchpriority="high" />
                   </a>
                </div>
                <div class="searchBar">
@@ -193,61 +190,8 @@
       </div>
    </header>
    <script>
-  
- /* ---------------------------------------------------------  */	
-   
-   <c:if test="${not empty sessionScope.loginUser}">
-   var ctx = document.querySelector('meta[name="ctx"]').getAttribute('content');
 
-   /* ── WebSocket 연결 (로그인 시에만) ── */
-   let socket = new SockJS('/ws');
-   let stompClient = Stomp.over(socket);
-   stompClient.debug = null;
-
-   /* ── 페이지 로드 시 미읽음 배지 초기화 ── */
-   $.ajax({
-       url: ctx + '/member/notification/count',
-       success: function(res) {
-           updateNotiBadge(res.wishCount);
-           updateChatBadge(res.chatCount);
-       }
-   });
-
-   stompClient.connect({}, function () {
-       stompClient.subscribe("/user/queue/notify", function (message) {
-           const data = JSON.parse(message.body);
-           if (data.type === 'MESSAGE') {
-               // 채팅 메시지 → 채팅 아이콘 뱃지 증가
-               updateChatBadge((parseInt(document.getElementById('chat-badge').textContent) || 0) + 1);
-           } else {
-               // 찜 알림 → 알림 벨 뱃지
-               updateNotiBadge(data.noReadCnt);
-               createToast(data.notiMessage);
-           }
-       });
-   }, function(error) {
-       console.warn('WebSocket 연결 실패:', error);
-   });
-
-   /* ── 알림 벨 클릭 → 읽음 처리 + 뱃지 초기화 ── */
-   document.getElementById('notiBell').addEventListener('click', function() {
-       $.ajax({
-           url: ctx + '/member/notification/read',
-           type: 'POST',
-           success: function() { updateNotiBadge(0); }
-       });
-   });
-
-   /* ── 채팅 팝업에서 읽음 처리 시 뱃지 즉시 갱신 ── */
-   window.addEventListener('message', function(e) {
-       if (e.data && e.data.type === 'CHAT_READ') {
-           $.ajax({
-               url: ctx + '/member/notification/count',
-               success: function(res) { updateChatBadge(res.chatCount); }
-           });
-       }
-   });
-   </c:if>
+   /* ── 전역 함수 정의 (jQuery 로드 전에 정의되어도 안전) ── */
 
    function updateNotiBadge(count) {
        const badge = document.getElementById('noti-badge');
@@ -313,102 +257,135 @@
            setTimeout(function() { toast.remove(); }, 260);
        }, 3500);
    }
-/* ---------------------------------------------------------  */
-   
-function changePage(pageNo) {
-    $.ajax({
-        url: "<%=request.getContextPath()%>/categoryproductlist.do",
-        type: "GET",
-        data: {
-            'cPage': pageNo,
-            'numPerpage': 32
-        },
-        dataType: "html",
-        success: function(data) {
-            $("section").html(data);
-        }
-    });
-}
 
+   function changePage(pageNo) {
+       $.ajax({
+           url: "<%=request.getContextPath()%>/categoryproductlist.do",
+           type: "GET",
+           data: { 'cPage': pageNo, 'numPerpage': 32 },
+           dataType: "html",
+           success: function(data) { $("section").html(data); }
+       });
+   }
 
+   function HeaderCategoryMenu() {
+       $.ajax({
+           url: "<%=request.getContextPath()%>/product/categories",
+           dataType: 'json',
+           success: function(data) {
+               var ctx = "<%=request.getContextPath()%>";
+               var $ul = $("#menuList>ul");
+               $ul.html("<li><a href='" + ctx + "/product/category' id='category0'>전체</a></li>");
 
-// 페이지 로딩 후 헤더 카테고리 메뉴 빌드
-$(function() { HeaderCategoryMenu(); });
+               var categories = {};
+               data.forEach(function(row) {
+                   var cat = row['CATEGORY_NAME'] || row['category_name'];
+                   var sub = row['SUB_CATEGORY_NAME'] || row['sub_category_name'];
+                   if (!categories[cat]) categories[cat] = [];
+                   if (sub) categories[cat].push(sub);
+               });
 
-function HeaderCategoryMenu() {
-    $.ajax({
-        url: "<%=request.getContextPath()%>/product/categories",
-        dataType: 'json',
-        success: function(data) {
-            var ctx = "<%=request.getContextPath()%>";
-            var $ul = $("#menuList>ul");
-            $ul.html("<li><a href='" + ctx + "/product/category' id='category0'>전체</a></li>");
+               var idx = 1;
+               Object.keys(categories).forEach(function(catName) {
+                   var $li = $("<li>").addClass("has-sub");
+                   var $a = $("<a>").attr("href", ctx + "/product/category?name=" + encodeURIComponent(catName))
+                                    .attr("id", "category" + idx)
+                                    .text(catName);
+                   $li.append($a);
 
-            // 카테고리별 그룹핑 후 메뉴 생성
-            var categories = {};
-            data.forEach(function(row) {
-                var cat = row['CATEGORY_NAME'] || row['category_name'];
-                var sub = row['SUB_CATEGORY_NAME'] || row['sub_category_name'];
-                if (!categories[cat]) categories[cat] = [];
-                if (sub) categories[cat].push(sub);
-            });
+                   var subs = categories[catName];
+                   if (subs && subs.length > 0) {
+                       var $subUl = $("<ul>").addClass("sub-menu");
+                       subs.forEach(function(subName) {
+                           var $subLi = $("<li>");
+                           var $subA = $("<a>").attr("href", ctx + "/product/category?name=" + encodeURIComponent(subName))
+                                              .text(subName);
+                           $subLi.append($subA);
+                           $subUl.append($subLi);
+                       });
+                       $li.append($subUl);
+                   }
 
-            var idx = 1;
-            Object.keys(categories).forEach(function(catName) {
-                var $li = $("<li>").addClass("has-sub");
-                var $a = $("<a>").attr("href", ctx + "/product/category?name=" + encodeURIComponent(catName))
-                                 .attr("id", "category" + idx)
-                                 .text(catName);
-                $li.append($a);
+                   $ul.append($li);
+                   idx++;
+               });
+           },
+           error: function() {}
+       });
+   }
 
-                // 서브카테고리 드롭다운 생성
-                var subs = categories[catName];
-                if (subs && subs.length > 0) {
-                    var $subUl = $("<ul>").addClass("sub-menu");
-                    subs.forEach(function(subName) {
-                        var $subLi = $("<li>");
-                        var $subA = $("<a>").attr("href", ctx + "/product/category?name=" + encodeURIComponent(subName))
-                                           .text(subName);
-                        $subLi.append($subA);
-                        $subUl.append($subLi);
-                    });
-                    $li.append($subUl);
-                }
+   function makeCategoryHeader(name, index) {
+       categoryname = "CATEGORY_NAME = '" + name + "'";
+       const $li = $("<li>");
+       const $a = $("<a>").attr("href", "<%=request.getContextPath()%>/getproduct.do?categoryname="+categoryname).attr("id", "category" + (index + 1)).text(name);
+       $li.append($a);
+       $("#menuList>ul").append($li);
+   }
 
-                $ul.append($li);
-                idx++;
-            });
-        },
-        error: function() {
-            // 카테고리 로드 실패 시 조용히 무시
-        }
-    });
-}
-
-function makeCategoryHeader(name, index) {
-	categoryname = "CATEGORY_NAME = '" + name + "'";
-    const $li = $("<li>");
-    const $a = $("<a>").attr("href", "<%=request.getContextPath()%>/getproduct.do?categoryname="+categoryname).attr("id", "category" + (index + 1)).text(name);
-<%--     const $categoryName = $("<span>").text(categoryname + " " + '(<%=request.getAttribute("totalData")%>)' + " ");
- --%>    <%-- const $a = $("<a>").attr("href", "<%=request.getContextPath()%>/headersearchcategory.do?categoryname="+name).attr("id", "category" + (index + 1)).text(name); --%> 
-    $li.append($a);
-	$("#menuList>ul").append($li);
-}
-function makeCatetorySub(subcateList, index) {
-    const $div=$("<div>").attr({"id":"sideMenu-category"+(index+1),"class":"sideMenu"});
-    const $ul=$("<ul>");
-    subcateList.forEach(sub=>{
-    	subcategoryname = "SUBCATEGORY_NAME = '" + sub.subCategory.subcategoryName +"'";
-    	const $a = $("<a>").attr("href", "<%=request.getContextPath()%>/getproduct.do?subcategroyname="+subcategoryname).text(sub.subCategory.subcategoryName);
-<%--            const $a = $("<a>").attr("href", "<%=request.getContextPath()%>/searchheadersubcategory.do?subcategroyname="+sub.subCategory.subcategoryName).text(sub.subCategory.subcategoryName);
- --%>           const $li = $("<li>").append($a);
+   function makeCatetorySub(subcateList, index) {
+       const $div=$("<div>").attr({"id":"sideMenu-category"+(index+1),"class":"sideMenu"});
+       const $ul=$("<ul>");
+       subcateList.forEach(sub=>{
+           subcategoryname = "SUBCATEGORY_NAME = '" + sub.subCategory.subcategoryName +"'";
+           const $a = $("<a>").attr("href", "<%=request.getContextPath()%>/getproduct.do?subcategroyname="+subcategoryname).text(sub.subCategory.subcategoryName);
+           const $li = $("<li>").append($a);
            $ul.append($li);
-    });
-$div.html($ul);
-$("div#menuList").after($div);
+       });
+       $div.html($ul);
+       $("div#menuList").after($div);
+   }
 
-}
+   /* ── defer 스크립트(jQuery, SockJS, Stomp) 로드 후 DOMContentLoaded에서 초기화 ── */
+   document.addEventListener('DOMContentLoaded', function() {
+       HeaderCategoryMenu();
 
+       <c:if test="${not empty sessionScope.loginUser}">
+       var ctx = document.querySelector('meta[name="ctx"]').getAttribute('content');
+
+       let socket = new SockJS('/ws');
+       let stompClient = Stomp.over(socket);
+       stompClient.debug = null;
+
+       $.ajax({
+           url: ctx + '/member/notification/count',
+           success: function(res) {
+               updateNotiBadge(res.wishCount);
+               updateChatBadge(res.chatCount);
+           }
+       });
+
+       stompClient.connect({}, function () {
+           stompClient.subscribe("/user/queue/notify", function (message) {
+               const data = JSON.parse(message.body);
+               if (data.type === 'MESSAGE') {
+                   updateChatBadge((parseInt(document.getElementById('chat-badge').textContent) || 0) + 1);
+               } else {
+                   updateNotiBadge(data.noReadCnt);
+                   createToast(data.notiMessage);
+               }
+           });
+       }, function(error) {
+           console.warn('WebSocket 연결 실패:', error);
+       });
+
+       document.getElementById('notiBell').addEventListener('click', function() {
+           $.ajax({
+               url: ctx + '/member/notification/read',
+               type: 'POST',
+               success: function() { updateNotiBadge(0); }
+           });
+       });
+
+       window.addEventListener('message', function(e) {
+           if (e.data && e.data.type === 'CHAT_READ') {
+               $.ajax({
+                   url: ctx + '/member/notification/count',
+                   success: function(res) { updateChatBadge(res.chatCount); }
+               });
+           }
+       });
+       </c:if>
+   });
 
 </script>
    <script src="<%=request.getContextPath()%>/js/common/header.js"></script>

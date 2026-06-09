@@ -20,7 +20,7 @@
                 var href = banner.linkUrl ? banner.linkUrl : '#';
                 $slide.append(
                     '<li><a href="' + href + '">' +
-                    '<img src="' + ctx + banner.imageUrl + '" alt="배너" />' +
+                    '<img src="' + ctx + banner.imageUrl + '" alt="배너" loading="lazy" />' +
                     '</a></li>'
                 );
                 $dots.append(

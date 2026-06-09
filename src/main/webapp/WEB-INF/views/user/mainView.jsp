@@ -96,7 +96,7 @@
                           wishBtn +
                           '<a href="' + detailUrl + '" class="mainCardLink">' +
                             '<div class="mainCardImg">' +
-                              '<img src="' + imgSrc + '" alt="' + p.title + '"' +
+                              '<img src="' + imgSrc + '" alt="' + p.title + '" loading="lazy"' +
                                    ' onerror="this.src=\'' + ctx + '/images/common/hifiveLogo.png\'">' +
                               badge +
                             '</div>' +
