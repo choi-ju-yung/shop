@@ -12,6 +12,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import com.example.demo.chat.redis.ChatRedisService;
 import com.example.demo.chat.service.ChatService;
 import com.example.demo.chat.vo.ChatMessage;
 import com.example.demo.config.KafkaConfig;
@@ -24,6 +25,9 @@ public class ChatMessageController {
 
     @Autowired
     private ChatService chatService;
+
+    @Autowired
+    private ChatRedisService chatRedisService;
 
     @Autowired
     private KafkaTemplate<String, ChatMessage> kafkaTemplate;
@@ -51,8 +55,9 @@ public class ChatMessageController {
         int userNo       = Integer.parseInt(payload.get("userNo"));
         int otherUserNo  = Integer.parseInt(payload.get("otherUserNo"));
 
-        // DB 읽음 처리
-        chatService.markMessagesAsRead(roomId, userNo);
+        // Redis 즉시 초기화 + DB UPDATE는 비동기
+        chatRedisService.resetUnread(roomId, userNo);
+        chatService.markMessagesAsReadAsync(roomId, userNo);
 
         // 발신자(상대방)에게 읽음 확인 → 채팅방 "읽음" 표시
         Map<String, Object> readReceipt = new HashMap<>();

@@ -188,6 +188,25 @@ ORDER BY COALESCE(M.SENT_AT, R.CREATED_AT) DESC
 		WHERE R.ROOM_ID = #{roomId}
 	</select>
 
+	<!-- 발신자 표시 이름 (닉네임 우선, 없으면 이름) -->
+	<select id="getSenderNameByUserNo" resultType="String" parameterType="int">
+		SELECT COALESCE(MP.NICKNAME, U.NAME)
+		FROM USERS U
+		LEFT JOIN MY_USER_PAGE MP ON U.USER_NO = MP.USER_NO
+		WHERE U.USER_NO = #{userNo}
+	</select>
+
+	<!-- 방 기본 정보 (변하지 않는 정보만) -->
+	<select id="getRoomBaseInfo" resultType="com.example.demo.chat.vo.ChatRoom" parameterType="String">
+		SELECT ROOM_ID, PRODUCT_ID, SELLER_NO, BUYER_NO FROM CHAT_ROOM WHERE ROOM_ID = #{roomId}
+	</select>
+
+	<!-- 특정 방에서 수신자의 미읽음 메시지 수 (Redis 초기화용) -->
+	<select id="getUnreadCountForReceiver" resultType="int" parameterType="map">
+		SELECT COUNT(*) FROM CHAT_MESSAGE
+		WHERE ROOM_ID = #{roomId} AND SENDER_NO != #{userNo} AND IS_READ = 'N'
+	</select>
+
 	<!-- 해당 유저의 전체 미읽음 채팅 메시지 수 -->
 	<select id="getTotalUnreadCount" resultType="int" parameterType="long">
         SELECT COUNT(*) FROM CHAT_MESSAGE

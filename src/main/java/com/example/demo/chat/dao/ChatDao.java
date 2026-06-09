@@ -72,6 +72,21 @@ public class ChatDao {
 	   return session.selectList("ChatMapper.getSingleChatRoomInfo",map);
    }
 
+   public String getSenderNameByUserNo(int userNo) {
+	   return session.selectOne("ChatMapper.getSenderNameByUserNo", userNo);
+   }
+
+   public ChatRoom getRoomBaseInfo(String roomId) {
+	   return session.selectOne("ChatMapper.getRoomBaseInfo", roomId);
+   }
+
+   public int getUnreadCountForReceiver(String roomId, int userNo) {
+	   java.util.Map<String, Object> map = new java.util.HashMap<>();
+	   map.put("roomId", roomId);
+	   map.put("userNo", userNo);
+	   return session.selectOne("ChatMapper.getUnreadCountForReceiver", map);
+   }
+
    public int getTotalUnreadCount(long userNo) {
 	   return session.selectOne("ChatMapper.getTotalUnreadCount", userNo);
    }
