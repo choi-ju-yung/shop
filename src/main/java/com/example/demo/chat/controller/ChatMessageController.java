@@ -55,9 +55,9 @@ public class ChatMessageController {
         int userNo       = Integer.parseInt(payload.get("userNo"));
         int otherUserNo  = Integer.parseInt(payload.get("otherUserNo"));
 
-        // Redis 즉시 초기화 + DB UPDATE는 비동기
+        // Redis 즉시 초기화 + DB UPDATE 동기 (chatList 재로드 시 stale 방지)
         chatRedisService.resetUnread(roomId, userNo);
-        chatService.markMessagesAsReadAsync(roomId, userNo);
+        chatService.markMessagesAsRead(roomId, userNo);
 
         // 헤더 배지 즉시 갱신 (DB 대신 Redis 기준 → async DB 지연 무관)
         int totalUnread = chatRedisService.getTotalUnread(userNo);

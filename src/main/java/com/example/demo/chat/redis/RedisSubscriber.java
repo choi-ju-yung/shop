@@ -36,13 +36,13 @@ public class RedisSubscriber {
             // 2. 채팅 목록 업데이트 - Redis 기반 (DB 쿼리 없음)
             ChatRoom roomBase = chatRedisService.getRoomBase(roomId);
             if (roomBase != null) {
-                // 발신자 목록: 미읽음 0, 마지막 메시지 = 방금 보낸 것
-                ChatRoom senderRoom = buildChatRoom(roomBase, roomId, chatMessage, receiverNo, 0);
+                // 발신자 목록: -2 = "기존 badge 유지" 신호
+                ChatRoom senderRoom = buildChatRoom(roomBase, roomId, chatMessage, receiverNo, -2);
                 messagingTemplate.convertAndSend("/topic/chat-list/" + senderNo, senderRoom);
 
-                // 수신자 목록: 미읽음 +1
-                int unread = chatRedisService.incrementUnread(roomId, receiverNo);
-                ChatRoom receiverRoom = buildChatRoom(roomBase, roomId, chatMessage, senderNo, unread);
+                // 수신자 목록: -1 = "현재 badge +1" 신호 (클라이언트 관리)
+                chatRedisService.incrementUnread(roomId, receiverNo);
+                ChatRoom receiverRoom = buildChatRoom(roomBase, roomId, chatMessage, senderNo, -1);
                 messagingTemplate.convertAndSend("/topic/chat-list/" + receiverNo, receiverRoom);
             }
 

@@ -189,8 +189,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const empty = container.querySelector('.cl-empty');
         if (empty) empty.remove();
 
-        const unreadHtml = (data.unreadCount > 0 && !isPopupOpen(String(data.roomId)))
-            ? '<span class="cl-unread">' + data.unreadCount + '</span>' : '';
+        // -1: 수신자 "현재 badge +1" / -2: 발신자 "기존 badge 유지"
+        let displayCount;
+        if (data.unreadCount === -1) {
+            if (!isPopupOpen(String(data.roomId))) {
+                const curBadge = existingItem ? existingItem.querySelector('.cl-unread') : null;
+                displayCount = curBadge ? (parseInt(curBadge.textContent) || 0) + 1 : 1;
+            } else {
+                displayCount = 0;
+            }
+        } else if (data.unreadCount === -2) {
+            const curBadge = existingItem ? existingItem.querySelector('.cl-unread') : null;
+            displayCount = curBadge ? (parseInt(curBadge.textContent) || 0) : 0;
+        } else {
+            displayCount = data.unreadCount;
+        }
+
+        const unreadHtml = displayCount > 0
+            ? '<span class="cl-unread">' + displayCount + '</span>' : '';
         const now = fmtTime(new Date().toISOString());
 
         /* 기존 아이템에서 닉네임 + 썸네일 보존 */
