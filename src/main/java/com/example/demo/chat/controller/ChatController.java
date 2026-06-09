@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.demo.chat.redis.ChatRedisService;
 import com.example.demo.chat.service.ChatService;
+import com.example.demo.chat.vo.ChatMessage;
 import com.example.demo.chat.vo.ChatRoom;
 import com.example.demo.mypage.service.MyPageService;
 import com.example.demo.user.vo.UserVO;
