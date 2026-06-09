@@ -5,9 +5,6 @@ import java.util.Locale.Category;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +36,6 @@ public class ProductRegistService {
     }
 
     @Transactional
-    @CacheEvict(value = "mainProducts", allEntries = true)
     public int insertProduct(Product product) {
         try {
             productRegistDao.insertProduct(product);
@@ -60,7 +56,6 @@ public class ProductRegistService {
     }
 
     /** 메인 페이지용 최신 상품 목록 */
-    @Cacheable(value = "mainProducts")
     public List<Product> selectMainProducts() {
         return productRegistDao.selectMainProducts();
     }
@@ -86,13 +81,11 @@ public class ProductRegistService {
     }
 
     /** 헤더 카테고리 메뉴 */
-    @Cacheable(value = "categories")
     public List<Map<String, Object>> selectAllCategories() {
         return productRegistDao.selectAllCategories();
     }
     
     @Transactional
-    @CacheEvict(value = "mainProducts", allEntries = true)
     public void deleteProduct(Long productId, long requestUserNo){
         Long sellerNo = productRegistDao.selectSellerNoByProductId(productId);
         if (sellerNo == null) {
@@ -112,7 +105,6 @@ public class ProductRegistService {
      * SOLD 시 buyerNo 필수
      */
     @Transactional
-    @CacheEvict(value = "mainProducts", allEntries = true)
     public void updateTradeStatus(Long productId, long requestUserNo, String tradeStatus, Long buyerNo) {
         Map<String, Object> map = new java.util.HashMap<>();
         map.put("productId",   productId);
