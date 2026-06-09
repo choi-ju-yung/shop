@@ -115,8 +115,7 @@ stompClient.debug = null; // 콘솔 노이즈 제거
 
 stompClient.connect({}, function(frame) {
 
-    // 1) 채팅방 진입 즉시 읽음 처리 + 팝업 열림 등록
-    sendReadReceipt();
+    // 1) 팝업 열림 등록 (읽음 처리는 chatList.jsp의 openChatRoom에서 이미 처리됨)
     localStorage.setItem('chatOpen_' + roomId, '1');
 
     // 2) 메시지 수신
