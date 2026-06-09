@@ -1,5 +1,6 @@
 package com.example.demo.chat.service;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,14 @@ public class ChatService {
     	Map map = new HashMap();
     	map.put("roomId", roomId);
     	map.put("userNo", userNo);
+        chatDao.markMessagesAsRead(map);
+    }
+
+    public void markMessagesAsRead(String roomId, int userNo, Timestamp readAt) {
+        Map map = new HashMap();
+        map.put("roomId", roomId);
+        map.put("userNo", userNo);
+        map.put("readAt", readAt);
         chatDao.markMessagesAsRead(map);
     }
 

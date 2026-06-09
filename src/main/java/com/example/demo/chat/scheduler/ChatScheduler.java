@@ -1,5 +1,6 @@
 package com.example.demo.chat.scheduler;
 
+import java.sql.Timestamp;
 import java.util.Set;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,10 +27,11 @@ public class ChatScheduler {
 
         for (String entry : dirtyReads) {
             try {
-                String[] parts = entry.split(":");
-                String roomId = parts[0];
-                int userNo = Integer.parseInt(parts[1]);
-                chatService.markMessagesAsRead(roomId, userNo);
+                String[] parts  = entry.split(":");
+                String roomId   = parts[0];
+                int userNo      = Integer.parseInt(parts[1]);
+                Timestamp readAt = new Timestamp(Long.parseLong(parts[2]));
+                chatService.markMessagesAsRead(roomId, userNo, readAt);
             } catch (Exception e) {
                 log.error("미읽음 DB 동기화 실패: {}", entry, e);
             }

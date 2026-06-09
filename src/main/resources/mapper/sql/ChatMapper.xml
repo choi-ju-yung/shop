@@ -42,6 +42,7 @@
         WHERE ROOM_ID = #{roomId}
           AND RECEIVER_NO = #{userNo}
           AND IS_READ = 'N'
+          <if test="readAt != null">AND SENT_AT &lt;= #{readAt}</if>
     </update>
 
     <select id="getUnreadMessageCount" resultType="int">

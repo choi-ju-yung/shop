@@ -107,7 +107,7 @@ public class ChatRedisService {
             }
         }
 
-        chatRedisTemplate.opsForSet().add(DIRTY_KEY, roomId + ":" + userNo);
+        chatRedisTemplate.opsForSet().add(DIRTY_KEY, roomId + ":" + userNo + ":" + System.currentTimeMillis());
     }
 
     /** 스케줄러용 — dirty 목록 전체 조회 후 제거 */
