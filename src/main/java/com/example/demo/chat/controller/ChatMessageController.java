@@ -13,7 +13,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import com.example.demo.chat.redis.ChatRedisService;
-import com.example.demo.chat.service.ChatService;
 import com.example.demo.chat.vo.ChatMessage;
 import com.example.demo.config.KafkaConfig;
 
@@ -22,9 +21,6 @@ public class ChatMessageController {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
-
-    @Autowired
-    private ChatService chatService;
 
     @Autowired
     private ChatRedisService chatRedisService;
@@ -55,9 +51,8 @@ public class ChatMessageController {
         int userNo       = Integer.parseInt(payload.get("userNo"));
         int otherUserNo  = Integer.parseInt(payload.get("otherUserNo"));
 
-        // Redis 즉시 초기화 + DB UPDATE 동기 (chatList 재로드 시 stale 방지)
+        // Redis 즉시 초기화 (dirty 마킹 → 스케줄러가 1분 내 DB 동기화)
         chatRedisService.resetUnread(roomId, userNo);
-        chatService.markMessagesAsRead(roomId, userNo);
 
         // 헤더 배지 즉시 갱신 (DB 대신 Redis 기준 → async DB 지연 무관)
         int totalUnread = chatRedisService.getTotalUnread(userNo);

@@ -20,6 +20,7 @@ public class ChatRedisService {
     private static final String UNREAD_KEY = "chat:unread:";
     private static final String TOTAL_KEY  = "chat:total:";
     private static final String ROOM_KEY   = "chat:room:";
+    private static final String DIRTY_KEY  = "chat:dirty:reads";
 
     private final RedisTemplate<String, String> chatRedisTemplate;
     private final ChatDao chatDao;
@@ -90,7 +91,7 @@ public class ChatRedisService {
         return roomVal != null ? roomVal.intValue() : 1;
     }
 
-    /** 채팅방 읽음 처리 시 미읽음 초기화 */
+    /** 채팅방 읽음 처리 시 미읽음 초기화 + dirty 마킹 (DB 동기화는 스케줄러가 처리) */
     public void resetUnread(String roomId, int userNo) {
         String roomKey = UNREAD_KEY + roomId + ":" + userNo;
         String cur = chatRedisTemplate.opsForValue().get(roomKey);
@@ -105,6 +106,17 @@ public class ChatRedisService {
                 chatRedisTemplate.opsForValue().set(totalKey, "0");
             }
         }
+
+        chatRedisTemplate.opsForSet().add(DIRTY_KEY, roomId + ":" + userNo);
+    }
+
+    /** 스케줄러용 — dirty 목록 전체 조회 후 제거 */
+    public java.util.Set<String> popDirtyReads() {
+        java.util.Set<String> members = chatRedisTemplate.opsForSet().members(DIRTY_KEY);
+        if (members != null && !members.isEmpty()) {
+            chatRedisTemplate.delete(DIRTY_KEY);
+        }
+        return members != null ? members : java.util.Collections.emptySet();
     }
 
     /** 헤더 배지용 전체 미읽음 카운트 (Redis → DB fallback) */

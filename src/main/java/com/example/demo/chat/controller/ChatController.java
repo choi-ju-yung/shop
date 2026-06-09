@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import java.util.concurrent.CompletableFuture;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,7 +15,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.demo.chat.redis.ChatRedisService;
 import com.example.demo.chat.service.ChatService;
-import com.example.demo.chat.vo.ChatMessage;
 import com.example.demo.chat.vo.ChatRoom;
 import com.example.demo.mypage.service.MyPageService;
 import com.example.demo.user.vo.UserVO;
@@ -56,26 +53,17 @@ public class ChatController {
     /** 채팅방 화면 렌더링 (폼 submit용) */
     @PostMapping("/member/chat/room")
     public String chatRoom(@RequestParam int productId, @RequestParam int targetUserNo,
-                           @RequestParam String roomId, Model model, HttpSession session) throws Exception {
+                           @RequestParam String roomId, Model model, HttpSession session) {
         UserVO loginUser = (UserVO) session.getAttribute("loginUser");
         long userNo = loginUser.getUserNo();
 
-        // updateReadMessage 비동기 (Oracle COMMIT 대기 없음)
-        Map readMap = new HashMap();
-        readMap.put("roomId", roomId);
-        readMap.put("targetUserNo", targetUserNo);
-        chatService.updateReadMessageAsync(readMap);
-
-        // Redis 미읽음 카운트 초기화
+        // Redis 미읽음 초기화 (dirty 마킹 → 스케줄러가 DB 동기화)
         chatRedisService.resetUnread(roomId, (int) userNo);
 
-        // 메시지 목록 + 방 상세 병렬 조회
         Map msgMap = new HashMap();
         msgMap.put("roomId", roomId);
-        CompletableFuture<List<ChatMessage>> messagesFuture =
-            CompletableFuture.supplyAsync(() -> chatService.getChatMessagesOnly(msgMap));
+        List<ChatMessage> messages = chatService.getChatMessagesOnly(msgMap);
         Map roomDetail = chatService.getChatRoomDetail(roomId, userNo);
-        List<ChatMessage> messages = messagesFuture.get();
 
         model.addAttribute("roomId", roomId);
         model.addAttribute("targetUserNo", targetUserNo);

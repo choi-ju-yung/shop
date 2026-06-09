@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,15 +53,6 @@ public class ChatService {
         chatDao.markMessagesAsRead(map);
     }
 
-    @Async
-    @Transactional
-    public void markMessagesAsReadAsync(String roomId, int userNo) {
-        Map map = new HashMap();
-        map.put("roomId", roomId);
-        map.put("userNo", userNo);
-        chatDao.markMessagesAsRead(map);
-    }
-
     public int getUnreadMessageCount(int roomId, int userNo) {
     	Map map = new HashMap();
     	map.put("roomId", roomId);
@@ -79,12 +69,6 @@ public class ChatService {
     	return chatDao.insertChatMessage(map);
     }
 
-    @Async
-    @Transactional
-    public void updateReadMessageAsync(Map map) {
-        chatDao.updateReadMessage(map);
-    }
-    
     public List<ChatMessage> getChatMessagesByRoomId(Map map){
     	chatDao.updateReadMessage(map);
     	return chatDao.getChatMessagesByRoomId(map);
