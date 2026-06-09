@@ -4,107 +4,8 @@
 <head>
 <meta charset="UTF-8">
 <title>이용약관</title>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Segoe UI', sans-serif; background: #f9fafb; color: #1a1a1a; }
-
-.popWrap {
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 32px 24px 40px;
-}
-
-.popTitle {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 24px;
-  padding-bottom: 14px;
-  border-bottom: 2px solid #20c997;
-}
-
-.termsBlock {
-  margin-bottom: 24px;
-}
-
-.termsBlock h4 {
-  font-size: 14px;
-  font-weight: 700;
-  color: #374151;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.termsBlock h4::before {
-  content: '';
-  display: inline-block;
-  width: 4px;
-  height: 14px;
-  background: #20c997;
-  border-radius: 2px;
-}
-
-.termsBlock textarea {
-  width: 100%;
-  height: 160px;
-  padding: 12px 14px;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 10px;
-  font-size: 13px;
-  line-height: 1.7;
-  color: #4b5563;
-  background: #fff;
-  resize: none;
-  outline: none;
-  font-family: inherit;
-}
-
-.agreeRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-  padding: 10px 14px;
-  background: #f0fdf4;
-  border: 1.5px solid #6ee7b7;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #065f46;
-  cursor: pointer;
-}
-
-.agreeRow input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  accent-color: #20c997;
-  cursor: pointer;
-}
-
-.popFooter {
-  margin-top: 28px;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.confirmBtn {
-  padding: 12px 32px;
-  background: #20c997;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.confirmBtn:hover { background: #17a589; }
-</style>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.min.js"></script>
+<link rel="stylesheet" href="<%=request.getContextPath()%>/css/popup/popup1.css" />
 </head>
 <body>
 <div class="popWrap">
@@ -176,7 +77,7 @@ body { font-family: 'Segoe UI', sans-serif; background: #f9fafb; color: #1a1a1a;
     <button class="confirmBtn" id="nextBtn">동의하고 계속하기</button>
   </div>
 </div>
-
+ㅈ
 <script>
 $(function() {
   $('#nextBtn').click(function() {
