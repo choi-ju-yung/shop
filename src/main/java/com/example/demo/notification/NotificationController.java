@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.demo.chat.redis.ChatRedisService;
 import com.example.demo.chat.service.ChatService;
 import com.example.demo.user.vo.UserVO;
 import com.github.pagehelper.PageHelper;
@@ -26,6 +27,7 @@ public class NotificationController {
 
     private final NotificationService notiService;
     private final ChatService chatService;
+    private final ChatRedisService chatRedisService;
 
     /** 알림 페이지 */
     @GetMapping("/member/notilist")
@@ -61,7 +63,7 @@ public class NotificationController {
         long userNo = loginUser.getUserNo();
 
         int wishCount = notiService.selectNoReadNotiByN((int) userNo);
-        int chatCount = chatService.getTotalUnreadCount(userNo);
+        int chatCount = chatRedisService.getTotalUnread((int) userNo); // Redis 기반 (async DB 지연 무관)
 
         Map<String, Integer> result = new HashMap<>();
         result.put("count", wishCount + chatCount);

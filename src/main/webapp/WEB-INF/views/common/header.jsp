@@ -364,6 +364,12 @@
                    createToast(data.notiMessage);
                }
            });
+
+           // 읽음 처리 후 서버가 Redis 기준으로 즉시 푸시 (DB async 지연 없음)
+           stompClient.subscribe("/user/queue/badgecount", function (message) {
+               const data = JSON.parse(message.body);
+               if (data.chatCount !== undefined) updateChatBadge(data.chatCount);
+           });
        }, function(error) {
            console.warn('WebSocket 연결 실패:', error);
        });
@@ -374,15 +380,6 @@
                type: 'POST',
                success: function() { updateNotiBadge(0); }
            });
-       });
-
-       window.addEventListener('message', function(e) {
-           if (e.data && e.data.type === 'CHAT_READ') {
-               $.ajax({
-                   url: ctx + '/member/notification/count',
-                   success: function(res) { updateChatBadge(res.chatCount); }
-               });
-           }
        });
        </c:if>
    });

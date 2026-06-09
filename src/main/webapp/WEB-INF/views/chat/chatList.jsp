@@ -243,20 +243,12 @@ document.addEventListener('DOMContentLoaded', function() {
         var rid = String(e.data.roomId);
 
         if (e.data.type === 'CHAT_READ') {
-            // 1) 뱃지 즉시 제거
+            // 뱃지 즉시 제거 (헤더 배지는 서버가 /queue/badgecount 로 WebSocket 푸시)
             var item = document.getElementById('chat-item-' + rid);
             if (item) {
                 var badge = item.querySelector('.cl-unread');
                 if (badge) badge.remove();
             }
-            // 2) 헤더 채팅 뱃지 카운트 갱신
-            $.ajax({
-                url: ctx + '/member/notification/count',
-                success: function(data) {
-                    if (typeof updateChatBadge === 'function') updateChatBadge(data.noReadMCnt);
-                    if (typeof updateBadge     === 'function') updateBadge(data.noReadCnt);
-                }
-            });
         }
 
         if (e.data.type === 'CHAT_CLOSED') {

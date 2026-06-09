@@ -16,9 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class ChatRedisService {
 
-    private static final String NAME_KEY    = "chat:name:";
-    private static final String UNREAD_KEY  = "chat:unread:";
-    private static final String ROOM_KEY    = "chat:room:";
+    private static final String NAME_KEY   = "chat:name:";
+    private static final String UNREAD_KEY = "chat:unread:";
+    private static final String TOTAL_KEY  = "chat:total:";
+    private static final String ROOM_KEY   = "chat:room:";
 
     private final RedisTemplate<String, String> chatRedisTemplate;
     private final ChatDao chatDao;
@@ -29,7 +30,8 @@ public class ChatRedisService {
         this.chatDao = chatDao;
     }
 
-    /** 발신자 표시 이름 조회 (Redis → DB fallback) */
+    // ────────────── 발신자 이름 캐시 ──────────────
+
     public String getSenderName(int userNo) {
         String key = NAME_KEY + userNo;
         String name = chatRedisTemplate.opsForValue().get(key);
@@ -42,12 +44,12 @@ public class ChatRedisService {
         return name != null ? name : "알 수 없음";
     }
 
-    /** 발신자 이름 캐시 갱신 (닉네임 변경 시 호출) */
     public void evictSenderName(int userNo) {
         chatRedisTemplate.delete(NAME_KEY + userNo);
     }
 
-    /** 방 기본 정보 조회 (Redis → DB fallback, 첫 조회만 DB) */
+    // ────────────── 방 기본 정보 캐시 ──────────────
+
     public ChatRoom getRoomBase(String roomId) {
         String key = ROOM_KEY + roomId;
         Map<Object, Object> cached = chatRedisTemplate.opsForHash().entries(key);
@@ -69,19 +71,50 @@ public class ChatRedisService {
         return room;
     }
 
-    /** 수신자 미읽음 카운트 +1 (key 없으면 DB에서 초기화 후 증가) */
-    public int incrementUnread(String roomId, int receiverNo) {
-        String key = UNREAD_KEY + roomId + ":" + receiverNo;
-        if (!Boolean.TRUE.equals(chatRedisTemplate.hasKey(key))) {
-            int dbCount = chatDao.getUnreadCountForReceiver(roomId, receiverNo);
-            chatRedisTemplate.opsForValue().setIfAbsent(key, String.valueOf(dbCount));
-        }
-        Long val = chatRedisTemplate.opsForValue().increment(key);
-        return val != null ? val.intValue() : 1;
+    // ────────────── 방별 미읽음 카운트 ──────────────
+
+    /** 채팅 목록 페이지 로드 시 DB 기준으로 Redis 초기화 */
+    public void initRoomUnread(String roomId, int userNo, int count) {
+        chatRedisTemplate.opsForValue().set(UNREAD_KEY + roomId + ":" + userNo, String.valueOf(count));
     }
 
-    /** 채팅방 읽음 처리 시 미읽음 카운트 초기화 */
+    /** 전체 미읽음 합계 초기화 (채팅 목록 페이지 로드 시) */
+    public void initTotalUnread(int userNo, int total) {
+        chatRedisTemplate.opsForValue().set(TOTAL_KEY + userNo, String.valueOf(total));
+    }
+
+    /** 새 메시지 수신 시 미읽음 +1 */
+    public int incrementUnread(String roomId, int receiverNo) {
+        Long roomVal  = chatRedisTemplate.opsForValue().increment(UNREAD_KEY + roomId + ":" + receiverNo);
+        chatRedisTemplate.opsForValue().increment(TOTAL_KEY + receiverNo);
+        return roomVal != null ? roomVal.intValue() : 1;
+    }
+
+    /** 채팅방 읽음 처리 시 미읽음 초기화 */
     public void resetUnread(String roomId, int userNo) {
-        chatRedisTemplate.opsForValue().set(UNREAD_KEY + roomId + ":" + userNo, "0");
+        String roomKey = UNREAD_KEY + roomId + ":" + userNo;
+        String cur = chatRedisTemplate.opsForValue().get(roomKey);
+        int prev = (cur != null) ? Integer.parseInt(cur) : 0;
+
+        chatRedisTemplate.opsForValue().set(roomKey, "0");
+
+        if (prev > 0) {
+            String totalKey = TOTAL_KEY + userNo;
+            Long newTotal = chatRedisTemplate.opsForValue().decrement(totalKey, prev);
+            if (newTotal != null && newTotal < 0) {
+                chatRedisTemplate.opsForValue().set(totalKey, "0");
+            }
+        }
+    }
+
+    /** 헤더 배지용 전체 미읽음 카운트 (Redis → DB fallback) */
+    public int getTotalUnread(int userNo) {
+        String val = chatRedisTemplate.opsForValue().get(TOTAL_KEY + userNo);
+        if (val == null) {
+            int dbCount = chatDao.getTotalUnreadCount((long) userNo);
+            chatRedisTemplate.opsForValue().set(TOTAL_KEY + userNo, String.valueOf(dbCount));
+            return dbCount;
+        }
+        return Math.max(0, Integer.parseInt(val));
     }
 }

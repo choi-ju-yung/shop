@@ -98,6 +98,15 @@ public class ChatController {
         PageHelper.startPage(page, 12);
         List<ChatRoom> rooms = chatService.getUserChatRooms(userNo);
         PageInfo<ChatRoom> pageInfo = new PageInfo<>(rooms);
+
+        // Redis 미읽음 카운트를 DB 기준으로 초기화 (실시간 INCR의 기준점)
+        int total = 0;
+        for (ChatRoom r : rooms) {
+            chatRedisService.initRoomUnread(r.getRoomId(), (int) userNo, r.getUnreadCount());
+            total += r.getUnreadCount();
+        }
+        chatRedisService.initTotalUnread((int) userNo, total);
+
         model.addAttribute("rooms", rooms);
         model.addAttribute("currentPage", pageInfo.getPageNum());
         model.addAttribute("totalPages",  pageInfo.getPages());
