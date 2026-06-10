@@ -113,6 +113,8 @@ const sock = new SockJS('/ws');
 const stompClient = Stomp.over(sock);
 stompClient.debug = null; // 콘솔 노이즈 제거
 
+const _seenMsgKeys = new Set();
+
 stompClient.connect({}, function(frame) {
 
     // 1) 팝업 열림 등록 (읽음 처리는 chatList.jsp의 openChatRoom에서 이미 처리됨)
@@ -121,6 +123,12 @@ stompClient.connect({}, function(frame) {
     // 2) 메시지 수신
     stompClient.subscribe('/user/queue/chat/', function(message) {
         const msg = JSON.parse(message.body);
+
+        // 8080/8081 양쪽 Redis 구독자가 각각 전송할 수 있어 중복 방어
+        const key = msg.senderNo + '_' + msg.sentAt;
+        if (_seenMsgKeys.has(key)) return;
+        _seenMsgKeys.add(key);
+
         appendMessage(msg);
 
         // 상대방 메시지가 오면 → 바로 읽음 처리 (내가 보고 있으므로)
