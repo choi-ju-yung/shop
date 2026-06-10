@@ -71,7 +71,7 @@
       <hashTree>
         <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="DB RPS 제어" enabled="true">
           <intProp name="calcMode">1</intProp>
-          <stringProp name="throughput">${THROUGHPUT_PER_MIN}</stringProp>
+          <stringProp name="throughput">${__P(THROUGHPUT_PER_MIN,6000)}</stringProp>
         </ConstantThroughputTimer>
         <hashTree/>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="DB 메시지 전송" enabled="true">
@@ -118,11 +118,11 @@
               <threadCounts>true</threadCounts>
             </value>
           </objProp>
-          <stringProp name="filename">results/db_${TARGET_RPS}rps.csv</stringProp>
+          <stringProp name="filename">results/db_${__P(TARGET_RPS,100)}rps.csv</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Redis write-behind 방식">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Redis write-behind 방식" enabled="true">
         <intProp name="ThreadGroup.num_threads">200</intProp>
         <intProp name="ThreadGroup.ramp_time">5</intProp>
         <stringProp name="ThreadGroup.duration">${DURATION}</stringProp>
@@ -136,9 +136,9 @@
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Redis RPS 제어">
+        <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Redis RPS 제어" enabled="true">
           <intProp name="calcMode">1</intProp>
-          <stringProp name="throughput">${THROUGHPUT_PER_MIN}</stringProp>
+          <stringProp name="throughput">${__P(THROUGHPUT_PER_MIN,6000)}</stringProp>
         </ConstantThroughputTimer>
         <hashTree/>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Redis 메시지 전송" enabled="true">
@@ -185,14 +185,10 @@
               <threadCounts>true</threadCounts>
             </value>
           </objProp>
-          <stringProp name="filename">results/redis_${TARGET_RPS}rps.csv</stringProp>
+          <stringProp name="filename">results/redis_${__P(TARGET_RPS,100)}rps.csv</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>
-
-      <!-- ===== 전체 결과 그래프 (테스트 플랜 레벨) ===== -->
-
-      <!-- DB vs Redis 응답시간 비교 라인 그래프 -->
       <ResultCollector guiclass="RespTimeGraphVisualizer" testclass="ResultCollector" testname="응답시간 그래프 (DB vs Redis)" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
@@ -204,7 +200,21 @@
             <success>true</success>
             <label>true</label>
             <code>true</code>
+            <message>false</message>
+            <threadName>false</threadName>
+            <dataType>false</dataType>
+            <encoding>false</encoding>
+            <assertions>false</assertions>
+            <subresults>false</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
             <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
             <bytes>true</bytes>
             <threadCounts>true</threadCounts>
           </value>
@@ -212,8 +222,6 @@
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-
-      <!-- P95/P99/평균/최대 막대 그래프 -->
       <ResultCollector guiclass="StatGraphVisualizer" testclass="ResultCollector" testname="통계 그래프 (Aggregate)" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
@@ -225,7 +233,21 @@
             <success>true</success>
             <label>true</label>
             <code>true</code>
+            <message>false</message>
+            <threadName>false</threadName>
+            <dataType>false</dataType>
+            <encoding>false</encoding>
+            <assertions>false</assertions>
+            <subresults>false</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
             <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
             <bytes>true</bytes>
             <threadCounts>true</threadCounts>
           </value>
@@ -233,8 +255,6 @@
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-
-      <!-- 숫자 요약 테이블 -->
       <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
@@ -246,7 +266,21 @@
             <success>true</success>
             <label>true</label>
             <code>true</code>
+            <message>false</message>
+            <threadName>false</threadName>
+            <dataType>false</dataType>
+            <encoding>false</encoding>
+            <assertions>false</assertions>
+            <subresults>false</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
             <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
             <bytes>true</bytes>
             <threadCounts>true</threadCounts>
           </value>
@@ -254,7 +288,6 @@
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-
     </hashTree>
   </hashTree>
 </jmeterTestPlan>
