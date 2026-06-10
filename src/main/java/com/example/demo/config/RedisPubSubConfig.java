@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -39,8 +40,8 @@ public class RedisPubSubConfig {
     @Bean
     public RedisMessageListenerContainer redisMessageListenerContainer(
             RedisConnectionFactory factory,
-            MessageListenerAdapter listenerAdapter,
-            MessageListenerAdapter readReceiptListenerAdapter) {
+            @Qualifier("messageListenerAdapter") MessageListenerAdapter listenerAdapter,
+            @Qualifier("readReceiptListenerAdapter") MessageListenerAdapter readReceiptListenerAdapter) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(factory);
         container.addMessageListener(listenerAdapter,            new ChannelTopic(CHAT_CHANNEL));
