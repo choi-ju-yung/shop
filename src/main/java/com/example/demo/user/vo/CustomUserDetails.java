@@ -1,5 +1,6 @@
 package com.example.demo.user.vo;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,7 +11,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
-public class CustomUserDetails implements UserDetails, OAuth2User{
+public class CustomUserDetails implements UserDetails, OAuth2User, Serializable {
+    private static final long serialVersionUID = 1L;
 	
 	private final UserVO user;
 	private Map<String, Object> attributes;

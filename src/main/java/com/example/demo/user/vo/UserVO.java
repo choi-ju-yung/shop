@@ -2,6 +2,8 @@ package com.example.demo.user.vo;
 
 import java.sql.Date;
 
+import java.io.Serializable;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +13,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserVO {
+public class UserVO implements Serializable {
+    private static final long serialVersionUID = 1L;
 	private long userNo;          // 내부 회원 번호 (PK)
 	private String loginId;  // 일반 로그인 아이디 
 	private String password; // 비밀번호
