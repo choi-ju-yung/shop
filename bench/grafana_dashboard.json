@@ -1,0 +1,165 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_SPRINGBOOT",
+      "label": "springboot",
+      "description": "Spring Boot 메트릭 (InfluxDB)",
+      "type": "datasource",
+      "pluginId": "influxdb",
+      "pluginName": "InfluxDB"
+    },
+    {
+      "name": "DS_K6",
+      "label": "k6",
+      "description": "k6 부하테스트 (InfluxDB)",
+      "type": "datasource",
+      "pluginId": "influxdb",
+      "pluginName": "InfluxDB"
+    }
+  ],
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
+    { "type": "datasource", "id": "influxdb", "name": "InfluxDB", "version": "1.0.0" },
+    { "type": "panel", "id": "timeseries", "name": "Time series", "version": "" }
+  ],
+  "title": "Shop 모니터링 대시보드",
+  "uid": "shop-monitoring-v1",
+  "description": "Spring Boot 실시간 모니터링 + k6 부하테스트 DB vs Redis 비교",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "5s",
+  "time": { "from": "now-5m", "to": "now" },
+  "timezone": "browser",
+  "graphTooltip": 1,
+  "annotations": { "list": [] },
+  "links": [],
+  "templating": { "list": [] },
+  "panels": [
+    {
+      "id": 1,
+      "title": "JVM Heap 사용량",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "influxdb", "uid": "${DS_SPRINGBOOT}" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "influxdb", "uid": "${DS_SPRINGBOOT}" },
+          "rawQuery": true,
+          "resultFormat": "time_series",
+          "query": "SELECT mean(\"value\") FROM \"jvm_memory_used\" WHERE (\"area\" = 'heap') AND $timeFilter GROUP BY time($__interval), \"id\" fill(null)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "lineInterpolation": "smooth", "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }
+      }
+    },
+    {
+      "id": 2,
+      "title": "HTTP 평균 응답시간 (ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "influxdb", "uid": "${DS_SPRINGBOOT}" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "influxdb", "uid": "${DS_SPRINGBOOT}" },
+          "rawQuery": true,
+          "resultFormat": "time_series",
+          "query": "SELECT mean(\"mean\") * 1000 FROM \"http_server_requests\" WHERE $timeFilter GROUP BY time($__interval), \"uri\" fill(null)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "lineInterpolation": "smooth", "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }
+      }
+    },
+    {
+      "id": 3,
+      "title": "HTTP 요청 수/초",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "influxdb", "uid": "${DS_SPRINGBOOT}" },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "influxdb", "uid": "${DS_SPRINGBOOT}" },
+          "rawQuery": true,
+          "resultFormat": "time_series",
+          "query": "SELECT non_negative_derivative(max(\"count\"), 1s) FROM \"http_server_requests\" WHERE $timeFilter GROUP BY time($__interval) fill(null)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "lineInterpolation": "smooth", "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }
+      }
+    },
+    {
+      "id": 4,
+      "title": "DB vs Redis 응답시간 비교 (k6 테스트 실행 시 표시)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "influxdb", "uid": "${DS_K6}" },
+      "targets": [
+        {
+          "refId": "A",
+          "alias": "DB 방식",
+          "datasource": { "type": "influxdb", "uid": "${DS_K6}" },
+          "rawQuery": true,
+          "resultFormat": "time_series",
+          "query": "SELECT mean(\"value\") FROM \"http_req_duration\" WHERE (\"name\" = 'db') AND $timeFilter GROUP BY time($__interval) fill(null)"
+        },
+        {
+          "refId": "B",
+          "alias": "Redis 방식",
+          "datasource": { "type": "influxdb", "uid": "${DS_K6}" },
+          "rawQuery": true,
+          "resultFormat": "time_series",
+          "query": "SELECT mean(\"value\") FROM \"http_req_duration\" WHERE (\"name\" = 'redis') AND $timeFilter GROUP BY time($__interval) fill(null)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "custom": { "lineWidth": 2, "fillOpacity": 10, "lineInterpolation": "smooth", "showPoints": "never" }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "DB 방식" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Redis 방식" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } }]
+          }
+        ]
+      },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }
+      }
+    }
+  ]
+}
