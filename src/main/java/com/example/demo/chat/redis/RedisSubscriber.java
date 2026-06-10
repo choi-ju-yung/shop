@@ -22,6 +22,21 @@ public class RedisSubscriber {
     private final ChatRedisService chatRedisService;
     private final ObjectMapper objectMapper;
 
+    public void onReadReceipt(String message, String channel) {
+        try {
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, Object> data = objectMapper.readValue(message, java.util.Map.class);
+            String roomId      = (String)  data.get("roomId");
+            int    targetUserNo = ((Number) data.get("targetUserNo")).intValue();
+
+            java.util.Map<String, Object> receipt = new java.util.HashMap<>();
+            receipt.put("roomId", roomId);
+            messagingTemplate.convertAndSendToUser(String.valueOf(targetUserNo), "/queue/read", receipt);
+        } catch (Exception e) {
+            log.error("RedisSubscriber onReadReceipt 오류", e);
+        }
+    }
+
     public void onChatMessage(String message, String channel) {
         try {
             ChatMessage chatMessage = objectMapper.readValue(message, ChatMessage.class);

@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Controller;
 import com.example.demo.chat.redis.ChatRedisService;
 import com.example.demo.chat.vo.ChatMessage;
 import com.example.demo.config.KafkaConfig;
+import com.example.demo.config.RedisPubSubConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Controller
 public class ChatMessageController {
@@ -27,6 +31,13 @@ public class ChatMessageController {
 
     @Autowired
     private KafkaTemplate<String, ChatMessage> kafkaTemplate;
+
+    @Autowired
+    @Qualifier("chatRedisTemplate")
+    private RedisTemplate<String, String> chatRedisTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * 메시지 전송 → Kafka로 발행
@@ -47,23 +58,31 @@ public class ChatMessageController {
      */
     @MessageMapping("/chat/read")
     public void readMessages(@Payload Map<String, String> payload) {
-        String roomId    = payload.get("roomId");
-        int userNo       = Integer.parseInt(payload.get("userNo"));
-        int otherUserNo  = Integer.parseInt(payload.get("otherUserNo"));
+        String roomId   = payload.get("roomId");
+        int userNo      = Integer.parseInt(payload.get("userNo"));
+        int otherUserNo = Integer.parseInt(payload.get("otherUserNo"));
 
-        // Redis 즉시 초기화 (dirty 마킹 → 스케줄러가 1분 내 DB 동기화)
         chatRedisService.resetUnread(roomId, userNo);
 
-        // 헤더 배지 즉시 갱신 (DB 대신 Redis 기준 → async DB 지연 무관)
+        // 수신자 배지 갱신 (같은 서버에 연결돼 있으므로 직접 전송)
         int totalUnread = chatRedisService.getTotalUnread(userNo);
         Map<String, Integer> badgePayload = new HashMap<>();
         badgePayload.put("chatCount", totalUnread);
         messagingTemplate.convertAndSendToUser(String.valueOf(userNo), "/queue/badgecount", badgePayload);
 
-        // 발신자(상대방)에게 읽음 확인 → 채팅방 "읽음" 표시
-        Map<String, Object> readReceipt = new HashMap<>();
-        readReceipt.put("roomId", roomId);
-        messagingTemplate.convertAndSendToUser(String.valueOf(otherUserNo), "/queue/read", readReceipt);
+        // 발신자가 다른 서버에 연결됐을 수 있으므로 Redis pub/sub으로 브로드캐스트
+        try {
+            Map<String, Object> receiptData = new HashMap<>();
+            receiptData.put("roomId", roomId);
+            receiptData.put("targetUserNo", otherUserNo);
+            chatRedisTemplate.convertAndSend(RedisPubSubConfig.READ_RECEIPT_CHANNEL,
+                    objectMapper.writeValueAsString(receiptData));
+        } catch (Exception e) {
+            // fallback: 같은 서버에 있으면 직접 전송
+            Map<String, Object> readReceipt = new HashMap<>();
+            readReceipt.put("roomId", roomId);
+            messagingTemplate.convertAndSendToUser(String.valueOf(otherUserNo), "/queue/read", readReceipt);
+        }
 
         // 내 채팅 목록 미읽음 뱃지 제거
         Map<String, Object> clearBadge = new HashMap<>();

@@ -14,10 +14,9 @@ import com.example.demo.chat.redis.RedisSubscriber;
 @Configuration
 public class RedisPubSubConfig {
 
-    // Redis Pub/Sub 채널 이름
-    public static final String CHAT_CHANNEL = "chat-channel";
+    public static final String CHAT_CHANNEL          = "chat-channel";
+    public static final String READ_RECEIPT_CHANNEL  = "read-receipt-channel";
 
-    // 메시지를 JSON 문자열로 publish/subscribe 하기 위한 RedisTemplate
     @Bean
     public RedisTemplate<String, String> chatRedisTemplate(RedisConnectionFactory factory) {
         RedisTemplate<String, String> template = new RedisTemplate<>();
@@ -27,20 +26,25 @@ public class RedisPubSubConfig {
         return template;
     }
 
-    // RedisSubscriber의 onChatMessage 메서드를 리스너로 등록
     @Bean
     public MessageListenerAdapter messageListenerAdapter(RedisSubscriber redisSubscriber) {
         return new MessageListenerAdapter(redisSubscriber, "onChatMessage");
     }
 
-    // 컨테이너에 채널 + 리스너 등록
+    @Bean
+    public MessageListenerAdapter readReceiptListenerAdapter(RedisSubscriber redisSubscriber) {
+        return new MessageListenerAdapter(redisSubscriber, "onReadReceipt");
+    }
+
     @Bean
     public RedisMessageListenerContainer redisMessageListenerContainer(
             RedisConnectionFactory factory,
-            MessageListenerAdapter listenerAdapter) {
+            MessageListenerAdapter listenerAdapter,
+            MessageListenerAdapter readReceiptListenerAdapter) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(factory);
-        container.addMessageListener(listenerAdapter, new ChannelTopic(CHAT_CHANNEL));
+        container.addMessageListener(listenerAdapter,            new ChannelTopic(CHAT_CHANNEL));
+        container.addMessageListener(readReceiptListenerAdapter, new ChannelTopic(READ_RECEIPT_CHANNEL));
         return container;
     }
 }
