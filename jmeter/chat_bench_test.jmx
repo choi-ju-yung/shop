@@ -2,7 +2,8 @@
 <jmeterTestPlan version="1.2" properties="5.0">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="채팅 DB vs Redis 성능 비교" enabled="true">
-      <stringProp name="TestPlan.comments">TARGET_RPS 변수를 바꿔가며 실행 (100/200/300/500/800/1000)</stringProp>
+      <stringProp name="TestPlan.comments">TARGET_RPS와 THROUGHPUT_PER_MIN을 같이 바꿔가며 실행
+100RPS=6000 / 200RPS=12000 / 300RPS=18000 / 500RPS=30000 / 800RPS=48000 / 1000RPS=60000</stringProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel">
         <collectionProp name="Arguments.arguments">
@@ -18,10 +19,20 @@
             <stringProp name="Argument.name">PORT</stringProp>
             <stringProp name="Argument.value">443</stringProp>
           </elementProp>
-          <!-- 이 값만 바꿔가며 실행: 100 → 200 → 300 → 500 → 800 → 1000 -->
+          <!-- ★ 두 값을 같이 바꿔서 실행 ★
+               100RPS  → TARGET_RPS=100,  THROUGHPUT_PER_MIN=6000
+               200RPS  → TARGET_RPS=200,  THROUGHPUT_PER_MIN=12000
+               300RPS  → TARGET_RPS=300,  THROUGHPUT_PER_MIN=18000
+               500RPS  → TARGET_RPS=500,  THROUGHPUT_PER_MIN=30000
+               800RPS  → TARGET_RPS=800,  THROUGHPUT_PER_MIN=48000
+               1000RPS → TARGET_RPS=1000, THROUGHPUT_PER_MIN=60000  -->
           <elementProp name="TARGET_RPS" elementType="Argument">
             <stringProp name="Argument.name">TARGET_RPS</stringProp>
             <stringProp name="Argument.value">100</stringProp>
+          </elementProp>
+          <elementProp name="THROUGHPUT_PER_MIN" elementType="Argument">
+            <stringProp name="Argument.name">THROUGHPUT_PER_MIN</stringProp>
+            <stringProp name="Argument.value">6000</stringProp>
           </elementProp>
           <elementProp name="DURATION" elementType="Argument">
             <stringProp name="Argument.name">DURATION</stringProp>
@@ -58,13 +69,13 @@
         <stringProp name="ThreadGroup.delay">0</stringProp>
       </ThreadGroup>
       <hashTree>
-        <!-- RPS 제어: TARGET_RPS * 60 = samples/minute -->
         <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="DB RPS 제어" enabled="true">
           <intProp name="calcMode">1</intProp>
           <doubleProp>
             <name>throughput</name>
-            <value>${__groovy(${TARGET_RPS} * 60)}</value>
+            <value>6000.0</value>
           </doubleProp>
+          <stringProp name="throughput">${THROUGHPUT_PER_MIN}</stringProp>
         </ConstantThroughputTimer>
         <hashTree/>
 
@@ -79,7 +90,6 @@
         </HTTPSamplerProxy>
         <hashTree/>
 
-        <!-- DB 결과 CSV 저장 -->
         <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="DB 결과 저장" enabled="true">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
@@ -119,8 +129,9 @@
           <intProp name="calcMode">1</intProp>
           <doubleProp>
             <name>throughput</name>
-            <value>${__groovy(${TARGET_RPS} * 60)}</value>
+            <value>6000.0</value>
           </doubleProp>
+          <stringProp name="throughput">${THROUGHPUT_PER_MIN}</stringProp>
         </ConstantThroughputTimer>
         <hashTree/>
 
@@ -135,7 +146,6 @@
         </HTTPSamplerProxy>
         <hashTree/>
 
-        <!-- Redis 결과 CSV 저장 -->
         <ResultCollector guiclass="SimpleDataWriter" testclass="ResultCollector" testname="Redis 결과 저장" enabled="true">
           <boolProp name="ResultCollector.error_logging">false</boolProp>
           <objProp>
