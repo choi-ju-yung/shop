@@ -88,11 +88,12 @@ public class ChatController {
         List<ChatRoom> rooms = chatService.getUserChatRooms(userNo);
         PageInfo<ChatRoom> pageInfo = new PageInfo<>(rooms);
 
-        // Redis 미읽음 카운트를 DB 기준으로 초기화 (실시간 INCR의 기준점)
+        // Redis 값 우선 사용 (resetUnread로 0이 세팅된 경우 DB stale 값으로 덮어쓰지 않음)
         int total = 0;
         for (ChatRoom r : rooms) {
-            chatRedisService.initRoomUnread(r.getRoomId(), (int) userNo, r.getUnreadCount());
-            total += r.getUnreadCount();
+            int unread = chatRedisService.getEffectiveUnread(r.getRoomId(), (int) userNo, r.getUnreadCount());
+            r.setUnreadCount(unread);
+            total += unread;
         }
         chatRedisService.initTotalUnread((int) userNo, total);
 

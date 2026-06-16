@@ -51,13 +51,14 @@ public class RedisSubscriber {
             // 2. 채팅 목록 업데이트 - Redis 기반 (DB 쿼리 없음)
             ChatRoom roomBase = chatRedisService.getRoomBase(roomId);
             if (roomBase != null) {
-                // 발신자 목록: -2 = "기존 badge 유지" 신호
-                ChatRoom senderRoom = buildChatRoom(roomBase, roomId, chatMessage, receiverNo, -2);
+                // 발신자 목록: 상대방(수신자) 이름을 Redis 캐시에서 조회
+                String receiverName = chatRedisService.getSenderName(receiverNo);
+                ChatRoom senderRoom = buildChatRoom(roomBase, roomId, chatMessage, receiverNo, -2, receiverName);
                 messagingTemplate.convertAndSend("/topic/chat-list/" + senderNo, senderRoom);
 
-                // 수신자 목록: -1 = "현재 badge +1" 신호 (클라이언트 관리)
+                // 수신자 목록: 상대방(발신자) 이름은 메시지에 포함되어 있음
                 chatRedisService.incrementUnread(roomId, receiverNo);
-                ChatRoom receiverRoom = buildChatRoom(roomBase, roomId, chatMessage, senderNo, -1);
+                ChatRoom receiverRoom = buildChatRoom(roomBase, roomId, chatMessage, senderNo, -1, chatMessage.getSenderName());
                 messagingTemplate.convertAndSend("/topic/chat-list/" + receiverNo, receiverRoom);
             }
 
@@ -72,7 +73,7 @@ public class RedisSubscriber {
         }
     }
 
-    private ChatRoom buildChatRoom(ChatRoom base, String roomId, ChatMessage msg, int otherUserNo, int unreadCount) {
+    private ChatRoom buildChatRoom(ChatRoom base, String roomId, ChatMessage msg, int otherUserNo, int unreadCount, String otherUserName) {
         ChatRoom room = new ChatRoom();
         room.setRoomId(roomId);
         room.setProductId(base.getProductId());
@@ -82,6 +83,7 @@ public class RedisSubscriber {
         room.setLastMessage(msg.getMessage());
         room.setLastMessageTime(msg.getSentAt());
         room.setUnreadCount(unreadCount);
+        room.setOtherUserName(otherUserName);
         return room;
     }
 }

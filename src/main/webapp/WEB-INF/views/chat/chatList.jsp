@@ -209,24 +209,29 @@ document.addEventListener('DOMContentLoaded', function() {
             ? '<span class="cl-unread">' + displayCount + '</span>' : '';
         const now = fmtTime(new Date().toISOString());
 
-        /* 기존 아이템에서 닉네임 + 썸네일 보존 */
-        let existingThumb = '<div class="cl-thumb-placeholder"><ion-icon name="bag-outline"></ion-icon></div>';
-        let existingName  = data.otherUserName || '';
+        /* 기존 아이템에서 닉네임 + 썸네일 + 아바타 보존 */
+        let existingThumb  = '<div class="cl-thumb-placeholder"><ion-icon name="bag-outline"></ion-icon></div>';
+        let existingAvatar = '<ion-icon name="person-circle-outline"></ion-icon>';
+        let existingName   = data.otherUserName || '';
         if (existingItem) {
             const tw = existingItem.querySelector('.cl-thumb-wrap');
             if (tw) {
                 const img = tw.querySelector('img.cl-thumb');
                 if (img) existingThumb = '<img class="cl-thumb" src="' + img.src + '" alt="상품">';
             }
-            const partnerEl = existingItem.querySelector('.cl-partner');
-            if (partnerEl && partnerEl.textContent.trim()) {
-                existingName = partnerEl.textContent.trim();
+            const av = existingItem.querySelector('.cl-avatar');
+            if (av && av.innerHTML.trim()) existingAvatar = av.innerHTML;
+            if (!existingName) {
+                const partnerEl = existingItem.querySelector('.cl-partner');
+                if (partnerEl && partnerEl.textContent.trim()) {
+                    existingName = partnerEl.textContent.trim();
+                }
             }
         }
         if (!existingName) existingName = '상대방';
 
         const innerHtml =
-            '<div class="cl-avatar"><ion-icon name="person-circle-outline"></ion-icon></div>' +
+            '<div class="cl-avatar">' + existingAvatar + '</div>' +
             '<div class="cl-body">' +
                 '<span class="cl-partner">' + existingName + '</span>' +
                 '<span class="cl-last-msg">' + data.lastMessage + '</span>' +

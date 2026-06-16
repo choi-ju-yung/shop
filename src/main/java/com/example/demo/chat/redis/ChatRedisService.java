@@ -74,9 +74,20 @@ public class ChatRedisService {
 
     // ────────────── 방별 미읽음 카운트 ──────────────
 
-    /** 채팅 목록 페이지 로드 시 DB 기준으로 Redis 초기화 */
-    public void initRoomUnread(String roomId, int userNo, int count) {
-        chatRedisTemplate.opsForValue().set(UNREAD_KEY + roomId + ":" + userNo, String.valueOf(count));
+    /**
+     * 채팅 목록 로드 시 Redis 값이 있으면 그것을 우선 사용하고,
+     * 없을 때만 DB 값으로 초기화한다.
+     * resetUnread()가 60초 스케줄러보다 먼저 실행된 경우 Redis에 정확한 0이
+     * 남아 있는데, 여기서 DB의 stale 값으로 덮어쓰면 읽음이 복구되어 보이는 버그 발생.
+     */
+    public int getEffectiveUnread(String roomId, int userNo, int dbCount) {
+        String key = UNREAD_KEY + roomId + ":" + userNo;
+        String val = chatRedisTemplate.opsForValue().get(key);
+        if (val != null) {
+            return Math.max(0, Integer.parseInt(val));
+        }
+        chatRedisTemplate.opsForValue().set(key, String.valueOf(dbCount));
+        return dbCount;
     }
 
     /** 전체 미읽음 합계 초기화 (채팅 목록 페이지 로드 시) */
