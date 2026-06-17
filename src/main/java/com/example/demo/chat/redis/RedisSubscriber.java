@@ -57,8 +57,8 @@ public class RedisSubscriber {
                 messagingTemplate.convertAndSend("/topic/chat-list/" + senderNo, senderRoom);
 
                 // 수신자 목록: 상대방(발신자) 이름은 메시지에 포함되어 있음
-                chatRedisService.incrementUnread(roomId, receiverNo);
-                ChatRoom receiverRoom = buildChatRoom(roomBase, roomId, chatMessage, senderNo, -1, chatMessage.getSenderName());
+                int newUnread = chatRedisService.incrementUnread(roomId, receiverNo);
+                ChatRoom receiverRoom = buildChatRoom(roomBase, roomId, chatMessage, senderNo, newUnread, chatMessage.getSenderName());
                 messagingTemplate.convertAndSend("/topic/chat-list/" + receiverNo, receiverRoom);
             }
 

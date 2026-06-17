@@ -189,20 +189,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const empty = container.querySelector('.cl-empty');
         if (empty) empty.remove();
 
-        // -1: 수신자 "현재 badge +1" / -2: 발신자 "기존 badge 유지"
+        // -2: 발신자 "기존 badge 유지" / 그 외: 서버에서 내려온 실제 카운트 사용
         let displayCount;
-        if (data.unreadCount === -1) {
-            if (!isPopupOpen(String(data.roomId))) {
-                const curBadge = existingItem ? existingItem.querySelector('.cl-unread') : null;
-                displayCount = curBadge ? (parseInt(curBadge.textContent) || 0) + 1 : 1;
-            } else {
-                displayCount = 0;
-            }
-        } else if (data.unreadCount === -2) {
+        if (data.unreadCount === -2) {
             const curBadge = existingItem ? existingItem.querySelector('.cl-unread') : null;
             displayCount = curBadge ? (parseInt(curBadge.textContent) || 0) : 0;
         } else {
-            displayCount = data.unreadCount;
+            displayCount = isPopupOpen(String(data.roomId)) ? 0 : data.unreadCount;
         }
 
         const unreadHtml = displayCount > 0
