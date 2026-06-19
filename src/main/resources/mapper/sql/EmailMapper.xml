@@ -25,4 +25,18 @@
  		) THEN 1 ELSE 0 END
  		FROM DUAL
  	</select>
+
+ 	<update id="markVerified" parameterType="String">
+ 		UPDATE EMAIL_AUTH SET IS_VERIFIED = 'Y' WHERE EMAIL = #{email}
+ 	</update>
+
+ 	<select id="isEmailVerified" parameterType="String" resultType="int">
+ 		SELECT CASE WHEN EXISTS(
+ 			SELECT 1 FROM EMAIL_AUTH
+ 			WHERE email = #{email}
+ 			AND is_verified = 'Y'
+ 			AND create_time >= SYSTIMESTAMP - INTERVAL '30' MINUTE
+ 		) THEN 1 ELSE 0 END
+ 		FROM DUAL
+ 	</select>
  </mapper>

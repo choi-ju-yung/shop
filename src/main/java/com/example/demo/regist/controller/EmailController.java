@@ -35,9 +35,8 @@ public class EmailController {
 					.authCode(code)
 					.requestIp(userIp).build();
 			
-			int result = emailService.createAuthNumber(authNumber);
-					// DB 저장 등 추가 로직 필요시 여기에 작성
-			return code; // 또는 "success" 등 원하는 값 반환
+			emailService.createAuthNumber(authNumber);
+			return "sent";
 		} catch (MessagingException e) {
 			e.printStackTrace();
 			return "fail";

@@ -28,11 +28,15 @@ public class RegistService {
 	
 	@Transactional
 	public void nomalInsert(UserVO userVO) {
-				
+
+		if (!emailService.isEmailVerified(userVO.getEmail())) {
+			throw new RuntimeException("이메일 인증이 완료되지 않았습니다.");
+		}
+
 		String encode = passwordEncoder.encode(userVO.getPassword());
 		userVO.setPassword(encode);
 		userVO.setRole("ROLE_USER");
-		
+
 		int result = registDao.nomalInsert(userVO);
 		if(result == 0) {
 			log.error("회원정보 등록실패 : {}", userVO);
