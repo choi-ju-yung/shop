@@ -56,9 +56,8 @@ public class RedisSubscriber {
                 ChatRoom senderRoom = buildChatRoom(roomBase, roomId, chatMessage, receiverNo, -2, receiverName);
                 messagingTemplate.convertAndSend("/topic/chat-list/" + senderNo, senderRoom);
 
-                // 수신자 목록: 상대방(발신자) 이름은 메시지에 포함되어 있음
-                int newUnread = chatRedisService.incrementUnread(roomId, receiverNo);
-                ChatRoom receiverRoom = buildChatRoom(roomBase, roomId, chatMessage, senderNo, newUnread, chatMessage.getSenderName());
+                // 수신자 목록: 미읽음 카운트는 Kafka 소비자에서 이미 1회 증가됨
+                ChatRoom receiverRoom = buildChatRoom(roomBase, roomId, chatMessage, senderNo, chatMessage.getUnreadCount(), chatMessage.getSenderName());
                 messagingTemplate.convertAndSend("/topic/chat-list/" + receiverNo, receiverRoom);
             }
 
