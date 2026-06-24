@@ -23,4 +23,13 @@ public class EmailDao {
 	public int compareAuthNumber(AuthNumber authNumber) {
 		return sqlSession.selectOne("EmailMapper.compareAuthNumber",authNumber);
 	}
+
+	public int markVerified(String email) {
+		return sqlSession.update("EmailMapper.markVerified", email);
+	}
+
+	public boolean isEmailVerified(String email) {
+		Integer result = sqlSession.selectOne("EmailMapper.isEmailVerified", email);
+		return result != null && result > 0;
+	}
 }

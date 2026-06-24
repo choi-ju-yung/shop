@@ -81,6 +81,14 @@ public class EmailService {
     }
     
     public boolean compareAuthNumber(AuthNumber authNumber) {
-    	return emailDao.compareAuthNumber(authNumber) > 0;
+    	boolean matched = emailDao.compareAuthNumber(authNumber) > 0;
+    	if (matched) {
+    		emailDao.markVerified(authNumber.getEmail());
+    	}
+    	return matched;
+    }
+
+    public boolean isEmailVerified(String email) {
+    	return emailDao.isEmailVerified(email);
     }
 }
