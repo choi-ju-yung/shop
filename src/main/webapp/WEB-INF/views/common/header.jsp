@@ -358,7 +358,9 @@
            stompClient.subscribe("/user/queue/notify", function (message) {
                const data = JSON.parse(message.body);
                if (data.type === 'MESSAGE') {
-                   updateChatBadge((parseInt(document.getElementById('chat-badge').textContent) || 0) + 1);
+                   if (!localStorage.getItem('chatOpen_' + data.roomId)) {
+                       updateChatBadge((parseInt(document.getElementById('chat-badge').textContent) || 0) + 1);
+                   }
                } else {
                    updateNotiBadge(data.noReadCnt);
                    createToast(data.notiMessage);

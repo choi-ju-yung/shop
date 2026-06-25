@@ -65,6 +65,7 @@ public class RedisSubscriber {
             Map<String, Object> notifyPayload = new HashMap<>();
             notifyPayload.put("notiMessage", chatMessage.getSenderName() + ": " + chatMessage.getMessage());
             notifyPayload.put("type", "MESSAGE");
+            notifyPayload.put("roomId", roomId);
             messagingTemplate.convertAndSendToUser(String.valueOf(receiverNo), "/queue/notify", notifyPayload);
 
         } catch (Exception e) {

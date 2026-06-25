@@ -117,8 +117,9 @@ const _seenMsgKeys = new Set();
 
 stompClient.connect({}, function(frame) {
 
-    // 1) 팝업 열림 등록 (읽음 처리는 chatList.jsp의 openChatRoom에서 이미 처리됨)
+    // 1) 팝업 열림 등록 + 입장 시 즉시 읽음 처리
     localStorage.setItem('chatOpen_' + roomId, '1');
+    sendReadReceipt();
 
     // 2) 메시지 수신
     stompClient.subscribe('/user/queue/chat/', function(message) {
