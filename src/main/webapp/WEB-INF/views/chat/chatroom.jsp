@@ -363,6 +363,15 @@ document.addEventListener('click', function() {
     document.getElementById('emojiBtn').classList.remove('active');
 });
 
+// 다른 탭에서 로그아웃하면 채팅 입력 비활성화
+window.addEventListener('storage', function(e) {
+    if (e.key === 'shopLogout') {
+        if (stompClient && stompClient.connected) stompClient.disconnect();
+        var inputContainer = document.getElementById('inputContainer');
+        inputContainer.innerHTML = '<p style="color:#999;text-align:center;padding:12px;margin:0;">로그아웃되어 메시지를 보낼 수 없습니다.</p>';
+    }
+});
+
 // 팝업 닫힐 때 localStorage 정리 + 부모 창에 알림
 window.addEventListener('beforeunload', function() {
     localStorage.removeItem('chatOpen_' + roomId);

@@ -49,10 +49,8 @@ public class ChatMessageController {
     @MessageMapping("/chat/send/{roomId}")
     public void sendMessage(@DestinationVariable String roomId,
                             @Payload ChatMessage chatMessage, Principal principal) {
+        if (principal == null) return;
         chatMessage.setRoomId(roomId);
-        
-        // 사용자에게 직접 메시지를 보내는것이 아님
-        // WebSocket으로 받은 메시지를 Kafka chat-messages 토픽에 발행하고 끝.
         kafkaTemplate.send(KafkaConfig.CHAT_TOPIC, chatMessage);
     }
 

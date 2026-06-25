@@ -63,7 +63,7 @@
 						<a href="<%=request.getContextPath()%>/admin/adminMode">관리자모드</a>
 					</c:if> 
 					<a href="#"
-						onclick="localStorage.removeItem('recentProducts'); location.replace('<%=request.getContextPath()%>/logout')"
+						onclick="localStorage.removeItem('recentProducts'); localStorage.setItem('shopLogout', Date.now()); location.replace('<%=request.getContextPath()%>/logout')"
 						id="logout">로그아웃</a>
 					<a href="<%=request.getContextPath()%>/coupon/list" id="eventBtn">쿠폰</a>
 					<a href="<%=request.getContextPath()%>/board/list?notice=N"
