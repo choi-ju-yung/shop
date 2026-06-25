@@ -227,7 +227,7 @@ function escapeHtml(str) {
 
 // 엔터 전송
 document.getElementById('messageInput').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') sendMessage();
+    if (e.key === 'Enter' && !e.isComposing) sendMessage();
 });
 
 /* ── 이모티콘 피커 ── */
