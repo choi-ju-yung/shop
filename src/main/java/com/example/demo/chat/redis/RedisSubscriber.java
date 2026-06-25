@@ -25,11 +25,11 @@ public class RedisSubscriber {
     public void onReadReceipt(String message, String channel) {
         try {
             @SuppressWarnings("unchecked")
-            java.util.Map<String, Object> data = objectMapper.readValue(message, java.util.Map.class);
+            Map<String, Object> data = objectMapper.readValue(message, Map.class);
             String roomId      = (String)  data.get("roomId");
             int    targetUserNo = ((Number) data.get("targetUserNo")).intValue();
 
-            java.util.Map<String, Object> receipt = new java.util.HashMap<>();
+            Map<String, Object> receipt = new HashMap<>();
             receipt.put("roomId", roomId);
             messagingTemplate.convertAndSendToUser(String.valueOf(targetUserNo), "/queue/read", receipt);
         } catch (Exception e) {
