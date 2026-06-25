@@ -220,12 +220,14 @@ function sendMessage() {
         receiverNo: targetUserNo
     }));
     clearTimeout(_typingTimer);
+    _isTyping = false;
     sendTyping(false);
     input.value = '';
     input.focus();
 }
 
 let _typingTimer = null;
+let _isTyping = false;
 function sendTyping(isTyping) {
     if (stompClient && stompClient.connected) {
         stompClient.send('/app/chat/typing/' + roomId, {}, JSON.stringify({
@@ -275,9 +277,13 @@ document.getElementById('messageInput').addEventListener('keydown', function(e) 
 });
 
 document.getElementById('messageInput').addEventListener('input', function() {
-    sendTyping(true);
-    clearTimeout(_typingTimer);
-    _typingTimer = setTimeout(function() { sendTyping(false); }, 1500);
+    if (this.value.length === 0) {
+        clearTimeout(_typingTimer);
+        if (_isTyping) { _isTyping = false; sendTyping(false); }
+    } else if (!_isTyping) {
+        _isTyping = true;
+        sendTyping(true);
+    }
 });
 
 /* ── 이모티콘 피커 ── */
