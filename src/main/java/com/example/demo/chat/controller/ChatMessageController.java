@@ -18,8 +18,11 @@ import com.example.demo.chat.redis.ChatRedisService;
 import com.example.demo.chat.vo.ChatMessage;
 import com.example.demo.config.KafkaConfig;
 import com.example.demo.config.RedisPubSubConfig;
+
+import lombok.extern.slf4j.Slf4j;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@Slf4j
 @Controller
 public class ChatMessageController {
 
@@ -51,6 +54,21 @@ public class ChatMessageController {
         // 사용자에게 직접 메시지를 보내는것이 아님
         // WebSocket으로 받은 메시지를 Kafka chat-messages 토픽에 발행하고 끝.
         kafkaTemplate.send(KafkaConfig.CHAT_TOPIC, chatMessage);
+    }
+
+    /**
+     * 타이핑 상태 전달 → Redis pub/sub 경유 (Kafka 불필요, 실시간 이벤트)
+     */
+    @MessageMapping("/chat/typing/{roomId}")
+    public void sendTyping(@DestinationVariable String roomId,
+                           @Payload Map<String, Object> payload) {
+        payload.put("roomId", roomId);
+        try {
+            chatRedisTemplate.convertAndSend(RedisPubSubConfig.TYPING_CHANNEL,
+                    objectMapper.writeValueAsString(payload));
+        } catch (Exception e) {
+            log.error("typing 전송 오류", e);
+        }
     }
 
     /**

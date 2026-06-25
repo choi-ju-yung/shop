@@ -6,6 +6,19 @@
 <head>
 <title>채팅방</title>
 <link rel="stylesheet" href="/css/chat/chatroom.css" />
+<style>
+.typing-bubble { display:flex; gap:4px; align-items:center; padding:10px 14px; }
+.typing-bubble .dot {
+    width:7px; height:7px; background:#aaa; border-radius:50%;
+    animation: typingDot 1.2s infinite;
+}
+.typing-bubble .dot:nth-child(2) { animation-delay:.2s; }
+.typing-bubble .dot:nth-child(3) { animation-delay:.4s; }
+@keyframes typingDot {
+    0%,60%,100% { transform:translateY(0); opacity:.4; }
+    30%          { transform:translateY(-5px); opacity:1; }
+}
+</style>
 </head>
 <body>
 
@@ -95,6 +108,14 @@
     <div class="emoji-grid" id="emojiGrid"></div>
 </div>
 
+<div id="typingIndicator" style="display:none; padding:4px 12px;">
+    <div class="msg-wrap other" style="margin:0;">
+        <div class="bubble typing-bubble">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </div>
+    </div>
+</div>
+
 <div id="inputContainer">
     <button id="emojiBtn" title="이모티콘">😊</button>
     <input type="text" id="messageInput" placeholder="메시지를 입력하세요">
@@ -138,7 +159,17 @@ stompClient.connect({}, function(frame) {
         }
     });
 
-    // 3) 읽음 확인 수신 → 내 메시지 "읽음"으로 업데이트
+    // 3) 타이핑 상태 수신 → ... 인디케이터 표시/숨김
+    stompClient.subscribe('/user/queue/typing', function(message) {
+        const data = JSON.parse(message.body);
+        if (String(data.roomId) !== String(roomId)) return;
+        const indicator = document.getElementById('typingIndicator');
+        const chatArea  = document.getElementById('chatArea');
+        indicator.style.display = data.typing ? 'block' : 'none';
+        if (data.typing) chatArea.scrollTop = chatArea.scrollHeight;
+    });
+
+    // 4) 읽음 확인 수신 → 내 메시지 "읽음"으로 업데이트
     stompClient.subscribe('/user/queue/read', function(message) {
         const data = JSON.parse(message.body);
         if (String(data.roomId) === String(roomId)) {
@@ -188,8 +219,21 @@ function sendMessage() {
         message:    message,
         receiverNo: targetUserNo
     }));
+    clearTimeout(_typingTimer);
+    sendTyping(false);
     input.value = '';
     input.focus();
+}
+
+let _typingTimer = null;
+function sendTyping(isTyping) {
+    if (stompClient && stompClient.connected) {
+        stompClient.send('/app/chat/typing/' + roomId, {}, JSON.stringify({
+            senderNo:   parseInt(userId),
+            receiverNo: parseInt(targetUserNo),
+            typing:     isTyping
+        }));
+    }
 }
 
 function sendReadReceipt() {
@@ -228,6 +272,12 @@ function escapeHtml(str) {
 // 엔터 전송
 document.getElementById('messageInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.isComposing) sendMessage();
+});
+
+document.getElementById('messageInput').addEventListener('input', function() {
+    sendTyping(true);
+    clearTimeout(_typingTimer);
+    _typingTimer = setTimeout(function() { sendTyping(false); }, 1500);
 });
 
 /* ── 이모티콘 피커 ── */

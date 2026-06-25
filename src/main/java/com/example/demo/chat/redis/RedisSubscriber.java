@@ -37,6 +37,17 @@ public class RedisSubscriber {
         }
     }
 
+    public void onTypingMessage(String message, String channel) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = objectMapper.readValue(message, Map.class);
+            int receiverNo = ((Number) data.get("receiverNo")).intValue();
+            messagingTemplate.convertAndSendToUser(String.valueOf(receiverNo), "/queue/typing", data);
+        } catch (Exception e) {
+            log.error("RedisSubscriber onTypingMessage 오류", e);
+        }
+    }
+
     public void onChatMessage(String message, String channel) {
         try {
             ChatMessage chatMessage = objectMapper.readValue(message, ChatMessage.class);
