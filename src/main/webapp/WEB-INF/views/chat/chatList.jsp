@@ -25,58 +25,64 @@
                 <c:forEach var="room" items="${rooms}">
                     <div id="chat-item-${room.roomId}"
                          class="cl-item"
+                         data-location="${not empty room.productPlace ? room.productPlace : ''}"
                          onclick="openChatRoom('${room.productId}', '${room.otherUserNo}', '${room.roomId}')">
 
-                        <%-- 왼쪽: 상대방 프로필 이미지 --%>
-                        <div class="cl-avatar">
+                        <%-- 왼쪽: 상품 썸네일 + 프로필 미니 --%>
+                        <div class="cl-media">
                             <c:choose>
-                                <c:when test="${fn:startsWith(room.otherUserImg, 'http')}">
-                                    <img src="${room.otherUserImg}" alt="프로필"
-                                         onerror="this.outerHTML='<ion-icon name=person-circle-outline></ion-icon>'">
-                                </c:when>
-                                <c:when test="${not empty room.otherUserImg}">
-                                    <img src="<%=request.getContextPath()%>${room.otherUserImg}" alt="프로필"
-                                         onerror="this.outerHTML='<ion-icon name=person-circle-outline></ion-icon>'">
+                                <c:when test="${not empty room.productImg}">
+                                    <img class="cl-product-thumb"
+                                         src="<%=request.getContextPath()%>${room.productImg}"
+                                         alt="상품"
+                                         onerror="this.outerHTML='<div class=\'cl-product-thumb-placeholder\'><ion-icon name=\'bag-outline\'></ion-icon></div>'">
                                 </c:when>
                                 <c:otherwise>
-                                    <ion-icon name="person-circle-outline"></ion-icon>
+                                    <div class="cl-product-thumb-placeholder">
+                                        <ion-icon name="bag-outline"></ion-icon>
+                                    </div>
                                 </c:otherwise>
                             </c:choose>
+
+                            <div class="cl-profile-mini">
+                                <c:choose>
+                                    <c:when test="${fn:startsWith(room.otherUserImg, 'http')}">
+                                        <img src="${room.otherUserImg}" alt="프로필"
+                                             onerror="this.outerHTML='<ion-icon name=person-circle-outline></ion-icon>'">
+                                    </c:when>
+                                    <c:when test="${not empty room.otherUserImg}">
+                                        <img src="<%=request.getContextPath()%>${room.otherUserImg}" alt="프로필"
+                                             onerror="this.outerHTML='<ion-icon name=person-circle-outline></ion-icon>'">
+                                    </c:when>
+                                    <c:otherwise>
+                                        <ion-icon name="person-circle-outline"></ion-icon>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
                         </div>
 
-                        <%-- 가운데: 닉네임 + 마지막 메시지 --%>
+                        <%-- 가운데: 닉네임 · 지역 · 시간 + 메시지 --%>
                         <div class="cl-body">
-                            <span class="cl-partner">
-                                <c:out value="${not empty room.otherUserName ? room.otherUserName : '상대방'}"/>
-                            </span>
+                            <div class="cl-top-row">
+                                <span class="cl-partner">
+                                    <c:out value="${not empty room.otherUserName ? room.otherUserName : '상대방'}"/>
+                                </span>
+                                <c:if test="${not empty room.productPlace}">
+                                    <span class="cl-sep">·</span>
+                                    <span class="cl-location">${room.productPlace}</span>
+                                </c:if>
+                                <span class="cl-time" data-ts="${room.lastMessageTime}"></span>
+                            </div>
                             <span class="cl-last-msg">
                                 ${empty room.lastMessage ? '메시지 없음' : room.lastMessage}
                             </span>
                         </div>
 
-                        <%-- 오른쪽: 시간 + (뱃지 + 썸네일) --%>
-                        <div class="cl-right">
-                            <span class="cl-time" data-ts="${room.lastMessageTime}"></span>
-                            <div class="cl-thumb-row">
-                                <c:if test="${room.unreadCount > 0}">
-                                    <span class="cl-unread">${room.unreadCount}</span>
-                                </c:if>
-                                <div class="cl-thumb-wrap">
-                                    <c:choose>
-                                        <c:when test="${not empty room.productImg}">
-                                            <img class="cl-thumb"
-                                                 src="<%=request.getContextPath()%>${room.productImg}"
-                                                 alt="상품"
-                                                 onerror="this.outerHTML='<div class=cl-thumb-placeholder><ion-icon name=bag-outline></ion-icon></div>'">
-                                        </c:when>
-                                        <c:otherwise>
-                                            <div class="cl-thumb-placeholder">
-                                                <ion-icon name="bag-outline"></ion-icon>
-                                            </div>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-                            </div>
+                        <%-- 오른쪽: 미읽음 뱃지 --%>
+                        <div class="cl-badge-area">
+                            <c:if test="${room.unreadCount > 0}">
+                                <span class="cl-unread">${room.unreadCount}</span>
+                            </c:if>
                         </div>
 
                     </div>
@@ -96,23 +102,58 @@ document.addEventListener('DOMContentLoaded', function() {
     const ctx    = document.querySelector('meta[name="ctx"]').getAttribute('content');
     const userNo = '${sessionScope.loginUser.userNo}';
 
-    /* 시간 포맷: YYYY.MM.DD HH:MM */
+    /* 지역명: 공백 기준 마지막 단어 (동/구/시 수준) */
+    function extractLocation(place) {
+        if (!place) return '';
+        var parts = place.trim().split(/\s+/);
+        return parts[parts.length - 1];
+    }
+
+    /* 상대 시간 포맷 */
     function fmtTime(ts) {
         if (!ts) return '';
         var d = new Date(ts);
         if (isNaN(d)) return '';
-        return d.getFullYear() + '.' +
-               String(d.getMonth()+1).padStart(2,'0') + '.' +
-               String(d.getDate()).padStart(2,'0') + ' ' +
-               String(d.getHours()).padStart(2,'0') + ':' +
-               String(d.getMinutes()).padStart(2,'0');
+        var now = new Date();
+
+        var isToday = d.getFullYear() === now.getFullYear()
+                   && d.getMonth()    === now.getMonth()
+                   && d.getDate()     === now.getDate();
+        if (isToday) {
+            var h    = d.getHours();
+            var m    = String(d.getMinutes()).padStart(2, '0');
+            var ampm = h < 12 ? '오전' : '오후';
+            var h12  = h % 12 || 12;
+            return ampm + ' ' + h12 + ':' + m;
+        }
+
+        var diffMs    = now - d;
+        var diffMin   = Math.floor(diffMs / 60000);
+        var diffHour  = Math.floor(diffMs / 3600000);
+        var diffDay   = Math.floor(diffMs / 86400000);
+        var diffWeek  = Math.floor(diffDay / 7);
+        var diffMonth = Math.floor(diffDay / 30);
+        var diffYear  = Math.floor(diffDay / 365);
+
+        if (diffMin   < 1)  return '방금 전';
+        if (diffMin   < 60) return diffMin + '분 전';
+        if (diffHour  < 24) return diffHour + '시간 전';
+        if (diffDay   < 7)  return diffDay + '일 전';
+        if (diffWeek  < 5)  return diffWeek + '주 전';
+        if (diffMonth < 12) return diffMonth + '달 전';
+        return diffYear + '년 전';
     }
 
     document.querySelectorAll('.cl-time[data-ts]').forEach(function(el) {
         el.textContent = fmtTime(el.getAttribute('data-ts'));
     });
 
-    /* localStorage 기반 팝업 열림 여부 확인 (페이지 새로고침 후에도 유지) */
+    /* 지역명 축약 (JSP에서 full place 넘어오므로 JS에서 마지막 단어만 표시) */
+    document.querySelectorAll('.cl-location').forEach(function(el) {
+        el.textContent = extractLocation(el.textContent.trim());
+    });
+
+    /* localStorage 기반 팝업 열림 여부 확인 */
     function isPopupOpen(roomId) {
         return localStorage.getItem('chatOpen_' + roomId) === '1';
     }
@@ -130,7 +171,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     window.openChatRoom = function(productId, targetUserNo, roomId) {
-        /* 미읽음 뱃지 로컬에서 즉시 제거 */
         var item = document.getElementById('chat-item-' + roomId);
         if (item) {
             var badge = item.querySelector('.cl-unread');
@@ -142,7 +182,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 roomId: roomId, userNo: userNo, otherUserNo: String(targetUserNo)
             }));
         }
-        /* 열린 채팅방으로 등록 */
         localStorage.setItem('chatOpen_' + roomId, '1');
 
         const popup = window.open('', 'chatPopup_' + roomId, 'width=460,height=660,resizable=yes');
@@ -163,82 +202,82 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.removeChild(form);
     };
 
+    function buildItemHtml(data, existingItem) {
+        /* 기존 DOM에서 보존할 값들 */
+        var productThumbHtml = '<div class="cl-product-thumb-placeholder"><ion-icon name="bag-outline"></ion-icon></div>';
+        var profileMiniHtml  = '<ion-icon name="person-circle-outline"></ion-icon>';
+        var partnerName      = data.otherUserName || '';
+        var location         = '';
+
+        if (existingItem) {
+            var thumb = existingItem.querySelector('.cl-product-thumb');
+            if (thumb) productThumbHtml = '<img class="cl-product-thumb" src="' + thumb.src + '" alt="상품" onerror="this.style.display=\'none\'">';
+            var profileMini = existingItem.querySelector('.cl-profile-mini');
+            if (profileMini) profileMiniHtml = profileMini.innerHTML;
+            if (!partnerName) {
+                var partnerEl = existingItem.querySelector('.cl-partner');
+                if (partnerEl) partnerName = partnerEl.textContent.trim();
+            }
+            var locEl = existingItem.querySelector('.cl-location');
+            if (locEl) location = locEl.textContent.trim();
+            if (!location) location = extractLocation(existingItem.dataset.location || '');
+        }
+        if (!partnerName) partnerName = '상대방';
+
+        var locationHtml = location
+            ? '<span class="cl-sep">·</span><span class="cl-location">' + location + '</span>'
+            : '';
+
+        var unreadHtml = '';
+        var displayCount;
+        if (data.unreadCount === -2) {
+            var curBadge = existingItem ? existingItem.querySelector('.cl-unread') : null;
+            displayCount = curBadge ? (parseInt(curBadge.textContent) || 0) : 0;
+        } else {
+            displayCount = isPopupOpen(String(data.roomId)) ? 0 : data.unreadCount;
+        }
+        if (displayCount > 0) unreadHtml = '<span class="cl-unread">' + displayCount + '</span>';
+
+        return '<div class="cl-media">'
+                + productThumbHtml
+                + '<div class="cl-profile-mini">' + profileMiniHtml + '</div>'
+             + '</div>'
+             + '<div class="cl-body">'
+                + '<div class="cl-top-row">'
+                    + '<span class="cl-partner">' + partnerName + '</span>'
+                    + locationHtml
+                    + '<span class="cl-time">' + fmtTime(new Date().toISOString()) + '</span>'
+                + '</div>'
+                + '<span class="cl-last-msg">' + (data.lastMessage || '') + '</span>'
+             + '</div>'
+             + '<div class="cl-badge-area">' + unreadHtml + '</div>';
+    }
+
     function updateChatListItem(data) {
-        const container  = document.getElementById('chat-list-container');
+        const container    = document.getElementById('chat-list-container');
         const existingItem = document.getElementById('chat-item-' + data.roomId);
 
-        /* ── 새 메시지가 없는 경우(읽음처리 등) → 미읽음 뱃지만 갱신, 나머지 그대로 ── */
+        /* 메시지 없음 → 뱃지만 갱신 */
         if (!data.lastMessage) {
             if (existingItem) {
-                const row = existingItem.querySelector('.cl-thumb-row');
-                if (row) {
-                    const oldBadge = row.querySelector('.cl-unread');
-                    if (oldBadge) oldBadge.remove();
+                var badgeArea = existingItem.querySelector('.cl-badge-area');
+                if (badgeArea) {
+                    badgeArea.innerHTML = '';
                     if (data.unreadCount > 0 && !isPopupOpen(String(data.roomId))) {
-                        const badge = document.createElement('span');
-                        badge.className = 'cl-unread';
-                        badge.textContent = data.unreadCount;
-                        row.insertBefore(badge, row.firstChild);
+                        badgeArea.innerHTML = '<span class="cl-unread">' + data.unreadCount + '</span>';
                     }
                 }
             }
             return;
         }
 
-        /* ── 새 메시지가 있는 경우 → 전체 갱신 + 맨 위로 ── */
         const empty = container.querySelector('.cl-empty');
         if (empty) empty.remove();
 
-        // -2: 발신자 "기존 badge 유지" / 그 외: 서버에서 내려온 실제 카운트 사용
-        let displayCount;
-        if (data.unreadCount === -2) {
-            const curBadge = existingItem ? existingItem.querySelector('.cl-unread') : null;
-            displayCount = curBadge ? (parseInt(curBadge.textContent) || 0) : 0;
-        } else {
-            displayCount = isPopupOpen(String(data.roomId)) ? 0 : data.unreadCount;
-        }
-
-        const unreadHtml = displayCount > 0
-            ? '<span class="cl-unread">' + displayCount + '</span>' : '';
-        const now = fmtTime(new Date().toISOString());
-
-        /* 기존 아이템에서 닉네임 + 썸네일 + 아바타 보존 */
-        let existingThumb  = '<div class="cl-thumb-placeholder"><ion-icon name="bag-outline"></ion-icon></div>';
-        let existingAvatar = '<ion-icon name="person-circle-outline"></ion-icon>';
-        let existingName   = data.otherUserName || '';
-        if (existingItem) {
-            const tw = existingItem.querySelector('.cl-thumb-wrap');
-            if (tw) {
-                const img = tw.querySelector('img.cl-thumb');
-                if (img) existingThumb = '<img class="cl-thumb" src="' + img.src + '" alt="상품">';
-            }
-            const av = existingItem.querySelector('.cl-avatar');
-            if (av && av.innerHTML.trim()) existingAvatar = av.innerHTML;
-            if (!existingName) {
-                const partnerEl = existingItem.querySelector('.cl-partner');
-                if (partnerEl && partnerEl.textContent.trim()) {
-                    existingName = partnerEl.textContent.trim();
-                }
-            }
-        }
-        if (!existingName) existingName = '상대방';
-
-        const innerHtml =
-            '<div class="cl-avatar">' + existingAvatar + '</div>' +
-            '<div class="cl-body">' +
-                '<span class="cl-partner">' + existingName + '</span>' +
-                '<span class="cl-last-msg">' + data.lastMessage + '</span>' +
-            '</div>' +
-            '<div class="cl-right">' +
-                '<span class="cl-time">' + now + '</span>' +
-                '<div class="cl-thumb-row">' +
-                    unreadHtml +
-                    '<div class="cl-thumb-wrap">' + existingThumb + '</div>' +
-                '</div>' +
-            '</div>';
+        const innerHTML = buildItemHtml(data, existingItem);
 
         if (existingItem) {
-            existingItem.innerHTML = innerHtml;
+            existingItem.innerHTML = innerHTML;
             container.prepend(existingItem);
         } else {
             const newItem = document.createElement('div');
@@ -246,25 +285,23 @@ document.addEventListener('DOMContentLoaded', function() {
             newItem.className = 'cl-item';
             newItem.setAttribute('onclick',
                 "openChatRoom('" + data.productId + "','" + data.otherUserNo + "','" + data.roomId + "')");
-            newItem.innerHTML = innerHtml;
+            newItem.innerHTML = innerHTML;
             container.prepend(newItem);
         }
     }
 
-    /* ── 채팅방 팝업 → 부모 창 postMessage 수신 ── */
+    /* 채팅방 팝업 → 부모 창 postMessage 수신 */
     window.addEventListener('message', function(e) {
         if (!e.data) return;
         var rid = String(e.data.roomId);
 
         if (e.data.type === 'CHAT_READ') {
-            // 뱃지 즉시 제거 (헤더 배지는 서버가 /queue/badgecount 로 WebSocket 푸시)
             var item = document.getElementById('chat-item-' + rid);
             if (item) {
                 var badge = item.querySelector('.cl-unread');
                 if (badge) badge.remove();
             }
         }
-
         if (e.data.type === 'CHAT_CLOSED') {
             localStorage.removeItem('chatOpen_' + rid);
         }

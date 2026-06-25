@@ -30,4 +30,5 @@ public class ChatRoom {
     private Timestamp lastMessageTime; // 최신 메시지 시간 (SQL: LAST_MESSAGE_TIME)
     private String productImg;      // 상품 대표 이미지 경로
     private String otherUserImg;    // 상대방 프로필 이미지
+    private String productPlace;    // 상품 거래지역
 }	

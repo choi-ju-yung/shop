@@ -368,7 +368,7 @@ window.addEventListener('storage', function(e) {
     if (e.key === 'shopLogout') {
         if (stompClient && stompClient.connected) stompClient.disconnect();
         var inputContainer = document.getElementById('inputContainer');
-        inputContainer.innerHTML = '<p style="color:#999;text-align:center;padding:12px;margin:0;">로그아웃되어 메시지를 보낼 수 없습니다.</p>';
+        inputContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;color:#9ca3af;font-size:13px;"><ion-icon name="lock-closed-outline" style="font-size:16px;"></ion-icon>로그아웃 상태입니다. 다시 로그인해 주세요.</div>';
     }
 });
 
