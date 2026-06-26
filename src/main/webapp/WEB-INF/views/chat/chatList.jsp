@@ -74,7 +74,7 @@
 
 							<%-- 오른쪽: 시간(위) + 미읽음 뱃지(아래) --%>
 							<div class="cl-right">
-								<span class="cl-time" data-ts="${room.lastMessageTime}"></span>
+								<span class="cl-time" data-ts="${room.lastMessageTime.time}"></span>
 								<c:if test="${room.unreadCount > 0}">
 									<span class="cl-unread">${room.unreadCount}</span>
 								</c:if>

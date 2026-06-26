@@ -68,7 +68,7 @@
                         <c:if test="${msg.isRead != 'Y'}">
                             <span class="read-cnt">1</span>
                         </c:if>
-                        <span class="msg-time" data-ts="${msg.sentAt}"></span>
+                        <span class="msg-time" data-ts="${msg.sentAt.time}"></span>
                     </div>
                     <div class="bubble">${msg.message}</div>
                 </div>
@@ -81,7 +81,7 @@
                         <div class="msg-bubble-row">
                             <div class="bubble">${msg.message}</div>
                             <div class="msg-side">
-                                <span class="msg-time" data-ts="${msg.sentAt}"></span>
+                                <span class="msg-time" data-ts="${msg.sentAt.time}"></span>
                             </div>
                         </div>
                     </div>
