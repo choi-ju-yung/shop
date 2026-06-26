@@ -1,7 +1,7 @@
 /* 이벤트 베너 부분 */
 .slideContainer {
 	width: 100%;
-	height:420px;
+	height: 420px;
     overflow: hidden;
     margin: 0 auto;
     padding-bottom: 10px;
@@ -18,9 +18,10 @@
 }
 /* 이미지 크기 */
 .slide li>img {
-    border-radius: 30px;
     height: 420px;
     width: 1280px;
+    border-radius: 0;
+    display: block;
 }
 div.btnContainer{
     position : relative;
@@ -80,62 +81,81 @@ div.btnContainer{
 
             /* 카테고리 */
             .mainCategoryDiv {
-                margin: 15px;
-                margin-top: 60px;
-                margin-bottom: 60px;
-                /* border: 1px solid red; */
-                height: 150px;
-
+                margin: 0 0 52px;
+                padding: 32px 0 28px;
                 display: flex;
                 justify-content: space-around;
-                align-items: center;
+                align-items: flex-start;
+                border-bottom: 1px solid #f0f0f0;
+            }
+
+            .mainCategoryDiv a {
+                text-decoration: none;
             }
 
             .categoryLink {
-                display: inline-block;
+                display: flex;
+                flex-direction: column;
                 align-items: center;
-                justify-content: center;
+                gap: 0;
+                transition: transform 0.18s;
             }
 
+            .categoryLink:hover { transform: translateY(-3px); }
+
+            /* 전체 카테고리 - 브랜드 그린 */
             .categoryBgAll {
-                width: 95px;
-                height: 95px;
-                background-color: #20c994;
-                border-radius: 35px;
+                width: 64px;
+                height: 64px;
+                background: #20c997;
+                border-radius: 20px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                transition: background 0.18s, box-shadow 0.18s;
             }
-            
+            .categoryBgAll:hover {
+                background: #12b886;
+                box-shadow: 0 4px 16px rgba(32,201,151,0.3);
+            }
+
+            /* 나머지 카테고리 - 동일한 연한 회색 */
             .categoryBg {
-                width: 95px;
-                height: 95px;
-                background-color: #ccc;
-                border-radius: 35px;
+                width: 64px;
+                height: 64px;
+                background: #f4f5f7;
+                border-radius: 20px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                transition: background 0.18s, box-shadow 0.18s;
             }
-            
-            .categoryBg:hover{
-            	background-color: #20c994;
+            .categoryBg:hover {
+                background: #eafaf5;
+                box-shadow: 0 4px 14px rgba(32,201,151,0.18);
             }
+            .categoryBg:hover .cateIcon { color: #20c997; }
 
             .cateIcon {
-                font-size: 50px;
-                color: white;
+                font-size: 30px;
+                color: #fff;
+                transition: color 0.18s;
             }
+
+            /* 일반 카테고리 아이콘 색상 */
+            .categoryBg .cateIcon { color: #6b7280; }
 
             .spanDiv {
                 display: flex;
-                margin-top: 10px;
+                margin-top: 9px;
                 justify-content: center;
             }
 
             .categoryTitle {
-                font-size: 15px;
-                font-weight: 700;
-                color: #313030;
+                font-size: 12px;
+                font-weight: 600;
+                color: #374151;
+                letter-spacing: -0.1px;
             }
             
             .popularProDiv{
@@ -342,25 +362,47 @@ div.btnContainer{
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+                linear-gradient(90deg, #20c997 0%, #e5e7eb 60%) border-box;
 }
 
 .mainSectionTitle {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
-    color: #313030;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mainSectionTitle::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 20px;
+    background: linear-gradient(180deg, #20c997, #12b886);
+    border-radius: 2px;
 }
 
 .mainMoreBtn {
-    font-size: 14px;
-    color: #20c997;
+    font-size: 13px;
+    color: #6b7280;
     text-decoration: none;
     font-weight: 600;
+    padding: 5px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    transition: all 0.15s;
 }
 
-.mainMoreBtn:hover { text-decoration: underline; }
+.mainMoreBtn:hover {
+    color: #20c997;
+    border-color: #20c997;
+    background: #f0fdf9;
+}
 
 .mainSkeleton {
     width: calc(25% - 15px);
@@ -385,15 +427,15 @@ div.btnContainer{
 .mainCard {
     position: relative;
     background: #fff;
-    border: 1px solid #eee;
-    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    border-radius: 16px;
     overflow: hidden;
-    transition: box-shadow 0.2s, transform 0.2s;
+    transition: box-shadow 0.22s, transform 0.22s;
 }
 
 .mainCard:hover {
-    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(32,201,151,0.13), 0 2px 8px rgba(0,0,0,0.06);
+    transform: translateY(-5px);
 }
 
 .mainCardLink {

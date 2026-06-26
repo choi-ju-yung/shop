@@ -37,43 +37,47 @@
     width: 58px;
     height: 58px;
     flex-shrink: 0;
+    overflow: visible;
 }
 .cl-product-thumb {
     width: 58px;
     height: 58px;
     border-radius: 10px;
     object-fit: cover;
-    border: 1px solid #e5e7eb;
+    border: 1.5px solid #e5e7eb;
     display: block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 .cl-product-thumb-placeholder {
     width: 58px;
     height: 58px;
     border-radius: 10px;
-    background: #f0fdf9;
-    border: 1px solid #d1fae5;
+    background: linear-gradient(135deg, #f0fdf9, #d1fae5);
+    border: 1.5px solid #a7f3d0;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #20c997;
-    font-size: 20px;
+    font-size: 22px;
+    box-shadow: 0 2px 8px rgba(32,201,151,0.12);
 }
+/* 프로필 미니: 오른쪽 하단, 살짝 삐져나오게 */
 .cl-profile-mini {
     position: absolute;
-    bottom: -5px;
-    left: -5px;
-    width: 26px;
-    height: 26px;
+    bottom: -7px;
+    right: -10px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    border: 2px solid #fff;
-    background: #e8f8f3;
+    border: 2.5px solid #fff;
+    background: linear-gradient(135deg, #20c997, #12b886);
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
-    color: #20c997;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    font-size: 15px;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.22);
 }
 .cl-profile-mini img {
     width: 100%;
@@ -82,20 +86,14 @@
     border-radius: 50%;
 }
 
-/* ── 가운데: 닉네임 · 지역 · 시간 + 메시지 ── */
+/* ── 가운데: 닉네임 + 마지막 메시지 ── */
 .cl-body {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-}
-.cl-top-row {
-    display: flex;
-    align-items: baseline;
-    gap: 4px;
-    flex-wrap: nowrap;
-    min-width: 0;
+    gap: 5px;
+    padding-left: 6px;
 }
 .cl-partner {
     font-size: 14px;
@@ -104,27 +102,6 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 120px;
-    flex-shrink: 0;
-}
-.cl-location {
-    font-size: 12px;
-    color: #9ca3af;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-.cl-sep {
-    font-size: 12px;
-    color: #d1d5db;
-    flex-shrink: 0;
-}
-.cl-time {
-    font-size: 12px;
-    color: #9ca3af;
-    white-space: nowrap;
-    margin-left: auto;
-    padding-left: 6px;
-    flex-shrink: 0;
 }
 .cl-last-msg {
     font-size: 13px;
@@ -134,11 +111,19 @@
     text-overflow: ellipsis;
 }
 
-/* ── 오른쪽: 미읽음 뱃지 ── */
-.cl-badge-area {
-    flex-shrink: 0;
+/* ── 오른쪽: 시간 위, 뱃지 아래 (시간 위치 고정) ── */
+.cl-right {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    flex-shrink: 0;
+    min-width: 36px;
+}
+.cl-time {
+    font-size: 12px;
+    color: #9ca3af;
+    white-space: nowrap;
 }
 .cl-unread {
     background: #ff4d6d;

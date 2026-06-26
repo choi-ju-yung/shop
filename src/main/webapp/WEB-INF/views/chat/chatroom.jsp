@@ -6,19 +6,6 @@
 <head>
 <title>채팅방</title>
 <link rel="stylesheet" href="/css/chat/chatroom.css" />
-<style>
-.typing-bubble { display:flex; gap:4px; align-items:center; padding:10px 14px; }
-.typing-bubble .dot {
-    width:7px; height:7px; background:#aaa; border-radius:50%;
-    animation: typingDot 1.2s infinite;
-}
-.typing-bubble .dot:nth-child(2) { animation-delay:.2s; }
-.typing-bubble .dot:nth-child(3) { animation-delay:.4s; }
-@keyframes typingDot {
-    0%,60%,100% { transform:translateY(0); opacity:.4; }
-    30%          { transform:translateY(-5px); opacity:1; }
-}
-</style>
 </head>
 <body>
 
@@ -28,7 +15,6 @@
 <input type="hidden" id="roomId"       value="${roomId}">
 
 <div id="chatHeader">
-    <%-- 상단: 상대방 이름 --%>
     <div class="header-top">
         <div class="header-user-dot"></div>
         <c:choose>
@@ -42,7 +28,6 @@
         </c:choose>
     </div>
 
-    <%-- 하단: 상품 카드 --%>
     <div class="header-product-card">
         <c:choose>
             <c:when test="${not empty room.PRODUCT_IMG}">
@@ -70,7 +55,6 @@
                 </c:otherwise>
             </c:choose>
         </div>
-
     </div>
 </div>
 
@@ -78,26 +62,35 @@
     <c:forEach var="msg" items="${messages}">
         <c:choose>
             <c:when test="${msg.senderNo == sessionScope.loginUser.userNo}">
-                <div class="msg-wrap mine">
-                    <div class="bubble">${msg.message}</div>
-                    <div class="msg-meta">
+                <%-- 내 메시지 (오른쪽) --%>
+                <div class="msg-row mine">
+                    <div class="msg-side">
+                        <c:if test="${msg.isRead != 'Y'}">
+                            <span class="read-cnt">1</span>
+                        </c:if>
                         <span class="msg-time" data-ts="${msg.sentAt}"></span>
-                        <span class="read-badge ${msg.isRead == 'Y' ? 'done' : ''}">${msg.isRead == 'Y' ? '읽음' : '1'}</span>
                     </div>
+                    <div class="bubble">${msg.message}</div>
                 </div>
             </c:when>
             <c:otherwise>
-                <div class="msg-wrap other">
-                    <div class="sender-name">${msg.senderName}</div>
-                    <div class="bubble">${msg.message}</div>
-                    <div class="msg-meta"><span class="msg-time" data-ts="${msg.sentAt}"></span></div>
+                <%-- 상대방 메시지 (왼쪽) --%>
+                <div class="msg-row other">
+                    <div class="msg-col">
+                        <span class="sender-name">${msg.senderName}</span>
+                        <div class="msg-bubble-row">
+                            <div class="bubble">${msg.message}</div>
+                            <div class="msg-side">
+                                <span class="msg-time" data-ts="${msg.sentAt}"></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </c:otherwise>
         </c:choose>
     </c:forEach>
 </div>
 
-<!-- 이모티콘 피커 (inputContainer 바로 위) -->
 <div id="emojiPicker">
     <div class="emoji-cats">
         <button class="emoji-cat-btn active" data-cat="face"    title="표정">😊</button>
@@ -109,9 +102,13 @@
 </div>
 
 <div id="typingIndicator" style="display:none; padding:4px 12px;">
-    <div class="msg-wrap other" style="margin:0;">
-        <div class="bubble typing-bubble">
-            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <div class="msg-row other" style="margin:0;">
+        <div class="msg-col">
+            <div class="msg-bubble-row">
+                <div class="bubble typing-bubble">
+                    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -132,34 +129,29 @@ const roomId       = document.getElementById('roomId').value;
 
 const sock = new SockJS('/ws');
 const stompClient = Stomp.over(sock);
-stompClient.debug = null; // 콘솔 노이즈 제거
+stompClient.debug = null;
 
 const _seenMsgKeys = new Set();
 
 stompClient.connect({}, function(frame) {
 
-    // 1) 팝업 열림 등록 + 입장 시 즉시 읽음 처리
     localStorage.setItem('chatOpen_' + roomId, '1');
     sendReadReceipt();
 
-    // 2) 메시지 수신
     stompClient.subscribe('/user/queue/chat/', function(message) {
         const msg = JSON.parse(message.body);
 
-        // 8080/8081 양쪽 Redis 구독자가 각각 전송할 수 있어 중복 방어
         const key = msg.senderNo + '_' + msg.sentAt;
         if (_seenMsgKeys.has(key)) return;
         _seenMsgKeys.add(key);
 
         appendMessage(msg);
 
-        // 상대방 메시지가 오면 → 바로 읽음 처리 (내가 보고 있으므로)
         if (msg.senderNo != userId) {
             sendReadReceipt();
         }
     });
 
-    // 3) 타이핑 상태 수신 → ... 인디케이터 표시/숨김
     stompClient.subscribe('/user/queue/typing', function(message) {
         const data = JSON.parse(message.body);
         if (String(data.roomId) !== String(roomId)) return;
@@ -169,13 +161,11 @@ stompClient.connect({}, function(frame) {
         if (data.typing) chatArea.scrollTop = chatArea.scrollHeight;
     });
 
-    // 4) 읽음 확인 수신 → 내 메시지 "읽음"으로 업데이트
     stompClient.subscribe('/user/queue/read', function(message) {
         const data = JSON.parse(message.body);
         if (String(data.roomId) === String(roomId)) {
-            document.querySelectorAll('.read-badge').forEach(function(el) {
-                el.textContent = '읽음';
-                el.classList.add('done');
+            document.querySelectorAll('.read-cnt').forEach(function(el) {
+                el.style.display = 'none';
             });
         }
     });
@@ -184,24 +174,30 @@ stompClient.connect({}, function(frame) {
 function appendMessage(msg) {
     const chatArea = document.getElementById('chatArea');
     const wrap = document.createElement('div');
-    wrap.classList.add('msg-wrap');
+    wrap.classList.add('msg-row');
 
-    const time = formatTimestamp(msg.sentAt);
+    const time = formatTime(new Date().toISOString());
 
     if (String(msg.senderNo) === String(userId)) {
         wrap.classList.add('mine');
         wrap.innerHTML =
-            '<div class="bubble">' + escapeHtml(msg.message) + '</div>' +
-            '<div class="msg-meta">' +
-                '<span>' + time + '</span>' +
-                '<span class="read-badge">1</span>' +
-            '</div>';
+            '<div class="msg-side">' +
+                '<span class="read-cnt">1</span>' +
+                '<span class="msg-time">' + time + '</span>' +
+            '</div>' +
+            '<div class="bubble">' + escapeHtml(msg.message) + '</div>';
     } else {
         wrap.classList.add('other');
         wrap.innerHTML =
-            '<div class="sender-name">' + escapeHtml(msg.senderName || '') + '</div>' +
-            '<div class="bubble">' + escapeHtml(msg.message) + '</div>' +
-            '<div class="msg-meta"><span>' + time + '</span></div>';
+            '<div class="msg-col">' +
+                '<span class="sender-name">' + escapeHtml(msg.senderName || '') + '</span>' +
+                '<div class="msg-bubble-row">' +
+                    '<div class="bubble">' + escapeHtml(msg.message) + '</div>' +
+                    '<div class="msg-side">' +
+                        '<span class="msg-time">' + time + '</span>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
     }
 
     chatArea.appendChild(wrap);
@@ -245,23 +241,21 @@ function sendReadReceipt() {
             userNo:      userId,
             otherUserNo: targetUserNo
         }));
-        // 부모 창에 읽음 처리 완료 신호
         if (window.opener && !window.opener.closed) {
             window.opener.postMessage({ type: 'CHAT_READ', roomId: roomId }, '*');
         }
     }
 }
 
-function formatTimestamp(ts) {
+function formatTime(ts) {
     if (!ts) return '';
     const d = new Date(ts);
     if (isNaN(d)) return '';
-    const yyyy = d.getFullYear();
-    const MM   = String(d.getMonth() + 1).padStart(2, '0');
-    const dd   = String(d.getDate()).padStart(2, '0');
-    const HH   = String(d.getHours()).padStart(2, '0');
-    const mm   = String(d.getMinutes()).padStart(2, '0');
-    return yyyy + '.' + MM + '.' + dd + ' ' + HH + ':' + mm;
+    const h = d.getHours();
+    const m = String(d.getMinutes()).padStart(2, '0');
+    const ampm = h < 12 ? '오전' : '오후';
+    const h12 = h % 12 || 12;
+    return ampm + ' ' + h12 + ':' + m;
 }
 
 function escapeHtml(str) {
@@ -271,7 +265,32 @@ function escapeHtml(str) {
         .replace(/>/g, '&gt;');
 }
 
-// 엔터 전송
+function insertDateSeparators() {
+    const chatArea = document.getElementById('chatArea');
+    const rows = chatArea.querySelectorAll('.msg-row');
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    let prevDateStr = null;
+
+    rows.forEach(function(row) {
+        const timeEl = row.querySelector('.msg-time[data-ts]');
+        if (!timeEl) return;
+        const ts = timeEl.getAttribute('data-ts');
+        if (!ts) return;
+        const d = new Date(ts);
+        if (isNaN(d)) return;
+        const dateStr = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+        if (prevDateStr !== dateStr) {
+            prevDateStr = dateStr;
+            const sep = document.createElement('div');
+            sep.className = 'date-sep';
+            sep.innerHTML = '<span class="date-sep-inner">📅 ' +
+                d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' +
+                d.getDate() + '일 ' + days[d.getDay()] + '요일</span>';
+            chatArea.insertBefore(sep, row);
+        }
+    });
+}
+
 document.getElementById('messageInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.isComposing) sendMessage();
 });
@@ -356,14 +375,12 @@ document.querySelectorAll('.emoji-cat-btn').forEach(function(btn) {
     });
 });
 
-// 피커 외부 클릭 시 닫기
 document.addEventListener('click', function() {
     var picker = document.getElementById('emojiPicker');
     picker.style.display = 'none';
     document.getElementById('emojiBtn').classList.remove('active');
 });
 
-// 다른 탭에서 로그아웃하면 채팅 입력 비활성화
 window.addEventListener('storage', function(e) {
     if (e.key === 'shopLogout') {
         if (stompClient && stompClient.connected) stompClient.disconnect();
@@ -372,7 +389,6 @@ window.addEventListener('storage', function(e) {
     }
 });
 
-// 팝업 닫힐 때 localStorage 정리 + 부모 창에 알림
 window.addEventListener('beforeunload', function() {
     localStorage.removeItem('chatOpen_' + roomId);
     if (window.opener && !window.opener.closed) {
@@ -380,11 +396,11 @@ window.addEventListener('beforeunload', function() {
     }
 });
 
-// 초기 시간 포맷 + 스크롤 아래로
 window.addEventListener('load', function() {
     document.querySelectorAll('.msg-time[data-ts]').forEach(function(el) {
-        el.textContent = formatTimestamp(el.getAttribute('data-ts'));
+        el.textContent = formatTime(el.getAttribute('data-ts'));
     });
+    insertDateSeparators();
     const chatArea = document.getElementById('chatArea');
     chatArea.scrollTop = chatArea.scrollHeight;
 });

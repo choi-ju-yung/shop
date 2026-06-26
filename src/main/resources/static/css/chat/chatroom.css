@@ -137,18 +137,67 @@ body {
 #chatArea::-webkit-scrollbar { width: 4px; }
 #chatArea::-webkit-scrollbar-thumb { background: #d1fae5; border-radius: 4px; }
 
-.msg-wrap {
+/* ── 날짜 구분선 ── */
+.date-sep {
+    display: flex;
+    justify-content: center;
+    margin: 14px 0 6px;
+    align-self: center;
+    width: 100%;
+}
+.date-sep-inner {
+    background: rgba(0,0,0,0.07);
+    color: #6b7280;
+    font-size: 11px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* ── 메시지 행 (KakaoTalk 레이아웃) ── */
+.msg-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    max-width: 72%;
+    margin: 2px 0;
+}
+.msg-row.mine  { align-self: flex-end; }
+.msg-row.other { align-self: flex-start; }
+
+/* 상대방: 이름 + 버블행 세로 묶음 */
+.msg-col {
     display: flex;
     flex-direction: column;
-    max-width: 72%;
+    align-items: flex-start;
+    gap: 3px;
+    max-width: 100%;
 }
-.msg-wrap.mine  { align-self: flex-end;   align-items: flex-end; }
-.msg-wrap.other { align-self: flex-start; align-items: flex-start; }
+
+/* 버블 + 시간 가로 묶음 */
+.msg-bubble-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+/* 읽음 표시 + 시간 세로 묶음 */
+.msg-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 2px;
+    flex-shrink: 0;
+    padding-bottom: 2px;
+}
+.msg-row.other .msg-side {
+    align-items: flex-start;
+}
 
 .sender-name {
     font-size: 11px;
     color: #9ca3af;
-    margin-bottom: 3px;
     padding: 0 4px;
 }
 
@@ -158,32 +207,34 @@ body {
     line-height: 1.55;
     word-break: break-word;
 }
-.mine  .bubble {
+.msg-row.mine .bubble {
     background: #20c997;
     color: #fff;
     border-radius: 16px 4px 16px 16px;
     box-shadow: 0 2px 6px rgba(32,201,151,0.25);
 }
-.other .bubble {
+.msg-row.other .bubble {
     background: #fff;
     color: #1f2937;
     border-radius: 4px 16px 16px 16px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
-.msg-meta {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 3px;
-    padding: 0 4px;
+/* 안 읽음 "1" 표시 */
+.read-cnt {
+    font-size: 11px;
+    font-weight: 700;
+    color: #20c997;
+    line-height: 1;
+}
+
+/* 시간 */
+.msg-time {
     font-size: 10px;
     color: #9ca3af;
+    white-space: nowrap;
+    line-height: 1;
 }
-.mine .msg-meta { justify-content: flex-end; }
-
-.read-badge { font-size: 10px; font-weight: 700; color: #20c997; }
-.read-badge.done { color: #9ca3af; }
 
 #inputContainer {
     display: flex;
@@ -294,3 +345,16 @@ body {
     transition: background 0.1s;
 }
 .emoji-item:hover { background: #f0fdf9; }
+
+/* ── 타이핑 인디케이터 ── */
+.typing-bubble { display: flex; gap: 4px; align-items: center; padding: 10px 14px; }
+.typing-bubble .dot {
+    width: 7px; height: 7px; background: #aaa; border-radius: 50%;
+    animation: typingDot 1.2s infinite;
+}
+.typing-bubble .dot:nth-child(2) { animation-delay: .2s; }
+.typing-bubble .dot:nth-child(3) { animation-delay: .4s; }
+@keyframes typingDot {
+    0%, 60%, 100% { transform: translateY(0); opacity: .4; }
+    30%            { transform: translateY(-5px); opacity: 1; }
+}
