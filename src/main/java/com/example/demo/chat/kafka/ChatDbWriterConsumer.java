@@ -28,6 +28,7 @@ public class ChatDbWriterConsumer {
             map.put("senderNo",   chatMessage.getSenderNo());
             map.put("message",    chatMessage.getMessage());
             map.put("receiverNo", chatMessage.getReceiverNo());
+            map.put("sentAt",     chatMessage.getSentAt());
             chatService.insertChatMessage(map);
         } catch (Exception e) {
             log.error("ChatDbWriterConsumer DB 저장 오류", e);

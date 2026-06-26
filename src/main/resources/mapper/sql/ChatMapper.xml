@@ -103,7 +103,7 @@ ORDER BY COALESCE(M.SENT_AT, R.CREATED_AT) DESC
 	
 	
 	<insert id="insertChatMessage" parameterType="Map">
-		INSERT INTO CHAT_MESSAGE VALUES(CHAT_MESSAGE_SEQ.NEXTVAL,#{roomId},#{senderNo},#{message},SYSDATE,default,#{receiverNo})
+		INSERT INTO CHAT_MESSAGE VALUES(CHAT_MESSAGE_SEQ.NEXTVAL,#{roomId},#{senderNo},#{message},#{sentAt},default,#{receiverNo})
 	</insert>
 	
 	<!-- 메시지 목록: 메시지 + 발신자 닉네임 조회 (닉네임 없으면 이름 fallback) -->

@@ -38,9 +38,6 @@ public class ChatKafkaConsumer {
             // 1. Redis 캐시에서 발신자 이름 조회 (DB 쿼리 없음)
             chatMessage.setSenderName(chatRedisService.getSenderName(chatMessage.getSenderNo()));
 
-            // 2. 현재 시각으로 전송 시간 설정 (DB 쿼리 없음)
-            chatMessage.setSentAt(new Timestamp(System.currentTimeMillis()));
-
             // 3. 미읽음 카운트 증가 - Kafka 소비자에서 1회만 실행 (Redis pub/sub 구독자가 여러 인스턴스면 중복 증가됨)
             int newUnread = chatRedisService.incrementUnread(chatMessage.getRoomId(), chatMessage.getReceiverNo());
             chatMessage.setUnreadCount(newUnread);

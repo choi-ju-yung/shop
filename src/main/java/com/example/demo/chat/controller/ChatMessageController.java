@@ -1,6 +1,7 @@
 package com.example.demo.chat.controller;
 
 import java.security.Principal;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,6 +52,7 @@ public class ChatMessageController {
                             @Payload ChatMessage chatMessage, Principal principal) {
         if (principal == null) return;
         chatMessage.setRoomId(roomId);
+        chatMessage.setSentAt(new Timestamp(System.currentTimeMillis()));
         kafkaTemplate.send(KafkaConfig.CHAT_TOPIC, chatMessage);
     }
 
