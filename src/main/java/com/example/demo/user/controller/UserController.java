@@ -130,9 +130,33 @@ public class UserController {
 
 	@PostMapping("/regist/insert")
 	public String registUser(HttpServletRequest request, HttpServletResponse response, UserVO userVO) {
-		
+
+		// 세션에 kakaoOauthId 없으면 유효하지 않은 요청
+		HttpSession sessionCheck = request.getSession(false);
+		if (sessionCheck == null || sessionCheck.getAttribute("kakaoOauthId") == null) {
+			return "redirect:/login";
+		}
+
+		// oauthId 중복 가입 방지
+		UserVO existing = userService.findByKakaoId(userVO.getOauthId());
+		if (existing != null) {
+			// 이미 가입된 계정 → 바로 로그인 처리
+			CustomUserDetails existingDetails = new CustomUserDetails(existing);
+			UsernamePasswordAuthenticationToken existingAuth = new UsernamePasswordAuthenticationToken(
+					existingDetails, null, existingDetails.getAuthorities());
+			SecurityContextHolder.getContext().setAuthentication(existingAuth);
+			HttpSession existingSession = request.getSession();
+			existingSession.setAttribute("loginUser", existing);
+			existingSession.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
+					SecurityContextHolder.getContext());
+			existingSession.removeAttribute("kakaoOauthId");
+			existingSession.removeAttribute("kakaoNickname");
+			existingSession.removeAttribute("kakaoEmail");
+			return "redirect:/main";
+		}
+
 		userService.registKakaoUser(userVO);
-		
+
 		UserVO savedUser = userService.findByKakaoId(userVO.getOauthId());
 
 		CustomUserDetails userDetails = new CustomUserDetails(savedUser);
@@ -146,7 +170,7 @@ public class UserController {
 		
 		
 		HttpSession session = request.getSession();
-		session.setAttribute("userNo", savedUser.getOauthId());
+		session.setAttribute("loginUser", savedUser);
 		session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                   SecurityContextHolder.getContext());
 		// 카카오 임시 세션 정리
