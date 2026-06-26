@@ -141,6 +141,8 @@ stompClient.connect({}, function(frame) {
     stompClient.subscribe('/user/queue/chat/', function(message) {
         const msg = JSON.parse(message.body);
 
+        if (String(msg.roomId) !== String(roomId)) return;
+
         const key = msg.senderNo + '_' + msg.sentAt;
         if (_seenMsgKeys.has(key)) return;
         _seenMsgKeys.add(key);
