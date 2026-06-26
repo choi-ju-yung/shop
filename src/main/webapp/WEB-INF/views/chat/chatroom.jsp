@@ -141,7 +141,7 @@ stompClient.connect({}, function(frame) {
     stompClient.subscribe('/user/queue/chat/', function(message) {
         const msg = JSON.parse(message.body);
 
-        if (String(msg.roomId) !== String(roomId)) return;
+        if (msg.roomId != null && String(msg.roomId) !== String(roomId)) return;
 
         const key = msg.senderNo + '_' + msg.sentAt;
         if (_seenMsgKeys.has(key)) return;
@@ -278,7 +278,7 @@ function insertDateSeparators() {
         if (!timeEl) return;
         const ts = timeEl.getAttribute('data-ts');
         if (!ts) return;
-        const d = new Date(ts);
+        const d = new Date(Number(ts));
         if (isNaN(d)) return;
         const dateStr = d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
         if (prevDateStr !== dateStr) {
@@ -400,7 +400,7 @@ window.addEventListener('beforeunload', function() {
 
 window.addEventListener('load', function() {
     document.querySelectorAll('.msg-time[data-ts]').forEach(function(el) {
-        el.textContent = formatTime(el.getAttribute('data-ts'));
+        el.textContent = formatTime(Number(el.getAttribute('data-ts')));
     });
     insertDateSeparators();
     const chatArea = document.getElementById('chatArea');

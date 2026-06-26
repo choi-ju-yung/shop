@@ -132,7 +132,7 @@
 		}
 
 		document.querySelectorAll('.cl-time[data-ts]').forEach(function(el) {
-			el.textContent = fmtTime(el.getAttribute('data-ts'));
+			el.textContent = fmtTime(Number(el.getAttribute('data-ts')));
 		});
 
 		function isPopupOpen(roomId) {
