@@ -216,10 +216,9 @@ public class UserController {
 	/** 아이디 찾기 처리 */
 	@PostMapping("/find/id")
 	@ResponseBody
-	public Map<String, Object> findId(@RequestParam String name,
-	                                  @RequestParam String email) {
+	public Map<String, Object> findId(@RequestParam String email) {
 		Map<String, Object> result = new HashMap<>();
-		String loginId = userService.findLoginId(name.trim(), email.trim());
+		String loginId = userService.findLoginId(email.trim());
 		if (loginId != null) {
 			result.put("found", true);
 			result.put("loginId", loginId);

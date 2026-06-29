@@ -17,7 +17,7 @@ public class RegistDao {
 		return sqlSession.insert("RegistUserMapper.nomalInsert",userVO);
 	}
 	
-	public int nomalInsertUserPage(long userNo) {
-		return sqlSession.insert("RegistUserMapper.nomalInsertUserPage",userNo);
+	public int nomalInsertUserPage(com.example.demo.user.vo.UserVO userVO) {
+		return sqlSession.insert("RegistUserMapper.nomalInsertUserPage", userVO);
 	}
 }

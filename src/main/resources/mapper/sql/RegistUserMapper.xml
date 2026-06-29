@@ -8,22 +8,13 @@
 		<selectKey keyProperty="userNo" resultType="int" order="BEFORE">
         SELECT USERS_SEQ.NEXTVAL FROM dual
     	</selectKey>
-		insert into users(user_no, login_id, pass_wd, name, email, role, reg_date) 
-		values(#{userNo},#{loginId},#{password},#{username},#{email},#{role},sysdate)
+		INSERT INTO USERS(USER_NO, LOGIN_ID, PASS_WD, EMAIL, ROLE, REG_DATE)
+		VALUES(#{userNo}, #{loginId}, #{password}, #{email}, #{role}, SYSDATE)
 	</insert>
-	
-	<insert id="nomalInsertUserPage" parameterType="long">
-			INSERT INTO MY_USER_PAGE(
-			USER_NO,
-			PROFILE_IMG,
-			INTRODUCE,
-			TEMPERATURE
-		) VALUES(
-		 	#{userNo},
-		 	DEFAULT,
-		 	DEFAULT,
-		 	DEFAULT
-		)
+
+	<insert id="nomalInsertUserPage" parameterType="com.example.demo.user.vo.UserVO">
+		INSERT INTO MY_USER_PAGE(USER_NO, PROFILE_IMG, INTRODUCE, TEMPERATURE, NICKNAME)
+		VALUES(#{userNo}, DEFAULT, DEFAULT, DEFAULT, #{nickname})
 	</insert>
 	
 	

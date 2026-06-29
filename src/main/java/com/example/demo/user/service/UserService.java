@@ -58,10 +58,6 @@ public class UserService {
 		return userDao.findByUserId(loginId);
 	}
 	
-	public UserVO getUserByUsername(String username) {
-		return userDao.getUserByUsername(username);
-	}
-
 	// 이메일 중복체크 서비스
 	public int emailDupCheck(String memberEmail) throws Exception {
 		return userDao.emailDupCheck(memberEmail);
@@ -80,14 +76,14 @@ public class UserService {
 			throw new RuntimeException("회원정보 등록실패");
 		}
 
-		int result2 = myPageDao.registUserPage(userVO.getUserNo());
+		int result2 = myPageDao.registUserPage(java.util.Map.of("userNo", userVO.getUserNo(), "nickname", userVO.getNickname()));
 		if (result2 == 0) {
 			log.error("회원페이지 등록실패 : {}", userVO.getUserNo());
 			throw new RuntimeException("회원페이지 등록실패");
 		}
 
 		try {
-			emailService.sendWelcomeEmail(userVO.getEmail(), userVO.getUsername());
+			emailService.sendWelcomeEmail(userVO.getEmail(), userVO.getNickname());
 		} catch (Exception e) {
 			log.warn("축하 메일 발송 실패 (회원가입은 완료): {}", e.getMessage());
 		}
@@ -127,9 +123,9 @@ public class UserService {
 		throw new RuntimeException("탈퇴 후 30일간 재가입이 제한됩니다. 재가입 가능일: " + availableDateStr);
 	}
 
-	/** 아이디 찾기: 이름 + 이메일 → 로그인 아이디 반환 (없으면 null) */
-	public String findLoginId(String name, String email) {
-		return userDao.findLoginIdByNameAndEmail(name, email);
+	/** 아이디 찾기: 이메일 → 로그인 아이디 반환 (없으면 null) */
+	public String findLoginId(String email) {
+		return userDao.findLoginIdByEmail(email);
 	}
 
 	/** 비밀번호 찾기: 임시 비밀번호 발급 후 이메일 발송 */

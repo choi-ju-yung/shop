@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.ui.Model;
+import com.example.demo.mypage.dao.MyPageDao;
 import com.example.demo.regist.service.RegistService;
 import com.example.demo.user.service.UserService;
 import com.example.demo.user.vo.UserVO;
@@ -24,11 +25,13 @@ public class RegistController {
 
 	private final RegistService registService;
 	private final UserService userService;
+	private final MyPageDao myPageDao;
 
 	@Autowired
-	public RegistController(RegistService registService, UserService userService) {
+	public RegistController(RegistService registService, UserService userService, MyPageDao myPageDao) {
 		this.registService = registService;
 		this.userService = userService;
+		this.myPageDao = myPageDao;
 	}
 
 	@PostMapping("/nomalInsert")
@@ -43,6 +46,13 @@ public class RegistController {
 			redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
 			return "redirect:/regist/nomalregist";
 		}
+	}
+
+	/** 닉네임 중복 확인 */
+	@GetMapping("/duplicateNickname")
+	@ResponseBody
+	public String duplicateNickname(@RequestParam String nickname) {
+		return String.valueOf(myPageDao.checkNicknameForRegist(nickname));
 	}
 
 	/** 이메일 기반 탈퇴 제한 확인 (인증 전송 전 호출) */

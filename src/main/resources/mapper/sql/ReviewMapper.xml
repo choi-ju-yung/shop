@@ -20,7 +20,7 @@
     <select id="getReviewsByReviewee" parameterType="long" resultType="com.example.demo.review.vo.ReviewVO">
         SELECT R.REVIEW_ID, R.PRODUCT_ID, R.REVIEWER_NO, R.REVIEWEE_NO,
                R.RATING, R.CONTENT, R.REG_DATE,
-               COALESCE(MP.NICKNAME, U.NAME) AS REVIEWER_NAME,
+               COALESCE(MP.NICKNAME, '알 수 없음') AS REVIEWER_NAME,
                P.PRODUCT_TITLE
         FROM REVIEW R
         JOIN USERS U              ON R.REVIEWER_NO = U.USER_NO
@@ -35,7 +35,7 @@
         SELECT P.PRODUCT_ID, P.PRODUCT_TITLE, P.PRODUCT_PRICE,
                P.USER_NO AS SELLER_NO, P.BUYER_NO,
                PF.FILE_PATH AS IMG_PATH,
-               COALESCE(MP.NICKNAME, U.NAME) AS SELLER_NAME
+               COALESCE(MP.NICKNAME, '알 수 없음') AS SELLER_NAME
         FROM PRODUCT P
         JOIN USERS U              ON P.USER_NO = U.USER_NO
         LEFT JOIN MY_USER_PAGE MP ON P.USER_NO = MP.USER_NO
@@ -56,7 +56,7 @@
             SELECT ROWNUM AS RN, T.* FROM (
                 SELECT R.REVIEW_ID, R.PRODUCT_ID, R.REVIEWER_NO, R.REVIEWEE_NO,
                        R.RATING, R.CONTENT, R.REG_DATE,
-                       COALESCE(MP.NICKNAME, U.NAME) AS REVIEWER_NAME,
+                       COALESCE(MP.NICKNAME, '알 수 없음') AS REVIEWER_NAME,
                        P.PRODUCT_TITLE
                 FROM REVIEW R
                 JOIN USERS U              ON R.REVIEWER_NO = U.USER_NO

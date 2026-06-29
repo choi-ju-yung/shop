@@ -27,7 +27,7 @@ public class WishService {
      * 찜 토글. 찜 추가 시 true, 취소 시 false 반환.
      * 찜 추가 시 판매자에게 WebSocket 알림 전송.
      */
-    public boolean toggleWish(long userNo, Long productId, String wishUserName) {
+    public boolean toggleWish(long userNo, Long productId) {
         Map<String, Object> map = new HashMap<>();
         map.put("userNo", userNo);
         map.put("productId", productId);
@@ -39,7 +39,8 @@ public class WishService {
             return false;
         } else {
             wishDao.insertWish(map);
-            sendWishNotification(userNo, productId, wishUserName);
+            String nickname = wishDao.getNicknameByUserNo(userNo);
+            sendWishNotification(userNo, productId, nickname);
             return true;
         }
     }

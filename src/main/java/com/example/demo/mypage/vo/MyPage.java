@@ -14,8 +14,7 @@ public class MyPage {
     private double temperature; // 실무에서는 숫자만 저장하고 등급은 코드에서 계산하는 것이 더 일반적
     
     
-    // JOIN으로 가져올 USERS_TB 필드
-    private String name;
+    // JOIN으로 가져올 USERS 필드
     private String email;
     private String loginId;
     private String oauthProvider;
