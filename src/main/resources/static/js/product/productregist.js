@@ -30,6 +30,12 @@ function getImageFiles(e) {
 			continue;
 		}
 
+		// 파일 크기 검사 (10MB)
+		if (file.size > 10 * 1024 * 1024) {
+			alert(`파일 크기가 너무 큽니다. 10MB 이하의 이미지만 업로드 가능합니다.\n(${file.name}: ${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+			continue;
+		}
+
 		// 중복 검사
 		let isDuplicate = false;
 		for (let i = 0; i < dataTransfer.items.length; i++) {
