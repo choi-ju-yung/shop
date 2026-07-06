@@ -32,12 +32,15 @@
         <span class="registMsg ok">카카오 계정 이메일이 자동으로 입력되었습니다</span>
       </div>
 
-      <%-- 이름 (카카오 닉네임, 읽기전용) --%>
+      <%-- 닉네임 --%>
       <div class="registGroup">
-        <label>이름</label>
-        <input class="registInput" type="text" id="username" name="username"
-               value="${nickname}" readonly>
-        <span class="registMsg ok">카카오 프로필 이름이 자동으로 입력되었습니다</span>
+        <label>닉네임 <span class="req">*</span></label>
+        <div class="registInputRow">
+          <input class="registInput" type="text" id="nicknameId" name="nickname"
+                 value="${nickname}" placeholder="2~12자 (한글/영문/숫자)" maxlength="12">
+          <button type="button" class="registInlineBtn" id="nicknameDupBtn">중복확인</button>
+        </div>
+        <span class="registMsg" id="nicknameMessage"></span>
       </div>
 
       <%-- 약관 동의 --%>

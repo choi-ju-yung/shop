@@ -25,15 +25,26 @@ public class RedisSubscriber {
     public void onReadReceipt(String message, String channel) {
         try {
             @SuppressWarnings("unchecked")
-            java.util.Map<String, Object> data = objectMapper.readValue(message, java.util.Map.class);
+            Map<String, Object> data = objectMapper.readValue(message, Map.class);
             String roomId      = (String)  data.get("roomId");
             int    targetUserNo = ((Number) data.get("targetUserNo")).intValue();
 
-            java.util.Map<String, Object> receipt = new java.util.HashMap<>();
+            Map<String, Object> receipt = new HashMap<>();
             receipt.put("roomId", roomId);
             messagingTemplate.convertAndSendToUser(String.valueOf(targetUserNo), "/queue/read", receipt);
         } catch (Exception e) {
             log.error("RedisSubscriber onReadReceipt 오류", e);
+        }
+    }
+
+    public void onTypingMessage(String message, String channel) {
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = objectMapper.readValue(message, Map.class);
+            int receiverNo = ((Number) data.get("receiverNo")).intValue();
+            messagingTemplate.convertAndSendToUser(String.valueOf(receiverNo), "/queue/typing", data);
+        } catch (Exception e) {
+            log.error("RedisSubscriber onTypingMessage 오류", e);
         }
     }
 
@@ -56,9 +67,8 @@ public class RedisSubscriber {
                 ChatRoom senderRoom = buildChatRoom(roomBase, roomId, chatMessage, receiverNo, -2, receiverName);
                 messagingTemplate.convertAndSend("/topic/chat-list/" + senderNo, senderRoom);
 
-                // 수신자 목록: 상대방(발신자) 이름은 메시지에 포함되어 있음
-                int newUnread = chatRedisService.incrementUnread(roomId, receiverNo);
-                ChatRoom receiverRoom = buildChatRoom(roomBase, roomId, chatMessage, senderNo, newUnread, chatMessage.getSenderName());
+                // 수신자 목록: 미읽음 카운트는 Kafka 소비자에서 이미 1회 증가됨
+                ChatRoom receiverRoom = buildChatRoom(roomBase, roomId, chatMessage, senderNo, chatMessage.getUnreadCount(), chatMessage.getSenderName());
                 messagingTemplate.convertAndSend("/topic/chat-list/" + receiverNo, receiverRoom);
             }
 
@@ -66,6 +76,7 @@ public class RedisSubscriber {
             Map<String, Object> notifyPayload = new HashMap<>();
             notifyPayload.put("notiMessage", chatMessage.getSenderName() + ": " + chatMessage.getMessage());
             notifyPayload.put("type", "MESSAGE");
+            notifyPayload.put("roomId", roomId);
             messagingTemplate.convertAndSendToUser(String.valueOf(receiverNo), "/queue/notify", notifyPayload);
 
         } catch (Exception e) {

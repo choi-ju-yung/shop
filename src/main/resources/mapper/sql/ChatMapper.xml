@@ -79,17 +79,19 @@ SELECT
     ) AS UNREAD_COUNT,
     PF.FILE_PATH AS PRODUCT_IMG,
     CASE
-        WHEN R.SELLER_NO = #{userNo} THEN COALESCE(MPB.NICKNAME, UB.NAME)
-        ELSE COALESCE(MPS.NICKNAME, US.NAME)
+        WHEN R.SELLER_NO = #{userNo} THEN COALESCE(MPB.NICKNAME, '알 수 없음')
+        ELSE COALESCE(MPS.NICKNAME, '알 수 없음')
     END AS OTHER_USER_NAME,
     CASE
         WHEN R.SELLER_NO = #{userNo} THEN MPB.PROFILE_IMG
         ELSE MPS.PROFILE_IMG
-    END AS OTHER_USER_IMG
+    END AS OTHER_USER_IMG,
+    P.PRODUCT_PLACE AS PRODUCT_PLACE
 FROM CHAT_ROOM R
 LEFT JOIN LAST_MSG LM          ON LM.ROOM_ID   = R.ROOM_ID
 LEFT JOIN CHAT_MESSAGE M       ON M.MSG_ID     = LM.MAX_MSG_ID
 LEFT JOIN PRODUCT_FILE PF      ON R.PRODUCT_ID = PF.PRODUCT_ID AND PF.IS_MAIN = 1
+LEFT JOIN PRODUCT P            ON R.PRODUCT_ID = P.PRODUCT_ID
 JOIN USERS US                  ON R.SELLER_NO  = US.USER_NO
 JOIN USERS UB                  ON R.BUYER_NO   = UB.USER_NO
 LEFT JOIN MY_USER_PAGE MPS     ON R.SELLER_NO  = MPS.USER_NO
@@ -101,16 +103,15 @@ ORDER BY COALESCE(M.SENT_AT, R.CREATED_AT) DESC
 	
 	
 	<insert id="insertChatMessage" parameterType="Map">
-		INSERT INTO CHAT_MESSAGE VALUES(CHAT_MESSAGE_SEQ.NEXTVAL,#{roomId},#{senderNo},#{message},SYSDATE,default,#{receiverNo})
+		INSERT INTO CHAT_MESSAGE VALUES(CHAT_MESSAGE_SEQ.NEXTVAL,#{roomId},#{senderNo},#{message},#{sentAt},default,#{receiverNo})
 	</insert>
 	
-	<!-- 메시지 목록: 메시지 + 발신자 닉네임 조회 (닉네임 없으면 이름 fallback) -->
+	<!-- 메시지 목록: 메시지 + 발신자 닉네임 조회 -->
 	<select id="getChatMessagesByRoomId" resultType="com.example.demo.chat.vo.ChatMessage">
-        SELECT /*+ NO_PARALLEL(M) NO_PARALLEL(U) NO_PARALLEL(MP) */ M.MSG_ID, M.ROOM_ID, M.SENDER_NO,
-               COALESCE(MP.NICKNAME, U.NAME) AS SENDER_NAME,
+        SELECT /*+ NO_PARALLEL(M) NO_PARALLEL(MP) */ M.MSG_ID, M.ROOM_ID, M.SENDER_NO,
+               COALESCE(MP.NICKNAME, '알 수 없음') AS SENDER_NAME,
                M.MESSAGE, M.SENT_AT, M.IS_READ
         FROM CHAT_MESSAGE M
-        JOIN USERS U         ON M.SENDER_NO = U.USER_NO
         LEFT JOIN MY_USER_PAGE MP ON M.SENDER_NO = MP.USER_NO
         WHERE M.ROOM_ID = #{roomId}
         ORDER BY M.SENT_AT
@@ -128,8 +129,8 @@ ORDER BY COALESCE(M.SENT_AT, R.CREATED_AT) DESC
             P.IS_DELETED                                                 AS PRODUCT_DELETED,
             P.TRADE_STATUS                                               AS TRADE_STATUS,
             CASE WHEN R.SELLER_NO = #{userNo}
-                 THEN COALESCE(MPB.NICKNAME, UB.NAME)
-                 ELSE COALESCE(MPS.NICKNAME, US.NAME) END                AS OTHER_USER_NAME,
+                 THEN COALESCE(MPB.NICKNAME, '알 수 없음')
+                 ELSE COALESCE(MPS.NICKNAME, '알 수 없음') END           AS OTHER_USER_NAME,
             CASE WHEN R.SELLER_NO = #{userNo} THEN UB.IS_DELETED
                  ELSE US.IS_DELETED END                                  AS OTHER_USER_DELETED
         FROM CHAT_ROOM R
@@ -148,11 +149,10 @@ ORDER BY COALESCE(M.SENT_AT, R.CREATED_AT) DESC
 	
 	<select id="getLatestMessageNameTimeInfo" resultType="Map">
 			SELECT
-				COALESCE(MP.NICKNAME, U.NAME) AS NAME,
+				COALESCE(MP.NICKNAME, '알 수 없음') AS NAME,
 				M.SENT_AT
-			FROM USERS U
-			JOIN CHAT_MESSAGE M ON U.USER_NO = M.SENDER_NO
-			LEFT JOIN MY_USER_PAGE MP ON U.USER_NO = MP.USER_NO
+			FROM CHAT_MESSAGE M
+			LEFT JOIN MY_USER_PAGE MP ON M.SENDER_NO = MP.USER_NO
 			WHERE M.ROOM_ID = #{roomId}
 			ORDER BY SENT_AT DESC
 			FETCH FIRST 1 ROWS ONLY
@@ -189,12 +189,11 @@ ORDER BY COALESCE(M.SENT_AT, R.CREATED_AT) DESC
 		WHERE R.ROOM_ID = #{roomId}
 	</select>
 
-	<!-- 발신자 표시 이름 (닉네임 우선, 없으면 이름) -->
+	<!-- 발신자 표시 이름 (닉네임) -->
 	<select id="getSenderNameByUserNo" resultType="String" parameterType="int">
-		SELECT COALESCE(MP.NICKNAME, U.NAME)
-		FROM USERS U
-		LEFT JOIN MY_USER_PAGE MP ON U.USER_NO = MP.USER_NO
-		WHERE U.USER_NO = #{userNo}
+		SELECT COALESCE(MP.NICKNAME, '알 수 없음')
+		FROM MY_USER_PAGE MP
+		WHERE MP.USER_NO = #{userNo}
 	</select>
 
 	<!-- 방 기본 정보 (변하지 않는 정보만) -->
@@ -218,9 +217,10 @@ ORDER BY COALESCE(M.SENT_AT, R.CREATED_AT) DESC
 	<select id="getChatBuyersByProductId" parameterType="map" resultType="map">
 		SELECT CR.ROOM_ID,
 		       CR.BUYER_NO,
-		       U.NAME AS BUYER_NAME
+		       COALESCE(MP.NICKNAME, '알 수 없음') AS BUYER_NAME
 		FROM CHAT_ROOM CR
-		JOIN USERS U ON CR.BUYER_NO = U.USER_NO
+		JOIN USERS U        ON CR.BUYER_NO = U.USER_NO
+		LEFT JOIN MY_USER_PAGE MP ON CR.BUYER_NO = MP.USER_NO
 		WHERE CR.PRODUCT_ID = #{productId}
 		  AND CR.SELLER_NO  = #{userNo}
 		  AND U.IS_DELETED  = 'N'

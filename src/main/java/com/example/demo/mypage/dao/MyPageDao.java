@@ -24,8 +24,12 @@ public class MyPageDao {
         return sqlSession.selectOne("MyPageMapper.findByMyPage", userNo);
     }
 
-    public int registUserPage(long userId) {
-        return sqlSession.insert("MyPageMapper.registUserPage", userId);
+    public int registUserPage(java.util.Map<String, Object> params) {
+        return sqlSession.insert("MyPageMapper.registUserPage", params);
+    }
+
+    public int checkNicknameForRegist(String nickname) {
+        return sqlSession.selectOne("MyPageMapper.checkNicknameForRegist", nickname);
     }
 
     public int checkNicknameDup(Map<String, Object> map) {

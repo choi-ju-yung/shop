@@ -66,12 +66,15 @@
         <span class="registMsg" id="pwMessage"></span>
       </div>
 
-      <%-- 이름 --%>
+      <%-- 닉네임 --%>
       <div class="registGroup">
-        <label>이름 <span class="req">*</span></label>
-        <input class="registInput" type="text" id="userNameId" name="username"
-               placeholder="실명 입력">
-        <span class="registMsg" id="userNameMessage"></span>
+        <label>닉네임 <span class="req">*</span></label>
+        <div class="registInputRow">
+          <input class="registInput" type="text" id="nicknameId" name="nickname"
+                 placeholder="2~12자 (한글/영문/숫자)" maxlength="12">
+          <button type="button" class="registInlineBtn" id="nicknameDupBtn">중복확인</button>
+        </div>
+        <span class="registMsg" id="nicknameMessage"></span>
       </div>
 
       <%-- 약관 동의 --%>

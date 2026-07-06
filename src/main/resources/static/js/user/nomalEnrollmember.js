@@ -50,14 +50,14 @@ const fn_viewDetail4 = () => {
 
 /**/
 
-const checkObj = {  // 해당 회원가입 정보입력할 때, 정상적으로 처리됬는지 구분하는 객체
+const checkObj = {
 	"memberEmail": false,
 	"memberId": false,
 	"memberPw": false,
 	"memberPwConfirm": false,
-	"memberName": false,
-	"sendEmail": false, // 이메일 인증번호 전송 성공 유무
-	"authNumber" : false // 인증번호 일치하는지 유무
+	"memberNickname": false,
+	"sendEmail": false,
+	"authNumber" : false
 };
 
 
@@ -223,27 +223,50 @@ memberPw.addEventListener("keyup", function() {
 });
 
 
-// 이름 정규표현식
-const regName = /^[가-힣]{2,6}$/
-const userNameId = document.getElementById("userNameId");
-const userNameMessage = $("#userNameMessage");
+// 닉네임 검증
+const regNickname = /^[가-힣a-zA-Z0-9]{2,12}$/;
+const nicknameId = document.getElementById("nicknameId");
+const nicknameMessage = $("#nicknameMessage");
+const nicknameDupBtn = document.getElementById("nicknameDupBtn");
 
-userNameId.addEventListener("keyup", function() {
-	const value = userNameId.value;
+nicknameId.addEventListener("keyup", function() {
+	const value = nicknameId.value;
+	checkObj.memberNickname = false;
 
 	if (value.length === 0) {
-		userNameMessage.text("");
-		checkObj.memberName = false;
+		nicknameMessage.text("");
 		return;
 	}
-
-	if (regName.test(value)) {
-		userNameMessage.text("이름을 정확하게 입력하셨습니다.").css("color", "green");
-		checkObj.memberName = true;
+	if (regNickname.test(value)) {
+		nicknameMessage.text("중복확인 버튼을 눌러주세요.").css("color", "#888");
 	} else {
-		userNameMessage.text("2~6자의 한글 이름으로 입력하세요.").css("color", "red");
-		checkObj.memberName = false;
+		nicknameMessage.text("2~12자의 한글/영문/숫자만 사용 가능합니다.").css("color", "red");
 	}
+});
+
+nicknameDupBtn.addEventListener("click", function() {
+	const value = nicknameId.value.trim();
+	if (!regNickname.test(value)) {
+		nicknameMessage.text("2~12자의 한글/영문/숫자만 사용 가능합니다.").css("color", "red");
+		checkObj.memberNickname = false;
+		return;
+	}
+	$.ajax({
+		url: "/regist/duplicateNickname",
+		data: { nickname: value },
+		success: function(result) {
+			if (result === "1") {
+				nicknameMessage.text("이미 사용 중인 닉네임입니다.").css("color", "red");
+				checkObj.memberNickname = false;
+			} else {
+				nicknameMessage.text("사용 가능한 닉네임입니다.").css("color", "green");
+				checkObj.memberNickname = true;
+			}
+		},
+		error: function() {
+			nicknameMessage.text("중복 확인 중 오류가 발생했습니다.").css("color", "red");
+		}
+	});
 });
 
 
@@ -346,6 +369,7 @@ authButton.addEventListener("click", function() {
 					checkObj.authNumber = true;
 					clearInterval(checkInterval);
 					timerMessageClass.text("인증완료").css("color","green");
+					emailMessage.text("사용 가능한 이메일입니다.").css("color", "green");
 				}else{
 					alert("인증번호가 다르거나 만료되었습니다.");
 					checkObj.authNumber = false;
@@ -363,9 +387,25 @@ authButton.addEventListener("click", function() {
 
 
 function fn_registEnrollMember() {
-	if (checkObj.memberEmail && checkObj.memberPw && checkObj.memberPwConfirm && checkObj.memberId
-		&& checkObj.memberName && checkObj.sendEmail && checkObj.authNumber) {
-		return true;
+	if (!checkObj.memberEmail || !checkObj.authNumber) {
+		emailMessage.text("이메일 인증을 완료해주세요.").css("color", "red");
+		document.getElementById("email").focus();
+		return false;
 	}
-	return false;
+	if (!checkObj.memberId) {
+		$("#idDupMessageId").text("아이디 중복 확인이 필요합니다.").css("color", "red");
+		document.getElementById("userId_").focus();
+		return false;
+	}
+	if (!checkObj.memberPw || !checkObj.memberPwConfirm) {
+		pwMessage.text("비밀번호를 확인해주세요.").css("color", "red");
+		document.getElementById("password").focus();
+		return false;
+	}
+	if (!checkObj.memberNickname) {
+		nicknameMessage.text("닉네임 중복 확인이 필요합니다.").css("color", "red");
+		document.getElementById("nicknameId").focus();
+		return false;
+	}
+	return true;
 }

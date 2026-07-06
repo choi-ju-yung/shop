@@ -49,8 +49,7 @@ public class WishController {
             HttpSession session) {
 
         UserVO loginUser = (UserVO) session.getAttribute("loginUser");
-        boolean wished = wishService.toggleWish(
-                loginUser.getUserNo(), productId, loginUser.getUsername());
+        boolean wished = wishService.toggleWish(loginUser.getUserNo(), productId);
 
         Map<String, Object> result = new HashMap<>();
         result.put("wished", wished);

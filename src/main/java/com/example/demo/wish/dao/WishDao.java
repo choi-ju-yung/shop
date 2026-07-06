@@ -39,4 +39,8 @@ public class WishDao {
     public void deleteWishlistByUserNo(long userNo) {
         session.delete("WishMapper.deleteWishlistByUserNo", userNo);
     }
+
+    public String getNicknameByUserNo(long userNo) {
+        return session.selectOne("WishMapper.getNicknameByUserNo", userNo);
+    }
 }

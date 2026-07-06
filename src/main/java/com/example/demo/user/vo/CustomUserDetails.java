@@ -45,7 +45,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
 
 	@Override
 	public String getUsername() {
-		return user.getUsername();
+		return user.getLoginId() != null ? user.getLoginId() : user.getOauthId();
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User, Serializable 
 
 	@Override
 	public String getName() {
-		return user.getUsername();
+		return user.getLoginId() != null ? user.getLoginId() : user.getOauthId();
 	}
 
 	@Override

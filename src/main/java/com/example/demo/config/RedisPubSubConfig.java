@@ -17,6 +17,7 @@ public class RedisPubSubConfig {
 
     public static final String CHAT_CHANNEL          = "chat-channel";
     public static final String READ_RECEIPT_CHANNEL  = "read-receipt-channel";
+    public static final String TYPING_CHANNEL        = "typing-channel";
 
     @Bean
     public RedisTemplate<String, String> chatRedisTemplate(RedisConnectionFactory factory) {
@@ -38,14 +39,21 @@ public class RedisPubSubConfig {
     }
 
     @Bean
+    public MessageListenerAdapter typingListenerAdapter(RedisSubscriber redisSubscriber) {
+        return new MessageListenerAdapter(redisSubscriber, "onTypingMessage");
+    }
+
+    @Bean
     public RedisMessageListenerContainer redisMessageListenerContainer(
             RedisConnectionFactory factory,
             @Qualifier("messageListenerAdapter") MessageListenerAdapter listenerAdapter,
-            @Qualifier("readReceiptListenerAdapter") MessageListenerAdapter readReceiptListenerAdapter) {
+            @Qualifier("readReceiptListenerAdapter") MessageListenerAdapter readReceiptListenerAdapter,
+            @Qualifier("typingListenerAdapter") MessageListenerAdapter typingListenerAdapter) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(factory);
         container.addMessageListener(listenerAdapter,            new ChannelTopic(CHAT_CHANNEL));
         container.addMessageListener(readReceiptListenerAdapter, new ChannelTopic(READ_RECEIPT_CHANNEL));
+        container.addMessageListener(typingListenerAdapter,      new ChannelTopic(TYPING_CHANNEL));
         return container;
     }
 }

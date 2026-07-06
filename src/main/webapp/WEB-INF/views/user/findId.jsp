@@ -9,13 +9,12 @@
     <div class="authBrand">
       <img src="<%=request.getContextPath()%>/images/common/logo.svg" alt="니꺼내꺼" class="brandLogoImg">
       <h2>아이디 찾기</h2>
-      <p>가입 시 등록한 이름과 이메일을 입력하세요</p>
+      <p>가입 시 등록한 이메일을 입력하세요</p>
     </div>
 
     <div class="authResultBox" id="resultBox"></div>
 
     <div class="authFields">
-      <input class="authInput" type="text" id="findName" placeholder="이름">
       <input class="authInput" type="email" id="findEmail" placeholder="이메일 주소">
     </div>
 
@@ -32,21 +31,20 @@
 
 <script>
 function findId() {
-  var name  = document.getElementById('findName').value.trim();
   var email = document.getElementById('findEmail').value.trim();
   var box   = document.getElementById('resultBox');
 
-  if (!name || !email) {
+  if (!email) {
     box.className = 'authResultBox error';
     box.style.display = 'block';
-    box.textContent = '이름과 이메일을 모두 입력해주세요.';
+    box.textContent = '이메일을 입력해주세요.';
     return;
   }
 
   $.ajax({
     url: '<%=request.getContextPath()%>/find/id',
     method: 'POST',
-    data: { name: name, email: email },
+    data: { email: email },
     success: function(res) {
       box.style.display = 'block';
       if (res.found) {

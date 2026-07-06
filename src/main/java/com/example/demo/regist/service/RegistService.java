@@ -43,14 +43,14 @@ public class RegistService {
 			throw new RuntimeException("회원정보 등록실패");
 		}
 		
-		int result2 = registDao.nomalInsertUserPage(userVO.getUserNo());
+		int result2 = registDao.nomalInsertUserPage(userVO);
 		if (result2 == 0) {
 			log.error("회원페이지 등록실패 : {}", userVO.getUserNo());
 			throw new RuntimeException("회원페이지 등록실패");
 		}
 
 		try {
-			emailService.sendWelcomeEmail(userVO.getEmail(), userVO.getUsername());
+			emailService.sendWelcomeEmail(userVO.getEmail(), userVO.getNickname());
 		} catch (Exception e) {
 			log.warn("축하 메일 발송 실패 (회원가입은 완료): {}", e.getMessage());
 		}

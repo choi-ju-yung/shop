@@ -2,9 +2,28 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <link rel="stylesheet" href="<%=request.getContextPath()%>/css/product/productregist.css" />
-<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
 <%@ include file="../common/header.jsp"%>
+
+<%-- 주소 검색 모달 --%>
+<div id="addressModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:9999; display:none; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; width:520px; max-width:95vw; box-shadow:0 8px 32px rgba(0,0,0,.18); overflow:hidden;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #f0f0f0;">
+            <span style="font-size:16px; font-weight:700;">주소 검색</span>
+            <button onclick="closeAddrModal()" style="background:none; border:none; font-size:22px; cursor:pointer; color:#888; line-height:1;">×</button>
+        </div>
+        <div style="padding:16px 20px;">
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+                <input id="addrKeyword" type="text" placeholder="도로명, 지번, 건물명으로 검색"
+                       style="flex:1; padding:10px 14px; border:1.5px solid #d1d5db; border-radius:8px; font-size:14px; outline:none;"
+                       onkeydown="if(event.key==='Enter') searchJuso()">
+                <button onclick="searchJuso()"
+                        style="padding:10px 18px; background:#20c997; color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">검색</button>
+            </div>
+            <ul id="jusoResults" style="list-style:none; margin:0; padding:0; max-height:280px; overflow-y:auto;"></ul>
+        </div>
+    </div>
+</div>
 
 <div class="regist-wrapper">
     <div class="regist-card">

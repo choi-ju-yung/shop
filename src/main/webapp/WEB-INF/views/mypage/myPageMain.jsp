@@ -23,10 +23,7 @@
     </div>
     <div class="mpProfileInfo">
       <div class="mpProfileName">
-        <c:choose>
-          <c:when test="${not empty myPage.nickname}">${myPage.nickname}</c:when>
-          <c:otherwise>${myPage.name}</c:otherwise>
-        </c:choose>
+        ${myPage.nickname}
         <span class="mpTempBadge" id="tempBadge">${myPage.temperature}℃</span>
       </div>
       <c:if test="${empty myPage.nickname}">
@@ -146,8 +143,8 @@
       <div class="mpSectionTitle"><ion-icon name="shield-checkmark-outline"></ion-icon> 계정 정보</div>
       <ul class="mpActivityList">
         <li>
-          <span class="mpActivityLabel"><ion-icon name="person-outline"></ion-icon> 이름</span>
-          <span class="mpActivityVal">${myPage.name}</span>
+          <span class="mpActivityLabel"><ion-icon name="person-outline"></ion-icon> 닉네임</span>
+          <span class="mpActivityVal">${myPage.nickname}</span>
         </li>
         <li>
           <span class="mpActivityLabel"><ion-icon name="mail-outline"></ion-icon> 이메일</span>

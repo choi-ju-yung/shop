@@ -24,5 +24,6 @@ public class ChatMessage {
    
     // 추가로 필요한 경우
     private String senderName;  // 보낸 사람 이름 (선택사항)
+    private int unreadCount;    // 수신자 미읽음 카운트 (Kafka 소비자에서 1회 증가 후 전달)
 
 }

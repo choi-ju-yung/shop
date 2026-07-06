@@ -31,10 +31,6 @@ public class UserDao {
 		return sqlSession.selectOne("UserMapper.findByUserNo",userNo);
 	}
 	
-	public UserVO getUserByUsername(String username) {
-		return sqlSession.selectOne("UserMapper.getUserByUsername",username);
-	}
-	
 	public int emailDupCheck(String memberEmail) {
 		return sqlSession.selectOne("UserMapper.emailDupCheck",memberEmail);
 	}
@@ -57,10 +53,9 @@ public class UserDao {
 				Map.of("email", email != null ? email : "", "loginId", loginId != null ? loginId : ""));
 	}
 
-	/** 아이디 찾기: 이름 + 이메일 */
-	public String findLoginIdByNameAndEmail(String name, String email) {
-		return sqlSession.selectOne("UserMapper.findLoginIdByNameAndEmail",
-				Map.of("name", name, "email", email));
+	/** 아이디 찾기: 이메일 */
+	public String findLoginIdByEmail(String email) {
+		return sqlSession.selectOne("UserMapper.findLoginIdByEmail", email);
 	}
 
 	/** 비밀번호 찾기: 로그인 아이디 + 이메일로 사용자 확인 */

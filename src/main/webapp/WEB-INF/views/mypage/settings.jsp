@@ -78,7 +78,6 @@
   <%-- 계정 정보 --%>
   <div class="settingsCard">
     <h3 class="settingsCardTitle">계정 정보</h3>
-    <div class="infoRow"><span class="infoLabel">이름</span><span class="infoVal">${myPage.name}</span></div>
     <div class="infoRow"><span class="infoLabel">이메일</span><span class="infoVal">${myPage.email}</span></div>
     <div class="infoRow">
       <span class="infoLabel">가입 유형</span>

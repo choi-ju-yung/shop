@@ -5,17 +5,24 @@
 <mapper namespace="MyPageMapper">
 
     <select id="findByMyPage" parameterType="long" resultType="com.example.demo.mypage.vo.MyPage">
-        SELECT MU.NICKNAME, MU.PROFILE_IMG, MU.INTRODUCE, MU.TEMPERATURE, U.NAME, U.EMAIL, U.LOGIN_ID, U.OAUTH_PROVIDER
-          FROM MY_USER_PAGE MU 
+        SELECT MU.NICKNAME, MU.PROFILE_IMG, MU.INTRODUCE, MU.TEMPERATURE, U.EMAIL, U.LOGIN_ID, U.OAUTH_PROVIDER
+          FROM MY_USER_PAGE MU
           JOIN USERS U ON MU.USER_NO = U.USER_NO
          WHERE MU.USER_NO = #{userNo}
     </select>
 
-    <!-- 회원가입 시 기본 레코드 생성 (닉네임은 NULL로, 추후 설정) -->
-    <insert id="registUserPage" parameterType="long">
+    <!-- 회원가입 시 기본 레코드 생성 (닉네임 포함) -->
+    <insert id="registUserPage" parameterType="map">
         INSERT INTO MY_USER_PAGE (USER_NO, PROFILE_IMG, INTRODUCE, TEMPERATURE, NICKNAME)
-        VALUES (#{userId}, DEFAULT, DEFAULT, DEFAULT, NULL)
+        VALUES (#{userNo}, DEFAULT, DEFAULT, DEFAULT, #{nickname})
     </insert>
+
+    <!-- 회원가입 시 닉네임 중복 확인 -->
+    <select id="checkNicknameForRegist" parameterType="String" resultType="int">
+        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+          FROM MY_USER_PAGE
+         WHERE NICKNAME = #{nickname}
+    </select>
 
     <!-- 닉네임 중복 확인 -->
     <select id="checkNicknameDup" parameterType="map" resultType="int">
