@@ -17,7 +17,7 @@ public class OciStorageConfig {
     @Value("${oci.storage.endpoint:}")
     private String endpoint;
 
-    @Value("${oci.storage.region:ap-melbourne-1}")
+    @Value("${oci.storage.region:ap-chuncheon-1}")
     private String region;
 
     @Value("${oci.storage.access-key:}")
