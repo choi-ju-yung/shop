@@ -64,7 +64,7 @@
 		<dependency>
 	        <groupId>org.springframework.boot</groupId>
 	        <artifactId>spring-boot-devtools</artifactId>
-	        <scope>runtime</scope>
+	        <scope>provided</scope>
 	        <optional>true</optional>
 	    </dependency>
 			
@@ -176,14 +176,14 @@
 		    <version>2.25.60</version>
 		</dependency>
 
-		<!-- Actuator + InfluxDB 모니터링 -->
+		<!-- Actuator + Prometheus 모니터링 -->
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 		<dependency>
 		    <groupId>io.micrometer</groupId>
-		    <artifactId>micrometer-registry-influx</artifactId>
+		    <artifactId>micrometer-registry-prometheus</artifactId>
 		</dependency>
 
 
